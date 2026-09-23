@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Love Story - เส้นทางความทรงจำของเรา</title>
+    
+    <!-- Google Fonts: Prompt & Mitr -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Prompt:wght@300;400;500;600;700&family=Sacramento&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pastel: {
+                            pink: '#FFF0F5',
+                            rose: '#FFB6C1',
+                            deepRose: '#FF69B4',
+                            beige: '#FAF0E6',
+                            cream: '#FFFDD0',
+                            lavender: '#E6E6FA',
+                            peach: '#FFDAB9',
+                            softDark: '#4A3E3D'
+                        },
+                        mood: {
+                            joy: '#FF6FA5',
+                            joyBg: '#FFE3EF',
+                            warm: '#FF9F5A',
+                            warmBg: '#FFEBDA',
+                            cheer: '#FFC845',
+                            cheerBg: '#FFF6DA',
+                            yum: '#FF7A5C',
+                            yumBg: '#FFE4DD',
+                            travel: '#5AC8E8',
+                            travelBg: '#DBF4FB',
+                            miss: '#A374DB',
+                            missBg: '#EEE2FA',
+                            gift: '#5ED1A6',
+                            giftBg: '#DBF7EB'
+                        }
+                    },
+                    fontFamily: {
+                        prompt: ['Prompt', 'sans-serif'],
+                        mitr: ['Mitr', 'sans-serif'],
+                        cursive: ['Sacramento', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: linear-gradient(150deg, #FFE8F1 0%, #FFF3E6 30%, #FFEFD9 55%, #F1E9FB 80%, #E4F6F2 100%);
+            background-attachment: fixed;
+            color: #4A3E3D;
+        }
+        
+        .font-cursive {
+            font-family: 'Sacramento', cursive;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 182, 193, 0.35);
+            box-shadow: 0 10px 30px 0 rgba(255, 182, 193, 0.18);
+        }
+        
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(255, 182, 193, 0.4);
+        }
+
+        /* Timeline vertical line background */
+        .timeline-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #FF6FA5 0%, #FF9F5A 30%, #FFC845 55%, #A374DB 80%, #5AC8E8 100%);
+            border-radius: 9999px;
+        }
+
+        /* Heart pulse animation */
+        @keyframes heartPulse {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.15); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.15); }
+            70% { transform: scale(1); }
+        }
+        
+        .animate-heart-pulse {
+            animation: heartPulse 2.5s infinite;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FFF0F5;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FFB6C1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FF69B4;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-16">
+
+    <header class="sticky top-0 z-40 glass-nav transition-all duration-300 overflow-hidden">
+        <!-- Decorative floating symbols -->
+        <i data-lucide="heart" class="hidden sm:block absolute top-2 left-1/3 w-3.5 h-3.5 text-pink-300/60 fill-pink-200/60 pointer-events-none"></i>
+        <i data-lucide="sparkles" class="hidden sm:block absolute bottom-1 left-1/2 w-3 h-3 text-amber-300/70 pointer-events-none"></i>
+        <i data-lucide="heart" class="hidden sm:block absolute top-3 right-1/3 w-3 h-3 text-fuchsia-300/60 fill-fuchsia-200/60 pointer-events-none"></i>
+
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center relative">
+            <div class="flex items-center space-x-2 cursor-pointer" onclick="scrollToTop()">
+                <div class="relative w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 shadow-inner">
+                    <i data-lucide="heart" class="w-6 h-6 fill-pink-400 stroke-pink-500 animate-heart-pulse"></i>
+                    <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-300 flex items-center justify-center text-[9px] shadow">✨</span>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold bg-gradient-to-r from-pink-500 via-fuchsia-500 to-amber-500 bg-clip-text text-transparent font-mitr leading-tight">Our Love Story</h1>
+                    <p class="text-xs text-pink-400 font-light">เส้นทางความทรงจำของเราสองคน</p>
+                </div>
+            </div>
+
+            <!-- Action Buttons header -->
+            <div class="flex items-center space-x-2">
+                <a href="/map.html" class="px-3 py-1.5 text-xs sm:text-sm bg-pink-100 hover:bg-pink-200 text-pink-700 rounded-full font-medium transition duration-200 flex items-center shadow-sm">
+                    <i data-lucide="map" class="w-4 h-4 mr-1 text-pink-500"></i>
+                    <span class="hidden sm:inline">แผนที่ความทรงจำ</span>
+                </a>
+                <button onclick="openRandomMemoryModal()" class="px-3 py-1.5 text-xs sm:text-sm bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-full font-medium transition duration-200 flex items-center shadow-sm">
+                    <i data-lucide="sparkles" class="w-4 h-4 mr-1 text-amber-500"></i>
+                    <span class="hidden sm:inline">สุ่มความทรงจำ</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 pt-6">
+        
+        <!-- Hero Card: Relationship Days Counter -->
+        <section class="glass-card rounded-3xl p-6 sm:p-8 mb-8 text-center relative overflow-hidden border-2 border-pink-100">
+            <div class="absolute -top-6 -left-6 w-24 h-24 bg-amber-200/40 rounded-full blur-xl pointer-events-none"></div>
+            <div class="absolute -bottom-6 -right-6 w-32 h-32 bg-purple-200/40 rounded-full blur-xl pointer-events-none"></div>
+            <div class="absolute top-1/2 right-1/4 w-20 h-20 bg-sky-200/30 rounded-full blur-xl pointer-events-none"></div>
+            
+            <div class="relative z-10">
+                <div class="flex items-center justify-center space-x-2 sm:space-x-3 mb-2">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-amber-400 hidden sm:inline-block"></i>
+                    <span id="couple-name-1" class="text-lg sm:text-2xl font-semibold text-rose-600 font-mitr cursor-pointer hover:underline" onclick="editCoupleNames()" title="คลิกเพื่อแก้ไขชื่อ">ทินภัทร</span>
+                    <i data-lucide="heart" class="w-6 h-6 text-pink-500 fill-pink-500 animate-heart-pulse"></i>
+                    <span id="couple-name-2" class="text-lg sm:text-2xl font-semibold text-rose-600 font-mitr cursor-pointer hover:underline" onclick="editCoupleNames()" title="คลิกเพื่อแก้ไขชื่อ">เสาวลักษณ์</span>
+                    <i data-lucide="sparkles" class="w-4 h-4 text-amber-400 hidden sm:inline-block"></i>
+                </div>
+                
+                <p class="text-xs sm:text-sm text-gray-500 mb-4">พวกเราคบกันและสร้างความทรงจำร่วมกันมาแล้ว</p>
+
+                <!-- Days Big Badge -->
+                <div class="inline-flex items-baseline justify-center bg-gradient-to-r from-pink-500 via-rose-400 to-orange-400 text-white px-8 py-4 rounded-2xl shadow-lg mb-4 transform hover:scale-105 transition duration-300">
+                    <span id="days-count" class="text-4xl sm:text-6xl font-extrabold tracking-tight font-mitr mr-2">0</span>
+                    <span class="text-lg sm:text-2xl font-medium">วัน</span>
+                </div>
+
+                <div class="flex flex-wrap justify-center items-center gap-3 text-xs sm:text-sm text-gray-600 mt-2">
+                    <div class="bg-white/80 px-3 py-1.5 rounded-full border border-pink-100 flex items-center shadow-sm">
+                        <i data-lucide="calendar" class="w-4 h-4 mr-1.5 text-pink-400"></i>
+                        <span>เริ่มคบกัน: <span id="start-date-display" class="font-medium text-pink-600">--/--/----</span></span>
+                    </div>
+                    <div class="bg-white/80 px-3 py-1.5 rounded-full border border-pink-100 flex items-center shadow-sm">
+                        <i data-lucide="gift" class="w-4 h-4 mr-1.5 text-rose-400"></i>
+                        <span id="next-anniversary">อีก -- วัน ถึงวันครบรอบ</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-8 flex flex-col md:flex-row gap-4 justify-between items-center bg-white/60 p-4 rounded-2xl border border-pink-100 shadow-sm">
+            
+            <!-- View Mode Switcher & Sort -->
+            <div class="flex items-center space-x-2 w-full md:w-auto justify-between md:justify-start">
+                <!-- View Mode Buttons -->
+                <div class="bg-pink-100/70 p-1 rounded-xl flex items-center">
+                    <button id="view-btn-timeline" onclick="switchView('timeline')" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition flex items-center bg-white text-pink-600 shadow-sm">
+                        <i data-lucide="git-commit" class="w-4 h-4 mr-1.5"></i> Timeline
+                    </button>
+                    <button id="view-btn-grid" onclick="switchView('grid')" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition flex items-center text-gray-600 hover:text-pink-600">
+                        <i data-lucide="layout-grid" class="w-4 h-4 mr-1.5"></i> Gallery Grid
+                    </button>
+                </div>
+
+                <!-- Sort Direction Button -->
+                <button onclick="toggleSortOrder()" id="sort-order-btn" class="px-3 py-2 bg-white border border-pink-200 text-gray-700 hover:text-pink-600 rounded-xl text-xs sm:text-sm font-medium transition flex items-center shadow-sm" title="เปลี่ยนการเรียงลำดับเวลา">
+                    <i data-lucide="arrow-down-up" class="w-4 h-4 mr-1 text-pink-400"></i>
+                    <span id="sort-order-text">ล่าสุดไปอดีต</span>
+                </button>
+            </div>
+
+            <!-- Search & Filters -->
+            <div class="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+                <!-- Search Input -->
+                <div class="relative w-full sm:w-60">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 transform -translate-y-1/2 text-pink-400"></i>
+                    <input type="text" id="search-input" placeholder="ค้นหาความทรงจำ..." 
+                        oninput="filterMemories()"
+                        class="w-full pl-9 pr-3 py-1.5 bg-white border border-pink-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-pink-300 transition">
+                </div>
+
+                <!-- Filter Favorites & Mood -->
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button onclick="toggleFilterFav()" id="filter-fav-btn" class="flex-1 sm:flex-none px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition border border-pink-200 bg-white text-gray-600 hover:bg-pink-50 flex items-center justify-center">
+                        <i data-lucide="heart" class="w-3.5 h-3.5 mr-1 text-pink-500"></i> โปรด (<span id="count-fav">0</span>)
+                    </button>
+                    
+                    <select id="mood-filter" onchange="filterMemories()" class="flex-1 sm:flex-none px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-white text-gray-600 border border-pink-200 focus:outline-none">
+                        <option value="">ทุก Mood</option>
+                        <option value="❤️">❤️ มีความสุขมากๆ</option>
+                        <option value="🥰">🥰 อบอุ่นหัวใจ</option>
+                        <option value="😊">😊 อารมณ์ดี</option>
+                        <option value="😋">😋 ของกินอร่อย</option>
+                        <option value="✈️">✈️ เที่ยวด้วยกัน</option>
+                        <option value="🥺">🥺 คิดถึงจัง</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <section class="relative min-h-[300px]">
+            
+            <!-- Timeline Container -->
+            <div id="timeline-wrapper" class="relative">
+                <!-- Vertical Line (Desktop: Center, Mobile: Left) -->
+                <div class="timeline-line left-4 md:left-1/2 transform md:-translate-x-1/2"></div>
+
+                <!-- Timeline Items -->
+                <div id="timeline-container" class="space-y-8 relative">
+                    <!-- Dynamic Timeline Items Render Here -->
+                </div>
+            </div>
+
+            <!-- Gallery Grid Container (Hidden by Default) -->
+            <div id="grid-container" class="hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                <!-- Dynamic Grid Items Render Here -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="hidden text-center py-16 glass-card rounded-3xl">
+                <div class="w-20 h-20 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4 text-pink-400">
+                    <i data-lucide="book-open" class="w-10 h-10"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-700 mb-1">ยังไม่มีบันทึกความทรงจำ</h3>
+                <p class="text-sm text-gray-500 mb-4">เริ่มต้นเขียนบันทึกเรื่องราวดีๆ ของเราวันนี้เลย!</p>
+                <button onclick="openAddModal()" class="px-5 py-2 bg-pink-500 text-white rounded-full text-sm font-medium shadow-md hover:bg-pink-600 transition">
+                    เพิ่มความทรงจำแรก
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Floating Add Memory Button -->
+    <button onclick="openAddModal()" title="เพิ่มความทรงจำ" aria-label="เพิ่มความทรงจำ"
+        class="fixed right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-r from-pink-500 via-rose-400 to-orange-400 text-white shadow-xl flex items-center justify-center transition duration-200 transform hover:scale-110 active:scale-95"
+        style="bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px)); box-shadow: 0 8px 24px rgba(255, 105, 180, 0.45);">
+        <i data-lucide="plus" class="w-7 h-7"></i>
+    </button>
+
+    <div id="memory-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-opacity">
+        <div class="glass-card bg-white/95 rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl relative border-2 border-pink-200">
+            <!-- Close Button -->
+            <button onclick="closeAddModal()" class="absolute top-4 right-4 bg-white text-rose-500 hover:text-white hover:bg-rose-500 p-2 rounded-full shadow-lg border border-pink-200 transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <h2 id="modal-title" class="text-xl font-bold font-mitr text-rose-600 mb-4 flex items-center">
+                <i data-lucide="pen-tool" class="w-5 h-5 mr-2"></i> เพิ่มความทรงจำ
+            </h2>
+
+            <form id="memory-form" onsubmit="saveMemory(event)" class="space-y-4">
+                <input type="hidden" id="memory-id">
+
+                <!-- Date & Mood row -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">วันที่เหตุการณ์ *</label>
+                        <input type="date" id="form-date" required class="w-full px-3 py-2 bg-pink-50/50 border border-pink-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">อารมณ์/ความรู้สึก (Mood)</label>
+                        <select id="form-mood" class="w-full px-3 py-2 bg-pink-50/50 border border-pink-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
+                            <option value="❤️">❤️ มีความสุขมากๆ</option>
+                            <option value="🥰">🥰 อบอุ่นหัวใจ</option>
+                            <option value="😊">😊 สนุกสนาน/อารมณ์ดี</option>
+                            <option value="😋">😋 มื้อนี้อร่อยมาก</option>
+                            <option value="✈️">✈️ เที่ยวเปิดประสบการณ์</option>
+                            <option value="🥺">🥺 คิดถึง / ซาบซึ้ง</option>
+                            <option value="🎁">🎁 วันพิเศษ / ของขวัญ</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Title -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">ชื่อเรื่อง/เหตุการณ์ *</label>
+                    <input type="text" id="form-title" placeholder="เช่น ไปกินชาบูเจ้าโปรด, เดทแรกที่สวนสาธารณะ" required class="w-full px-3 py-2 bg-pink-50/50 border border-pink-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
+                </div>
+
+                <!-- Location -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">สถานที่ / พิกัด (Optional)</label>
+                    <div class="relative">
+                        <i data-lucide="map-pin" class="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-pink-400"></i>
+                        <input type="text" id="form-location" placeholder="เช่น สยามพารากอน, ชะอำ" class="w-full pl-9 pr-3 py-2 bg-pink-50/50 border border-pink-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-pink-300">
+                    </div>
+                </div>
+
+                <!-- Detail / Story -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">เรื่องราว / ความทรงจำ *</label>
+                    <textarea id="form-story" rows="4" placeholder="วันนี้มีอะไรเกิดขึ้นบ้างนะ... เขียนบันทึกความรู้สึกไว้ตรงนี้เลย..." required class="w-full px-3 py-2 bg-pink-50/50 border border-pink-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-pink-300"></textarea>
+                </div>
+
+                <!-- Multiple Images Upload / Preview -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">รูปภาพประกอบ (เลือกได้หลายรูป)</label>
+                    <input type="file" id="form-image-input" accept="image/*" multiple onchange="previewImages(event)" class="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-medium file:bg-pink-100 file:text-pink-700 hover:file:bg-pink-200 cursor-pointer">
+                    
+                    <!-- Container Preview Images Grid -->
+                    <div id="image-previews-grid" class="mt-3 grid grid-cols-3 gap-2"></div>
+                </div>
+
+                <!-- Favorite Toggle -->
+                <div class="flex items-center space-x-2 pt-1">
+                    <input type="checkbox" id="form-fav" class="w-4 h-4 text-pink-500 rounded focus:ring-pink-300 border-pink-300">
+                    <label for="form-fav" class="text-xs text-gray-600 cursor-pointer flex items-center">
+                        <i data-lucide="heart" class="w-3.5 h-3.5 mr-1 text-pink-500 fill-pink-500"></i> บันทึกนี้เป็นรายการโปรด
+                    </label>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-3">
+                    <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-pink-400 to-rose-400 text-white font-medium rounded-xl shadow-md hover:from-pink-500 hover:to-rose-500 transition duration-200">
+                        บันทึกความทรงจำ ❤️
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="detail-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/50 backdrop-blur-md transition-opacity">
+        <div class="glass-card bg-white/95 rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl relative border-2 border-pink-200">
+            <button onclick="closeDetailModal()" class="absolute top-4 right-4 bg-white text-rose-500 hover:text-white hover:bg-rose-500 p-2 rounded-full shadow-lg border border-pink-200 transition z-20">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div id="detail-content">
+                <!-- Dynamic Content Insertion -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox Modal for Full Images -->
+    <div id="lightbox-modal" class="fixed inset-0 z-60 hidden flex items-center justify-center bg-black/90 backdrop-blur-lg p-4">
+        <button onclick="closeLightbox()" class="absolute top-4 right-4 text-white hover:text-pink-300 p-2 z-20">
+            <i data-lucide="x" class="w-8 h-8"></i>
+        </button>
+
+        <button onclick="prevLightboxImage()" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white bg-white/10 hover:bg-white/20 p-3 rounded-full backdrop-blur-sm transition z-20">
+            <i data-lucide="chevron-left" class="w-6 h-6"></i>
+        </button>
+
+        <button onclick="nextLightboxImage()" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white bg-white/10 hover:bg-white/20 p-3 rounded-full backdrop-blur-sm transition z-20">
+            <i data-lucide="chevron-right" class="w-6 h-6"></i>
+        </button>
+
+        <div class="max-w-4xl max-h-[85vh] flex flex-col items-center justify-center">
+            <img id="lightbox-image" src="" class="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl">
+            <p id="lightbox-counter" class="text-white/80 text-xs mt-3 font-medium"></p>
+        </div>
+    </div>
+
+    <div id="random-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-opacity">
+        <div class="glass-card bg-white/95 rounded-3xl max-w-md w-full p-6 shadow-2xl relative border-2 border-amber-200 text-center">
+            <button onclick="closeRandomModal()" class="absolute top-3 right-3 text-gray-400 hover:text-amber-500 p-1 rounded-full hover:bg-amber-50 transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="w-12 h-12 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-3 animate-bounce">
+                <i data-lucide="sparkles" class="w-6 h-6"></i>
+            </div>
+            
+            <h3 class="text-xs font-bold text-amber-600 uppercase tracking-wider mb-1">ความทรงจำในอดีตที่สุ่มได้ ✨</h3>
+            
+            <div id="random-content" class="my-4 text-left bg-amber-50/50 p-4 rounded-2xl border border-amber-100">
+                <!-- Content here -->
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="openRandomMemoryModal()" class="flex-1 py-2 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-xl text-sm font-medium transition">
+                    🔄 สุ่มอีกรอบ
+                </button>
+                <button onclick="closeRandomModal()" class="flex-1 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-xl text-sm font-medium transition">
+                    ยิ้มแล้วปิดเลย 😊
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+        <div class="glass-card bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl relative border-2 border-pink-200">
+            <button onclick="closeSettingsModal()" class="absolute top-3 right-3 text-gray-400 hover:text-pink-500 p-1">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            
+            <h3 class="text-lg font-bold text-rose-600 font-mitr mb-4">แก้ไขข้อมูลคู่รัก</h3>
+            
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">ชื่อฝ่ายที่ 1</label>
+                    <input type="text" id="setting-name1" class="w-full px-3 py-2 border rounded-xl text-sm border-pink-200">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">ชื่อฝ่ายที่ 2</label>
+                    <input type="text" id="setting-name2" class="w-full px-3 py-2 border rounded-xl text-sm border-pink-200">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">วันที่เริ่มคบกัน</label>
+                    <input type="date" id="setting-startdate" disabled class="w-full px-3 py-2 border rounded-xl text-sm border-pink-100 bg-gray-100 text-gray-400 cursor-not-allowed">
+                    <p class="text-[11px] text-gray-400 mt-1">วันเริ่มต้นความสัมพันธ์ไม่สามารถแก้ไขได้</p>
+                </div>
+                
+                <button onclick="saveSettings()" class="w-full py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-xl text-sm font-medium mt-2 shadow">
+                    บันทึกข้อมูล
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'couple_memories_timeline_data';
+        const SETTINGS_KEY = 'couple_settings_data';
+
+        let memories = [];
+        let currentUploadedImages = []; // Stores Array of Base64 strings for multiple photos
+        let settings = {
+            name1: 'ทินภัทร',
+            name2: 'เสาวลักษณ์',
+            startDate: '2023-01-09'
+        };
+
+        let currentView = 'timeline'; // 'timeline' or 'grid'
+        let sortDesc = true; // true = new to old, false = old to new
+        let filterOnlyFav = false;
+
+        // Lightbox state
+        let currentLightboxImages = [];
+        let currentLightboxIndex = 0;
+
+        // Sample initial data with multiple images
+        const sampleMemories = [
+            {
+                id: 'temple-2023-01-11',
+                date: '2023-01-11',
+                title: 'วัดแรกของเรา 2 คน',
+                story: 'ทริปแรกด้วยกันที่อยุธยา พาเที่ยววัดใหญ่ชัยมงคล เดินขึ้นบันไดสูงๆ ไปดูเจดีย์เก่าแก่ที่อยู่คู่เมืองมานานหลายร้อยปี วันนั้นคนเยอะและอากาศไม่ค่อยดี เลยต้องใส่แมสก์กันทั้งคู่ แต่ก็ยังแอบถ่ายรูปคู่กันไว้เป็นที่ระลึก ยืนมองยอดเจดีย์แล้วก็คิดว่า นี่แหละจุดเริ่มต้นของการไปเที่ยวด้วยกันในที่ต่างๆ ต่อจากนี้',
+                mood: '✈️',
+                location: 'วัดใหญ่ชัยมงคล จ.อยุธยา',
+                images: [
+                    'images/photo-5ef05729.jpg'
+                ],
+                fav: false,
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: '1',
+                date: '2024-02-14',
+                title: 'เดทครบรอบ 1 ปี ที่ชายหาดหัวหิน 🌊',
+                story: 'เดินทางไปเที่ยวทะเลด้วยกัน ลมเย็นมากๆ เรากอดกันนั่งดูพระอาทิตย์ตกดินด้วยกัน ทานอาหารทะเลอร่อยสุดๆ เป็นวันที่ มีความสุขมากๆ เลยนะ ❤️',
+                mood: '❤️',
+                location: 'ชายหาดหัวหิน',
+                images: [
+                    'https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=800&auto=format&fit=crop',
+                    'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop',
+                    'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?q=80&w=800&auto=format&fit=crop'
+                ],
+                fav: true,
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: '2',
+                date: '2024-06-10',
+                title: 'เซอไพรส์วันเกิดครบรอบ 24 ปี 🎂',
+                story: 'แอบซื้อเค้กสตรอว์เบอร์รีที่คุณชอบที่สุดมาให้ตอนเที่ยงคืน เห็นรอยยิ้มของคุณแล้วเราก็มีความสุขตามไปด้วย สัญญาว่าจะอยู่ HBD ด้วยกันแบบนี้ทุกปีเลย',
+                mood: '🥰',
+                location: 'บ้านของเรา',
+                images: [
+                    'https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=800&auto=format&fit=crop',
+                    'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?q=80&w=800&auto=format&fit=crop'
+                ],
+                fav: true,
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: '3',
+                date: '2024-09-01',
+                title: 'ลองทำต้มยำกุ้งกินกันครั้งแรก 🍲',
+                story: 'ช่วยกันเตรียมวัตถุดิบจนครัวเลอะเทอะไปหมด แม้รสชาติจะเปรี้ยวไปนิดหน่อย แต่มื้อนี้สนุกและอร่อยที่สุดเพราะเราทำด้วยกัน!',
+                mood: '😋',
+                location: 'ห้องครัว',
+                images: [],
+                fav: false,
+                createdAt: new Date().toISOString()
+            }
+        ];
+
+        window.onload = function() {
+            loadSettings();
+            loadMemories();
+            calculateDaysTogether();
+            renderMemories();
+            lucide.createIcons();
+        };
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- Settings Logic ---
+        function loadSettings() {
+            const storedSettings = localStorage.getItem(SETTINGS_KEY);
+            if (storedSettings) {
+                try { settings = JSON.parse(storedSettings); } catch(e){}
+            }
+            updateSettingsUI();
+        }
+
+        function updateSettingsUI() {
+            document.getElementById('couple-name-1').innerText = settings.name1 || 'ฝ่ายที่ 1';
+            document.getElementById('couple-name-2').innerText = settings.name2 || 'ฝ่ายที่ 2';
+            document.getElementById('start-date-display').innerText = formatDateThai(settings.startDate);
+        }
+
+        function editCoupleNames() { openSettingsModal(); }
+        function editStartDate() { openSettingsModal(); }
+
+        function openSettingsModal() {
+            document.getElementById('setting-name1').value = settings.name1;
+            document.getElementById('setting-name2').value = settings.name2;
+            document.getElementById('setting-startdate').value = settings.startDate;
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function saveSettings() {
+            const n1 = document.getElementById('setting-name1').value.trim();
+            const n2 = document.getElementById('setting-name2').value.trim();
+            // วันเริ่มคบกันล็อกไว้ ไม่ให้แก้ไขจากตรงนี้
+
+            if (n1) settings.name1 = n1;
+            if (n2) settings.name2 = n2;
+
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+            updateSettingsUI();
+            calculateDaysTogether();
+            closeSettingsModal();
+
+            confetti({ particleCount: 50, spread: 60, origin: { y: 0.3 } });
+        }
+
+        // --- Days Counter Calculation ---
+        function calculateDaysTogether() {
+            if (!settings.startDate) return;
+
+            const start = new Date(settings.startDate);
+            const today = new Date();
+            start.setHours(0,0,0,0);
+            today.setHours(0,0,0,0);
+
+            const diffTime = Math.abs(today - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+            animateValue('days-count', 0, diffDays, 1000);
+
+            const currentYear = today.getFullYear();
+            let nextAnniv = new Date(start);
+            nextAnniv.setFullYear(currentYear);
+
+            if (nextAnniv < today) {
+                nextAnniv.setFullYear(currentYear + 1);
+            }
+
+            const diffAnnivTime = nextAnniv - today;
+            const diffAnnivDays = Math.ceil(diffAnnivTime / (1000 * 60 * 60 * 24));
+
+            const annivElem = document.getElementById('next-anniversary');
+            if (diffAnnivDays === 0 || diffAnnivDays === 365) {
+                annivElem.innerHTML = '🎉 <span class="font-bold text-pink-600">สุขสันต์วันครบรอบวันนี้!</span> 🎉';
+            } else {
+                annivElem.innerHTML = `อีก <span class="font-semibold text-rose-500">${diffAnnivDays}</span> วัน ถึงวันครบรอบถัดไป`;
+            }
+        }
+
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerText = Math.floor(progress * (end - start) + start);
+                if (progress < 1) window.requestAnimationFrame(step);
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // --- Memories Data Storage ---
+        function loadMemories() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                try {
+                    memories = JSON.parse(stored);
+                } catch(e) {
+                    memories = sampleMemories;
+                }
+            } else {
+                memories = sampleMemories;
+                saveMemoriesToStorage();
+            }
+        }
+
+        function saveMemoriesToStorage() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(memories));
+        }
+
+        function switchView(mode) {
+            currentView = mode;
+            const btnTimeline = document.getElementById('view-btn-timeline');
+            const btnGrid = document.getElementById('view-btn-grid');
+            const timelineWrapper = document.getElementById('timeline-wrapper');
+            const gridContainer = document.getElementById('grid-container');
+
+            const activeClass = 'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition flex items-center bg-white text-pink-600 shadow-sm';
+            const inactiveClass = 'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition flex items-center text-gray-600 hover:text-pink-600';
+
+            btnTimeline.className = mode === 'timeline' ? activeClass : inactiveClass;
+            btnGrid.className = mode === 'grid' ? activeClass : inactiveClass;
+
+            timelineWrapper.classList.toggle('hidden', mode !== 'timeline');
+            gridContainer.classList.toggle('hidden', mode !== 'grid');
+
+            renderMemories();
+        }
+
+        function toggleSortOrder() {
+            sortDesc = !sortDesc;
+            document.getElementById('sort-order-text').innerText = sortDesc ? 'ล่าสุดไปอดีต' : 'อดีตไปล่าสุด';
+            renderMemories();
+        }
+
+        function toggleFilterFav() {
+            filterOnlyFav = !filterOnlyFav;
+            const btn = document.getElementById('filter-fav-btn');
+            if (filterOnlyFav) {
+                btn.className = 'flex-1 sm:flex-none px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition border border-pink-300 bg-pink-500 text-white flex items-center justify-center shadow-sm';
+            } else {
+                btn.className = 'flex-1 sm:flex-none px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition border border-pink-200 bg-white text-gray-600 hover:bg-pink-50 flex items-center justify-center';
+            }
+            renderMemories();
+        }
+
+        function filterMemories() {
+            renderMemories();
+        }
+
+        function getFilteredMemories() {
+            const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
+            const moodVal = document.getElementById('mood-filter').value;
+
+            let filtered = [...memories];
+
+            // Sort
+            filtered.sort((a, b) => {
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+                return sortDesc ? dateB - dateA : dateA - dateB;
+            });
+
+            // Fav
+            if (filterOnlyFav) {
+                filtered = filtered.filter(m => m.fav);
+            }
+
+            // Mood
+            if (moodVal) {
+                filtered = filtered.filter(m => m.mood === moodVal);
+            }
+
+            // Search
+            if (searchVal) {
+                filtered = filtered.filter(m => 
+                    m.title.toLowerCase().includes(searchVal) ||
+                    m.story.toLowerCase().includes(searchVal) ||
+                    (m.location && m.location.toLowerCase().includes(searchVal))
+                );
+            }
+
+            return filtered;
+        }
+
+        function renderMemories() {
+            const filtered = getFilteredMemories();
+            const timelineContainer = document.getElementById('timeline-container');
+            const gridContainer = document.getElementById('grid-container');
+            const emptyState = document.getElementById('empty-state');
+
+            document.getElementById('count-fav').innerText = memories.filter(m => m.fav).length;
+
+            if (filtered.length === 0) {
+                timelineContainer.innerHTML = '';
+                gridContainer.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            if (currentView === 'timeline') {
+                renderTimelineView(filtered, timelineContainer);
+            } else {
+                renderGridView(filtered, gridContainer);
+            }
+
+            lucide.createIcons();
+        }
+
+        function renderTimelineView(items, container) {
+            container.innerHTML = items.map((m, idx) => {
+                const isEven = idx % 2 === 0;
+                const images = m.images || (m.image ? [m.image] : []);
+                const theme = moodTheme(m.mood);
+
+                return `
+                    <div class="relative flex flex-col md:flex-row items-start md:items-center">
+                        
+                        <!-- Timeline Node Center Icon -->
+                        <div class="absolute left-4 md:left-1/2 transform -translate-x-1/2 w-9 h-9 rounded-full ${theme.dot} border-4 border-white shadow-md flex items-center justify-center text-white text-sm z-10">
+                            <span>${m.mood || '❤️'}</span>
+                        </div>
+
+                        <!-- Card Content Container -->
+                        <div class="ml-12 md:ml-0 md:w-1/2 ${isEven ? 'md:pr-10 md:text-right' : 'md:pl-10 md:ml-auto'} w-full">
+                            <div class="glass-card rounded-2xl p-5 hover:shadow-xl transition duration-300 border border-pink-100 relative group">
+                                
+                                <!-- Card Header -->
+                                <div class="flex items-center justify-between mb-2 ${isEven ? 'md:flex-row-reverse' : ''}">
+                                    <span class="text-xs font-semibold ${theme.badgeText} ${theme.badgeBg} px-2.5 py-0.5 rounded-full">
+                                        📅 ${formatDateThai(m.date)}
+                                    </span>
+                                    <button onclick="toggleFav('${m.id}', event)" class="text-pink-400 hover:text-pink-600 transition">
+                                        <i data-lucide="heart" class="w-5 h-5 ${m.fav ? 'fill-pink-500 text-pink-500' : ''}"></i>
+                                    </button>
+                                </div>
+
+                                <h3 onclick="openDetailModal('${m.id}')" class="text-base sm:text-lg font-bold text-gray-800 font-mitr cursor-pointer hover:text-pink-600 transition mb-1">
+                                    ${escapeHtml(m.title)}
+                                </h3>
+
+                                ${m.location ? `
+                                    <p class="text-xs text-gray-500 mb-3 flex items-center ${isEven ? 'md:justify-end' : ''}">
+                                        <i data-lucide="map-pin" class="w-3.5 h-3.5 mr-1 text-rose-400"></i> ${escapeHtml(m.location)}
+                                    </p>
+                                ` : ''}
+
+                                <!-- Multiple Images Preview Grid in Card -->
+                                ${renderImagesGridHTML(images, m.id)}
+
+                                <p class="text-xs sm:text-sm text-gray-600 line-clamp-3 leading-relaxed mb-4 text-left">
+                                    ${escapeHtml(m.story)}
+                                </p>
+
+                                <div class="flex items-center justify-between border-t border-pink-100 pt-3 text-xs">
+                                    <button onclick="openDetailModal('${m.id}')" class="text-pink-600 font-medium hover:underline flex items-center">
+                                        ดูรายละเอียด <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
+                                    </button>
+                                    <div class="flex space-x-2">
+                                        <button onclick="editMemory('${m.id}')" class="text-gray-400 hover:text-pink-600 p-1"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                                        <button onclick="deleteMemory('${m.id}')" class="text-gray-400 hover:text-red-500 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderGridView(items, container) {
+            container.innerHTML = items.map(m => {
+                const images = m.images || (m.image ? [m.image] : []);
+                const theme = moodTheme(m.mood);
+                return `
+                    <div class="glass-card rounded-2xl overflow-hidden hover:shadow-xl transition duration-300 border border-pink-100 flex flex-col justify-between">
+                        <div>
+                            ${images.length > 0 ? `
+                                <div class="relative h-48 w-full overflow-hidden bg-pink-100 cursor-pointer" onclick="openDetailModal('${m.id}')">
+                                    <img src="${images[0]}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
+                                    ${images.length > 1 ? `<span class="absolute bottom-2 right-2 bg-black/60 text-white text-[11px] px-2 py-0.5 rounded-full font-medium">📷 +${images.length - 1}</span>` : ''}
+                                    <span class="absolute top-2 left-2 ${theme.badgeBg} ${theme.badgeText} px-2 py-0.5 rounded-full text-xs">${m.mood || '❤️'}</span>
+                                </div>
+                            ` : ''}
+
+                            <div class="p-4">
+                                <div class="flex justify-between items-start mb-1">
+                                    <span class="text-xs ${theme.badgeText} font-medium">${formatDateThai(m.date)}</span>
+                                    <button onclick="toggleFav('${m.id}', event)" class="text-pink-400 hover:text-pink-600">
+                                        <i data-lucide="heart" class="w-4 h-4 ${m.fav ? 'fill-pink-500 text-pink-500' : ''}"></i>
+                                    </button>
+                                </div>
+                                <h3 onclick="openDetailModal('${m.id}')" class="text-base font-bold text-gray-800 font-mitr cursor-pointer hover:text-pink-600 mb-1">
+                                    ${escapeHtml(m.title)}
+                                </h3>
+                                <p class="text-xs text-gray-600 line-clamp-2 leading-relaxed mb-3">${escapeHtml(m.story)}</p>
+                            </div>
+                        </div>
+
+                        <div class="px-4 py-2.5 bg-pink-50/50 border-t border-pink-100 flex justify-between items-center text-xs">
+                            <button onclick="openDetailModal('${m.id}')" class="text-pink-600 font-medium">อ่านต่อ</button>
+                            <div class="flex space-x-2">
+                                <button onclick="editMemory('${m.id}')" class="text-gray-400 hover:text-pink-600"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i></button>
+                                <button onclick="deleteMemory('${m.id}')" class="text-gray-400 hover:text-red-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+
+        function renderImagesGridHTML(images, memoryId) {
+            if (!images || images.length === 0) return '';
+
+            if (images.length === 1) {
+                return `
+                    <div class="my-3 rounded-xl overflow-hidden h-44 bg-pink-50 cursor-pointer" onclick="openLightboxFromCard('${memoryId}', 0)">
+                        <img src="${images[0]}" class="w-full h-full object-cover hover:scale-105 transition duration-300">
+                    </div>
+                `;
+            }
+
+            if (images.length === 2) {
+                return `
+                    <div class="my-3 grid grid-cols-2 gap-1.5 rounded-xl overflow-hidden h-40 cursor-pointer">
+                        <img src="${images[0]}" onclick="openLightboxFromCard('${memoryId}', 0)" class="w-full h-full object-cover hover:opacity-90 transition">
+                        <img src="${images[1]}" onclick="openLightboxFromCard('${memoryId}', 1)" class="w-full h-full object-cover hover:opacity-90 transition">
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="my-3 grid grid-cols-3 gap-1.5 rounded-xl overflow-hidden h-36 cursor-pointer">
+                    <img src="${images[0]}" onclick="openLightboxFromCard('${memoryId}', 0)" class="w-full h-full object-cover hover:opacity-90 transition">
+                    <img src="${images[1]}" onclick="openLightboxFromCard('${memoryId}', 1)" class="w-full h-full object-cover hover:opacity-90 transition">
+                    <div class="relative h-full" onclick="openLightboxFromCard('${memoryId}', 2)">
+                        <img src="${images[2]}" class="w-full h-full object-cover hover:opacity-90 transition">
+                        ${images.length > 3 ? `
+                            <div class="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-bold text-xs">
+                                +${images.length - 3} รูป
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function toggleFav(id, event) {
+            event.stopPropagation();
+            const memory = memories.find(m => m.id === id);
+            if (memory) {
+                memory.fav = !memory.fav;
+                saveMemoriesToStorage();
+                renderMemories();
+
+                if (memory.fav) {
+                    confetti({ particleCount: 25, spread: 40, origin: { y: 0.6 } });
+                }
+            }
+        }
+
+        function previewImages(event) {
+            const files = Array.from(event.target.files);
+            if (!files.length) return;
+
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentUploadedImages.push(e.target.result);
+                    renderFormImagePreviews();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function renderFormImagePreviews() {
+            const grid = document.getElementById('image-previews-grid');
+            grid.innerHTML = currentUploadedImages.map((imgSrc, index) => `
+                <div class="relative group h-20 rounded-xl overflow-hidden border border-pink-200">
+                    <img src="${imgSrc}" class="w-full h-full object-cover">
+                    <button type="button" onclick="removeUploadedImage(${index})" class="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full text-xs shadow hover:bg-red-600 transition">
+                        <i data-lucide="x" class="w-3 h-3"></i>
+                    </button>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function removeUploadedImage(index) {
+            currentUploadedImages.splice(index, 1);
+            renderFormImagePreviews();
+        }
+
+        // --- Add/Edit Modal Logic ---
+        function openAddModal() {
+            document.getElementById('modal-title').innerHTML = '<i data-lucide="pen-tool" class="w-5 h-5 mr-2"></i> เพิ่มความทรงจำ';
+            document.getElementById('memory-form').reset();
+            document.getElementById('memory-id').value = '';
+            document.getElementById('form-date').valueAsDate = new Date();
+            currentUploadedImages = [];
+            renderFormImagePreviews();
+            document.getElementById('memory-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeAddModal() {
+            document.getElementById('memory-modal').classList.add('hidden');
+        }
+
+        function editMemory(id) {
+            const m = memories.find(item => item.id === id);
+            if (!m) return;
+
+            document.getElementById('modal-title').innerHTML = '<i data-lucide="edit-3" class="w-5 h-5 mr-2"></i> แก้ไขความทรงจำ';
+            document.getElementById('memory-id').value = m.id;
+            document.getElementById('form-date').value = m.date;
+            document.getElementById('form-mood').value = m.mood || '❤️';
+            document.getElementById('form-title').value = m.title;
+            document.getElementById('form-location').value = m.location || '';
+            document.getElementById('form-story').value = m.story;
+            document.getElementById('form-fav').checked = !!m.fav;
+
+            currentUploadedImages = m.images ? [...m.images] : (m.image ? [m.image] : []);
+            renderFormImagePreviews();
+
+            document.getElementById('memory-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function saveMemory(e) {
+            e.preventDefault();
+
+            const id = document.getElementById('memory-id').value;
+            const date = document.getElementById('form-date').value;
+            const mood = document.getElementById('form-mood').value;
+            const title = document.getElementById('form-title').value.trim();
+            const location = document.getElementById('form-location').value.trim();
+            const story = document.getElementById('form-story').value.trim();
+            const fav = document.getElementById('form-fav').checked;
+
+            if (id) {
+                const index = memories.findIndex(m => m.id === id);
+                if (index !== -1) {
+                    memories[index] = {
+                        ...memories[index],
+                        date, mood, title, location, story,
+                        images: [...currentUploadedImages],
+                        fav
+                    };
+                }
+            } else {
+                const newMemory = {
+                    id: Date.now().toString(),
+                    date, mood, title, location, story,
+                    images: [...currentUploadedImages],
+                    fav,
+                    createdAt: new Date().toISOString()
+                };
+                memories.unshift(newMemory);
+
+                confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
+            }
+
+            saveMemoriesToStorage();
+            renderMemories();
+            closeAddModal();
+        }
+
+        function deleteMemory(id) {
+            if (confirm('คุณแน่ใจไหมว่าต้องการลบบันทึกความทรงจำนี้?')) {
+                memories = memories.filter(m => m.id !== id);
+                saveMemoriesToStorage();
+                renderMemories();
+            }
+        }
+
+        function openDetailModal(id) {
+            const m = memories.find(item => item.id === id);
+            if (!m) return;
+
+            const images = m.images || (m.image ? [m.image] : []);
+            const theme = moodTheme(m.mood);
+
+            const contentHtml = `
+                <!-- Image Gallery Preview in Detail -->
+                ${images.length > 0 ? `
+                    <div class="mb-4">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 rounded-2xl overflow-hidden border border-pink-100">
+                            ${images.map((img, idx) => `
+                                <img src="${img}" onclick="openLightboxFromCard('${m.id}', ${idx})" class="w-full h-28 object-cover cursor-pointer hover:opacity-90 transition">
+                            `).join('')}
+                        </div>
+                        <p class="text-[11px] text-gray-400 mt-1 text-center">คลิกที่รูปเพื่อเปิดดูขนาดใหญ่</p>
+                    </div>
+                ` : ''}
+                
+                <div class="flex items-center space-x-2 text-xs ${theme.badgeText} font-medium mb-2">
+                    <span class="${theme.badgeBg} px-2.5 py-1 rounded-full text-sm">${m.mood || '❤️'}</span>
+                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                    <span>${formatDateThai(m.date)}</span>
+                </div>
+
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-800 font-mitr mb-2 leading-tight">
+                    ${escapeHtml(m.title)}
+                </h2>
+
+                ${m.location ? `
+                    <div class="flex items-center text-xs text-rose-500 font-medium mb-4">
+                        <i data-lucide="map-pin" class="w-3.5 h-3.5 mr-1"></i>
+                        <span>${escapeHtml(m.location)}</span>
+                    </div>
+                ` : ''}
+
+                <div class="bg-pink-50/50 p-4 rounded-2xl border border-pink-100 text-sm text-gray-700 leading-relaxed whitespace-pre-line mb-4">
+                    ${escapeHtml(m.story)}
+                </div>
+
+                <div class="flex justify-between items-center pt-2 border-t border-pink-100">
+                    <button onclick="toggleFav('${m.id}', event); openDetailModal('${m.id}');" class="flex items-center text-xs font-medium ${m.fav ? 'text-pink-600' : 'text-gray-400'}">
+                        <i data-lucide="heart" class="w-4 h-4 mr-1 ${m.fav ? 'fill-pink-500 text-pink-500' : ''}"></i>
+                        ${m.fav ? 'บันทึกในรายการโปรดแล้ว' : 'เพิ่มในรายการโปรด'}
+                    </button>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="closeDetailModal(); editMemory('${m.id}');" class="flex items-center text-xs font-medium text-pink-600 bg-pink-50 hover:bg-pink-100 px-3 py-1.5 rounded-full transition">
+                            <i data-lucide="edit-3" class="w-3.5 h-3.5 mr-1"></i>
+                            แก้ไข
+                        </button>
+                        <button onclick="closeDetailModal(); deleteMemory('${m.id}');" class="flex items-center text-xs font-medium text-red-500 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-full transition">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5 mr-1"></i>
+                            ลบ
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('detail-content').innerHTML = contentHtml;
+            document.getElementById('detail-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detail-modal').classList.add('hidden');
+        }
+
+        // --- Lightbox Functions ---
+        function openLightboxFromCard(memoryId, imageIndex) {
+            const m = memories.find(item => item.id === memoryId);
+            if (!m) return;
+
+            currentLightboxImages = m.images || (m.image ? [m.image] : []);
+            currentLightboxIndex = imageIndex;
+
+            if (currentLightboxImages.length > 0) {
+                updateLightboxUI();
+                document.getElementById('lightbox-modal').classList.remove('hidden');
+            }
+        }
+
+        function updateLightboxUI() {
+            const imgElem = document.getElementById('lightbox-image');
+            const counterElem = document.getElementById('lightbox-counter');
+            imgElem.src = currentLightboxImages[currentLightboxIndex];
+            counterElem.innerText = `รูปที่ ${currentLightboxIndex + 1} จาก ${currentLightboxImages.length}`;
+        }
+
+        function prevLightboxImage() {
+            if (currentLightboxImages.length <= 1) return;
+            currentLightboxIndex = (currentLightboxIndex - 1 + currentLightboxImages.length) % currentLightboxImages.length;
+            updateLightboxUI();
+        }
+
+        function nextLightboxImage() {
+            if (currentLightboxImages.length <= 1) return;
+            currentLightboxIndex = (currentLightboxIndex + 1) % currentLightboxImages.length;
+            updateLightboxUI();
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox-modal').classList.add('hidden');
+        }
+
+        // --- Random Memory Feature ---
+        function openRandomMemoryModal() {
+            if (memories.length === 0) {
+                alert('ยังไม่มีบันทึกความทรงจำเลย ลองเพิ่มความทรงจำก่อนนะ!');
+                return;
+            }
+
+            const randomIndex = Math.floor(Math.random() * memories.length);
+            const randomMem = memories[randomIndex];
+            const images = randomMem.images || (randomMem.image ? [randomMem.image] : []);
+
+            const html = `
+                <div class="text-center">
+                    <div class="text-2xl mb-1">${randomMem.mood || '❤️'}</div>
+                    <span class="text-xs text-pink-500 font-medium block mb-1">${formatDateThai(randomMem.date)}</span>
+                    <h4 class="text-base font-bold text-gray-800 font-mitr mb-2">${escapeHtml(randomMem.title)}</h4>
+                    ${images.length > 0 ? `<img src="${images[0]}" class="w-full h-36 object-cover rounded-xl mb-3 border border-pink-100">` : ''}
+                    <p class="text-xs text-gray-600 line-clamp-4 leading-relaxed italic text-left">
+                        "${escapeHtml(randomMem.story)}"
+                    </p>
+                </div>
+            `;
+
+            document.getElementById('random-content').innerHTML = html;
+            document.getElementById('random-modal').classList.remove('hidden');
+
+            confetti({ particleCount: 30, spread: 50, origin: { y: 0.5 } });
+        }
+
+        function closeRandomModal() {
+            document.getElementById('random-modal').classList.add('hidden');
+        }
+
+        // --- Mood Color Theme Helper ---
+        // Each mood gets its own accent so the timeline reads as a spectrum of feelings, not one flat pink.
+        const MOOD_THEMES = {
+            '❤️': { dot: 'bg-pink-500',   badgeBg: 'bg-pink-100',   badgeText: 'text-pink-600' },
+            '🥰': { dot: 'bg-fuchsia-500', badgeBg: 'bg-fuchsia-100', badgeText: 'text-fuchsia-600' },
+            '😊': { dot: 'bg-amber-400',  badgeBg: 'bg-amber-100',  badgeText: 'text-amber-600' },
+            '😋': { dot: 'bg-orange-500', badgeBg: 'bg-orange-100', badgeText: 'text-orange-600' },
+            '✈️': { dot: 'bg-sky-500',    badgeBg: 'bg-sky-100',    badgeText: 'text-sky-600' },
+            '🥺': { dot: 'bg-purple-500', badgeBg: 'bg-purple-100', badgeText: 'text-purple-600' },
+            '🎁': { dot: 'bg-emerald-500', badgeBg: 'bg-emerald-100', badgeText: 'text-emerald-600' }
+        };
+        const DEFAULT_MOOD_THEME = { dot: 'bg-pink-500', badgeBg: 'bg-pink-100', badgeText: 'text-pink-600' };
+        function moodTheme(mood) {
+            return MOOD_THEMES[mood] || DEFAULT_MOOD_THEME;
+        }
+
+        // --- Helper Utilities ---
+        function formatDateThai(dateStr) {
+            if (!dateStr) return '';
+            const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return dateStr;
+
+            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
