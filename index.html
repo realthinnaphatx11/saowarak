@@ -96,6 +96,9 @@
             border-radius: 9999px;
         }
 
+        /* ซ่อนจุดอารมณ์บนไทม์ไลน์ตอนเปิดดูรูป กันโผล่ทับ */
+        body.lightbox-open .timeline-dot { visibility: hidden; }
+
         /* Heart pulse animation */
         @keyframes heartPulse {
             0% { transform: scale(1); }
@@ -381,20 +384,20 @@
     </div>
 
     <!-- Lightbox Modal for Full Images -->
-    <div id="lightbox-modal" class="fixed inset-0 z-60 hidden flex items-center justify-center bg-black/90 backdrop-blur-lg p-4">
-        <button onclick="closeLightbox()" class="absolute top-4 right-4 text-white hover:text-pink-300 p-2 z-20">
-            <i data-lucide="x" class="w-8 h-8"></i>
+    <div id="lightbox-modal" onclick="if(event.target===this||event.target.id==='lightbox-wrap')closeLightbox()" style="z-index:100" class="fixed inset-0 hidden flex items-center justify-center bg-black/90 backdrop-blur-lg p-4">
+        <button onclick="closeLightbox()" aria-label="ปิดรูปภาพ" title="ปิด" style="top:max(1rem, env(safe-area-inset-top)); right:max(1rem, env(safe-area-inset-right)); z-index:110" class="absolute bg-white/20 hover:bg-white/40 text-white p-2.5 rounded-full backdrop-blur-sm shadow-lg border border-white/30 transition">
+            <i data-lucide="x" class="w-7 h-7"></i>
         </button>
 
-        <button onclick="prevLightboxImage()" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white bg-white/10 hover:bg-white/20 p-3 rounded-full backdrop-blur-sm transition z-20">
+        <button onclick="prevLightboxImage()" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white bg-white/10 hover:bg-white/20 p-3 rounded-full backdrop-blur-sm transition" style="z-index:110">
             <i data-lucide="chevron-left" class="w-6 h-6"></i>
         </button>
 
-        <button onclick="nextLightboxImage()" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white bg-white/10 hover:bg-white/20 p-3 rounded-full backdrop-blur-sm transition z-20">
+        <button onclick="nextLightboxImage()" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white bg-white/10 hover:bg-white/20 p-3 rounded-full backdrop-blur-sm transition" style="z-index:110">
             <i data-lucide="chevron-right" class="w-6 h-6"></i>
         </button>
 
-        <div class="max-w-4xl max-h-[85vh] flex flex-col items-center justify-center">
+        <div id="lightbox-wrap" class="max-w-4xl max-h-[85vh] flex flex-col items-center justify-center">
             <img id="lightbox-image" src="" class="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl">
             <p id="lightbox-counter" class="text-white/80 text-xs mt-3 font-medium"></p>
         </div>
@@ -517,19 +520,6 @@
                 images: [
                     'https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=800&auto=format&fit=crop',
                     'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?q=80&w=800&auto=format&fit=crop'
-                ],
-                fav: true,
-                createdAt: new Date().toISOString()
-            },    
-            {
-                id: 'temple-2023-01-12',
-                date: '2024-012-10',
-                title: 'วันเกิดครบรอบ 24 ปี 🎂',
-                story: 'แอบซื้อเค้กสตรอว์เบอร์รีที่คุณชอบที่สุดมาให้ตอนเที่ยงคืน เห็นรอยยิ้มของคุณแล้วเราก็มีความสุขตามไปด้วย สัญญาว่าจะอยู่ HBD ด้วยกันแบบนี้ทุกปีเลย',
-                mood: '🥰',
-                location: 'เชียงใหม่',
-                images: [
-                    'images/1.JPG'
                 ],
                 fav: true,
                 createdAt: new Date().toISOString()
@@ -779,7 +769,7 @@
                     <div class="relative flex flex-col md:flex-row items-start md:items-center">
                         
                         <!-- Timeline Node Center Icon -->
-                        <div class="absolute left-4 md:left-1/2 transform -translate-x-1/2 w-9 h-9 rounded-full ${theme.dot} border-4 border-white shadow-md flex items-center justify-center text-white text-sm z-10">
+                        <div class="absolute left-4 md:left-1/2 transform -translate-x-1/2 w-9 h-9 rounded-full ${theme.dot} border-4 border-white shadow-md flex items-center justify-center text-white text-sm z-10 timeline-dot">
                             <span>${m.mood || '❤️'}</span>
                         </div>
 
@@ -1117,7 +1107,9 @@
 
             if (currentLightboxImages.length > 0) {
                 updateLightboxUI();
+                document.querySelectorAll('.heart-trail').forEach(el => el.remove());
                 document.getElementById('lightbox-modal').classList.remove('hidden');
+                document.body.classList.add('lightbox-open');
             }
         }
 
@@ -1142,7 +1134,16 @@
 
         function closeLightbox() {
             document.getElementById('lightbox-modal').classList.add('hidden');
+            document.body.classList.remove('lightbox-open');
         }
+
+        document.addEventListener('keydown', (e) => {
+            const lb = document.getElementById('lightbox-modal');
+            if (!lb || lb.classList.contains('hidden')) return;
+            if (e.key === 'Escape') closeLightbox();
+            else if (e.key === 'ArrowLeft') prevLightboxImage();
+            else if (e.key === 'ArrowRight') nextLightboxImage();
+        });
 
         // --- Random Memory Feature ---
         function openRandomMemoryModal() {
@@ -1239,6 +1240,8 @@
             const SPAWN_INTERVAL = 60; // ms, throttle so it doesn't flood the page
 
             function spawnHeart(x, y) {
+                const lb = document.getElementById('lightbox-modal');
+                if (lb && !lb.classList.contains('hidden')) return; // ไม่แสดงหัวใจทับรูปตอนดูภาพ
                 const now = Date.now();
                 if (now - lastSpawn < SPAWN_INTERVAL) return;
                 lastSpawn = now;
