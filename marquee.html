@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Love Story - ภาพความทรงจำ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Prompt:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <!-- ใช้ค่าธีมเดียวกับหน้าหลัก (theme_mode) -->
+    <script>
+        (function () {
+            try {
+                var s = localStorage.getItem('theme_mode');
+                var d = s ? s === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (d) document.documentElement.classList.add('dark');
+            } catch (e) {}
+        })();
+    </script>
+
+    <style>
+        :root {
+            --bg: linear-gradient(150deg, #FFE8F1 0%, #FFF3E6 30%, #FFEFD9 55%, #F1E9FB 80%, #E4F6F2 100%);
+            --text: #4A3E3D;
+            --muted: #8A7A79;
+            --accent: #FF6FA5;
+            --card-shadow: 0 12px 28px rgba(255, 143, 184, .28);
+            --chip: rgba(255,255,255,.75);
+            --chip-border: rgba(255,182,193,.5);
+        }
+        html.dark {
+            color-scheme: dark;
+            --bg: linear-gradient(150deg, #1F1426 0%, #251824 30%, #241B22 55%, #1E1A2F 80%, #14232B 100%);
+            --text: #F3E8EC;
+            --muted: #B8A7B2;
+            --accent: #FF8FB8;
+            --card-shadow: 0 12px 28px rgba(0, 0, 0, .45);
+            --chip: rgba(255,255,255,.08);
+            --chip-border: rgba(255,143,184,.3);
+        }
+        * { box-sizing: border-box; }
+        html, body { height: 100%; margin: 0; }
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: var(--bg);
+            background-attachment: fixed;
+            color: var(--text);
+            display: flex; flex-direction: column; justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .top {
+            position: fixed; top: 0; left: 0; right: 0;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: max(1rem, env(safe-area-inset-top)) 1rem 0;
+            z-index: 5;
+        }
+        .chip {
+            display: inline-flex; align-items: center; gap: .4rem;
+            padding: .45rem .9rem; border-radius: 9999px;
+            background: var(--chip); border: 1px solid var(--chip-border);
+            color: var(--text); font: 500 .85rem 'Prompt', sans-serif;
+            text-decoration: none; cursor: pointer; backdrop-filter: blur(8px);
+        }
+        .chip:hover { border-color: var(--accent); }
+        .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+        header { text-align: center; padding: 5rem 1.25rem 2rem; }
+        h1 { font: 600 clamp(1.7rem, 4.5vw, 2.8rem)/1.25 'Mitr', sans-serif; margin: 0 0 .5rem; }
+        header p { margin: 0; color: var(--muted); font-size: clamp(.9rem, 2vw, 1.05rem); }
+
+        /* --- Marquee --- */
+        .marquee {
+            overflow: hidden; padding: 1rem 0 2rem;
+            -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+                    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+        }
+        .track {
+            display: flex; width: max-content;
+            animation: scroll var(--dur, 60s) linear infinite;
+        }
+        .marquee:hover .track, .marquee:focus-within .track { animation-play-state: paused; }
+        .group { display: flex; gap: 1.75rem; padding-right: 1.75rem; }
+        @keyframes scroll { to { transform: translateX(-50%); } }
+
+        figure { margin: 0; width: clamp(170px, 22vw, 250px); text-align: center; flex: none; }
+        .photo {
+            aspect-ratio: 4 / 5; border-radius: 20px; overflow: hidden;
+            box-shadow: var(--card-shadow);
+            background: var(--chip);
+        }
+        .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        figcaption { margin-top: .9rem; font: 500 1rem 'Mitr', sans-serif; }
+        figcaption small { display: block; margin-top: .15rem; font: 300 .8rem 'Prompt', sans-serif; color: var(--muted); }
+
+        .state { text-align: center; color: var(--muted); padding: 3rem 1rem; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .track { animation: none; }
+            .marquee { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="top">
+        <a class="chip" href="index.html">← กลับไทม์ไลน์</a>
+        <button class="chip" id="theme-btn" type="button" onclick="toggleTheme()" aria-label="สลับโหมดมืด/สว่าง">🌙</button>
+    </div>
+
+    <header>
+        <h1>ภาพความทรงจำของเรา</h1>
+        <p id="subtitle">กำลังโหลดรูป...</p>
+    </header>
+
+    <main class="marquee" id="marquee" aria-label="แกลเลอรีรูปความทรงจำ">
+        <div class="track" id="track"></div>
+    </main>
+
+    <!-- Firebase: ตัวเดียวกับหน้าหลัก ต้องวางไฟล์ไว้โฟลเดอร์เดียวกัน -->
+    <script src="./firebase-config.js"></script>
+    <script>window.firebaseConfig = firebaseConfig;</script>
+    <script type="module" src="./firebase-app.js"></script>
+
+    <script>
+        const MIN_ITEMS = 12; // ถ้ารูปน้อย จะเอามาทำซ้ำให้เต็มจอ ไม่ให้เลื่อนแล้วโล่ง
+        const SECONDS_PER_ITEM = 5; // ยิ่งเลขมาก ยิ่งเลื่อนช้า
+
+        function escapeHtml(s) {
+            return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+        function formatDateThai(str) {
+            const d = new Date(str);
+            if (isNaN(d.getTime())) return str || '';
+            const m = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+            return `${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear() + 543}`;
+        }
+
+        function waitForFirebase() {
+            return new Promise(resolve => {
+                if (window.firestoreApi) return resolve();
+                window.addEventListener('firebase-ready', resolve, { once: true });
+            });
+        }
+
+        // เอารูปทุกรูปจากทุกเหตุการณ์ (เรียงตามวันที่เก่า -> ใหม่)
+        function collectPhotos(memories) {
+            const sorted = [...memories].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const photos = [];
+            sorted.forEach(m => {
+                const imgs = m.images || (m.image ? [m.image] : []);
+                imgs.forEach(src => photos.push({ src, title: m.title, date: m.date }));
+            });
+            return photos;
+        }
+
+        function render(photos) {
+            const track = document.getElementById('track');
+            const subtitle = document.getElementById('subtitle');
+
+            if (photos.length === 0) {
+                document.getElementById('marquee').innerHTML =
+                    '<div class="state">ยังไม่มีรูปในความทรงจำเลย ลองเพิ่มรูปที่หน้าไทม์ไลน์ก่อนนะ 💗</div>';
+                subtitle.textContent = 'ยังไม่มีรูป';
+                return;
+            }
+
+            subtitle.textContent = `รวม ${photos.length} รูปจากทุกเรื่องราวของเรา`;
+
+            let items = [...photos];
+            while (items.length < MIN_ITEMS) items = items.concat(photos);
+
+            const group = items.map(p => `
+                <figure>
+                    <div class="photo"><img src="${p.src}" alt="${escapeHtml(p.title)}" loading="lazy"></div>
+                    <figcaption>${escapeHtml(p.title)}<small>${formatDateThai(p.date)}</small></figcaption>
+                </figure>`).join('');
+
+            // ใส่ชุดเดียวกัน 2 รอบ แล้วเลื่อนไปครึ่งหนึ่ง = วนต่อเนื่องไม่สะดุด
+            track.style.setProperty('--dur', (items.length * SECONDS_PER_ITEM) + 's');
+            track.innerHTML = `<div class="group">${group}</div><div class="group" aria-hidden="true">${group}</div>`;
+        }
+
+        (async function init() {
+            try {
+                await waitForFirebase();
+                const memories = await window.firestoreApi.loadMemoriesFromFirestore();
+                render(collectPhotos(memories));
+            } catch (e) {
+                console.error(e);
+                document.getElementById('subtitle').textContent = 'โหลดรูปไม่สำเร็จ: ' + e.message;
+            }
+        })();
+
+        // --- Dark mode ---
+        function syncThemeBtn() {
+            const dark = document.documentElement.classList.contains('dark');
+            const b = document.getElementById('theme-btn');
+            b.textContent = dark ? '☀️' : '🌙';
+            b.setAttribute('aria-pressed', String(dark));
+        }
+        function toggleTheme() {
+            const dark = document.documentElement.classList.toggle('dark');
+            try { localStorage.setItem('theme_mode', dark ? 'dark' : 'light'); } catch (e) {}
+            syncThemeBtn();
+        }
+        syncThemeBtn();
+    </script>
+</body>
+</html>
