@@ -7,130 +7,33 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="firebase-config.js"></script>
   <style>
-    body {
-      font-family: 'Prompt', 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #fff2f7 0%, #fff8e7 35%, #fdf4ff 100%);
-    }
-    .glass {
-      background: rgba(255,255,255,0.75);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 182, 193, 0.4);
-      box-shadow: 0 12px 30px rgba(255, 120, 160, 0.12);
-    }
+    body { font-family: 'Prompt', 'Segoe UI', sans-serif; background: linear-gradient(135deg,#fff2f7 0%,#fff8e7 35%,#fdf4ff 100%); }
+    .glass { background: rgba(255,255,255,.75); backdrop-filter: blur(10px); border: 1px solid rgba(255,182,193,.4); box-shadow: 0 12px 30px rgba(255,120,160,.12); }
   </style>
 </head>
 <body class="min-h-screen text-gray-700">
   <main class="max-w-4xl mx-auto px-4 py-10">
     <section class="glass rounded-[32px] p-6 md:p-8 mb-6">
-      <div class="flex items-center justify-center gap-3 mb-4">
-        <span class="text-3xl">💖</span>
-        <h1 class="text-2xl md:text-4xl font-bold text-pink-600">ทินภัทร & เสาวลักษณ์</h1>
-        <span class="text-3xl">💖</span>
-      </div>
-
+      <div class="flex items-center justify-center gap-3 mb-4"><span class="text-3xl">💖</span><h1 class="text-2xl md:text-4xl font-bold text-pink-600">ทินภัทร & เสาวลักษณ์</h1><span class="text-3xl">💖</span></div>
       <p class="text-center text-pink-500 font-medium mb-6">สิ่งเล็กน้อยที่ทำให้เรารู้สึกอบอุ่นที่สุด</p>
-
-      <div class="rounded-3xl bg-gradient-to-r from-pink-500 via-rose-400 to-orange-400 p-[1px] shadow-lg">
-        <div class="bg-white/90 rounded-3xl p-5 md:p-7">
-          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <p class="text-xs uppercase tracking-[0.2em] text-pink-500 font-semibold mb-2">เหตุการณ์ล่าสุด</p>
-              <h2 class="text-2xl md:text-3xl font-bold text-rose-600">ชาบูที่สยาม</h2>
-              <p class="mt-2 text-sm text-gray-500">วันที่ 25 พฤศจิกายน 2024 • สยามสแควร์</p>
-            </div>
-            <div class="text-5xl">🥢</div>
-          </div>
-
-          <div class="mt-6 rounded-2xl bg-pink-50 border border-pink-100 p-4 text-sm leading-7 text-gray-700">
-            ไปทานชาบูที่สยามด้วยกันแบบชิลล์ ๆ พร้อมกันทั้งคู่<br>
-            กินไปคุยไป จนลืมเวลาไปเลย แต่อย่างที่แน่ใจที่สุดคือ<br>
-            <span class="font-semibold text-pink-600">ความหวานของมื้อนี้ไม่ได้มีแค่ชาบู แต่มีความสุขของเราอยู่ในทุกคำที่คุยกันด้วย</span>
-          </div>
-        </div>
-      </div>
+      <div class="rounded-3xl bg-gradient-to-r from-pink-500 via-rose-400 to-orange-400 p-[1px] shadow-lg"><div class="bg-white/90 rounded-3xl p-5 md:p-7"><div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"><div><p class="text-xs uppercase tracking-[.2em] text-pink-500 font-semibold mb-2">เหตุการณ์ล่าสุด</p><h2 class="text-2xl md:text-3xl font-bold text-rose-600">ชาบูที่สยาม</h2><p class="mt-2 text-sm text-gray-500">วันที่ 25 พฤศจิกายน 2024 • สยามสแควร์</p></div><div class="text-5xl">🥢</div></div><div class="mt-6 rounded-2xl bg-pink-50 border border-pink-100 p-4 text-sm leading-7">ไปทานชาบูที่สยามด้วยกันแบบชิลล์ ๆ พร้อมกันทั้งคู่<br>กินไปคุยไป จนลืมเวลาไปเลย<br><span class="font-semibold text-pink-600">ความหวานของมื้อนี้คือความสุขของเราในทุกคำที่คุยกัน</span></div></div></div>
     </section>
-
     <section class="glass rounded-[28px] p-5 md:p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-bold text-pink-600">ความทรงจำของเรา</h3>
-        <button id="add-memory-btn" class="px-4 py-2 rounded-full bg-pink-500 text-white text-sm font-medium hover:bg-pink-600 transition">+ เพิ่มความทรงจำ</button>
-      </div>
-
-      <div id="memory-list" class="space-y-4"></div>
+      <div class="flex items-center justify-between mb-4"><h3 class="text-lg font-bold text-pink-600">ความทรงจำของเรา</h3><button id="add-memory-btn" class="px-4 py-2 rounded-full bg-pink-500 text-white text-sm font-medium hover:bg-pink-600">+ เพิ่มความทรงจำ</button></div>
+      <p id="status" class="text-sm text-gray-500 mb-3">กำลังเชื่อมต่อ Cloud Firestore...</p><div id="memory-list" class="space-y-4"></div>
     </section>
   </main>
-
+  <script type="module" src="firebase-app.js"></script>
   <script>
-    const STORAGE_KEY = 'couple_memories_timeline_data';
-
-    const defaultMemories = [
-      {
-        id: 'shabu-siam-2024-11-25',
-        date: '2024-11-25',
-        title: 'ชาบูที่สยาม',
-        mood: '😋',
-        location: 'สยามสแควร์',
-        story: 'ไปทานชาบูที่สยามด้วยกันแบบชิลล์ ๆ พร้อมกันทั้งคู่ กินไปคุยไปจนลืมเวลาไปเลย แต่ความหวานที่สุดคือการมีคนนี้อยู่ข้าง ๆตลอดเวลา',
-        fav: true,
-        images: []
-      }
-    ];
-
-    function loadMemories() {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (!saved) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultMemories));
-        return defaultMemories;
-      }
-
-      try {
-        const parsed = JSON.parse(saved);
-        return Array.isArray(parsed) && parsed.length ? parsed : defaultMemories;
-      } catch {
-        return defaultMemories;
-      }
-    }
-
-    function renderMemories() {
-      const memories = loadMemories();
-      const list = document.getElementById('memory-list');
-
-      list.innerHTML = memories.map(memory => `
-        <article class="rounded-2xl border border-pink-100 bg-white/80 p-4 md:p-5 shadow-sm">
-          <div class="flex items-center justify-between gap-3">
-            <div>
-              <p class="text-xs text-pink-500 font-semibold uppercase tracking-[0.15em]">${memory.mood || '💞'} ${memory.date}</p>
-              <h4 class="mt-1 text-xl font-bold text-gray-800">${memory.title}</h4>
-            </div>
-            <span class="text-xl">${memory.fav ? '💗' : '💭'}</span>
-          </div>
-          <p class="mt-3 text-sm text-gray-500">📍 ${memory.location || 'สถานที่แห่งความทรงจำ'}</p>
-          <p class="mt-3 text-sm leading-7 text-gray-700">${memory.story}</p>
-        </article>
-      `).join('');
-    }
-
-    document.getElementById('add-memory-btn').addEventListener('click', () => {
-      const memories = loadMemories();
-      const newEntry = {
-        id: 'memory-' + Date.now(),
-        date: new Date().toISOString().slice(0, 10),
-        title: 'ชาบูที่สยาม',
-        mood: '😋',
-        location: 'สยามสแควร์',
-        story: 'อีกหนึ่งความทรงจำที่เราได้อยู่ด้วยกัน มื้อนี้อบอุ่นและหวานมาก',
-        fav: true,
-        images: []
-      };
-
-      const updated = [newEntry, ...memories];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      renderMemories();
-    });
-
-    renderMemories();
+    const defaultMemory = { date:'2024-11-25', title:'ชาบูที่สยาม', mood:'😋', location:'สยามสแควร์', story:'ไปทานชาบูที่สยามด้วยกันแบบชิลล์ ๆ พร้อมกันทั้งคู่ กินไปคุยไปจนลืมเวลาไปเลย แต่ความหวานที่สุดคือการมีคนนี้อยู่ข้าง ๆ ตลอดเวลา', fav:true, images:[] };
+    let memories = [];
+    const $ = id => document.getElementById(id);
+    function escapeHtml(value='') { return String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
+    function renderMemories() { $('memory-list').innerHTML = memories.map(m => `<article class="rounded-2xl border border-pink-100 bg-white/80 p-4 md:p-5 shadow-sm"><div class="flex items-center justify-between"><div><p class="text-xs text-pink-500 font-semibold">${escapeHtml(m.mood || '💞')} ${escapeHtml(m.date)}</p><h4 class="mt-1 text-xl font-bold text-gray-800">${escapeHtml(m.title)}</h4></div><span class="text-xl">${m.fav ? '💗' : '💭'}</span></div><p class="mt-3 text-sm text-gray-500">📍 ${escapeHtml(m.location || 'สถานที่แห่งความทรงจำ')}</p><p class="mt-3 text-sm leading-7">${escapeHtml(m.story)}</p></article>`).join(''); }
+    async function loadMemories() { memories = await window.firestoreApi.loadMemoriesFromFirestore(); if (!memories.length) memories = [await window.firestoreApi.addMemoryToFirestore(defaultMemory)]; renderMemories(); $('status').textContent = 'เชื่อมต่อ Cloud Firestore แล้ว'; }
+    async function initFirestore() { try { await loadMemories(); } catch (error) { console.error(error); $('status').textContent = 'เชื่อมต่อ Firestore ไม่สำเร็จ: ' + error.message; $('add-memory-btn').disabled = true; } }
+    $('add-memory-btn').addEventListener('click', async () => { const saved = await window.firestoreApi.addMemoryToFirestore({ ...defaultMemory, date:new Date().toISOString().slice(0,10), createdAt:undefined }); memories.unshift(saved); renderMemories(); });
+    window.addEventListener('firebase-ready', initFirestore, { once:true });
   </script>
-  <script src="firebase-config.js"></script>
-<script type="module" src="firebase-app.js"></script>
 </body>
 </html>
