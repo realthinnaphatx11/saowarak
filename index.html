@@ -460,8 +460,12 @@
         </div>
     </div>
 
+    <!-- Firebase: config -> window.firebaseConfig -> firebase-app.js (module) -->
+    <script src="./firebase-config.js"></script>
+    <script>window.firebaseConfig = firebaseConfig;</script>
+    <script type="module" src="./firebase-app.js"></script>
+
     <script>
-        const STORAGE_KEY = 'couple_memories_timeline_data_v2'; // เปลี่ยน key เพื่อล้างเหตุการณ์เก่าที่เคยเซฟไว้ในเบราว์เซอร์
         const SETTINGS_KEY = 'couple_settings_data';
 
         let memories = [];
@@ -483,10 +487,20 @@
         // ไม่มีข้อมูลตัวอย่าง (เริ่มต้นว่างเปล่า)
         const sampleMemories = [];
 
-        window.onload = function() {
+        function waitForFirebase() {
+            return new Promise(resolve => {
+                if (window.firestoreApi) return resolve();
+                window.addEventListener('firebase-ready', resolve, { once: true });
+            });
+        }
+
+        window.onload = async function() {
             loadSettings();
-            loadMemories();
             calculateDaysTogether();
+            renderMemories();
+            lucide.createIcons();
+            await waitForFirebase();
+            await loadMemories();
             renderMemories();
             lucide.createIcons();
         };
@@ -586,22 +600,14 @@
         }
 
         // --- Memories Data Storage ---
-        function loadMemories() {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored) {
-                try {
-                    memories = JSON.parse(stored);
-                } catch(e) {
-                    memories = sampleMemories;
-                }
-            } else {
-                memories = sampleMemories;
-                saveMemoriesToStorage();
+        async function loadMemories() {
+            try {
+                memories = await window.firestoreApi.loadMemoriesFromFirestore();
+            } catch (e) {
+                console.error(e);
+                alert('โหลดข้อมูลจาก Firebase ไม่สำเร็จ: ' + e.message);
+                memories = [];
             }
-        }
-
-        function saveMemoriesToStorage() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(memories));
         }
 
         function switchView(mode) {
@@ -846,32 +852,50 @@
             `;
         }
 
-        function toggleFav(id, event) {
+        async function toggleFav(id, event) {
             event.stopPropagation();
             const memory = memories.find(m => m.id === id);
-            if (memory) {
+            if (!memory) return;
+            memory.fav = !memory.fav;
+            renderMemories();
+            if (memory.fav) confetti({ particleCount: 25, spread: 40, origin: { y: 0.6 } });
+            try {
+                await window.firestoreApi.updateMemoryInFirestore(id, { fav: memory.fav });
+            } catch (e) {
                 memory.fav = !memory.fav;
-                saveMemoriesToStorage();
                 renderMemories();
-
-                if (memory.fav) {
-                    confetti({ particleCount: 25, spread: 40, origin: { y: 0.6 } });
-                }
+                alert('อัปเดตไม่สำเร็จ: ' + e.message);
             }
         }
 
-        function previewImages(event) {
+        // ย่อรูปก่อนเก็บ (Firestore จำกัด 1 MiB ต่อ document)
+        function compressImage(file, maxSize = 900, quality = 0.7) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+                img.onload = () => {
+                    const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+                    const c = document.createElement('canvas');
+                    c.width = Math.round(img.width * scale);
+                    c.height = Math.round(img.height * scale);
+                    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+                    URL.revokeObjectURL(url);
+                    resolve(c.toDataURL('image/jpeg', quality));
+                };
+                img.onerror = reject;
+                img.src = url;
+            });
+        }
+
+        async function previewImages(event) {
             const files = Array.from(event.target.files);
             if (!files.length) return;
-
-            files.forEach(file => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    currentUploadedImages.push(e.target.result);
-                    renderFormImagePreviews();
-                };
-                reader.readAsDataURL(file);
-            });
+            for (const file of files) {
+                try { currentUploadedImages.push(await compressImage(file)); }
+                catch (e) { alert('อ่านรูปไม่สำเร็จ: ' + file.name); }
+            }
+            event.target.value = '';
+            renderFormImagePreviews();
         }
 
         function renderFormImagePreviews() {
@@ -928,50 +952,56 @@
             lucide.createIcons();
         }
 
-        function saveMemory(e) {
+        async function saveMemory(e) {
             e.preventDefault();
 
             const id = document.getElementById('memory-id').value;
-            const date = document.getElementById('form-date').value;
-            const mood = document.getElementById('form-mood').value;
-            const title = document.getElementById('form-title').value.trim();
-            const location = document.getElementById('form-location').value.trim();
-            const story = document.getElementById('form-story').value.trim();
-            const fav = document.getElementById('form-fav').checked;
+            const data = {
+                date: document.getElementById('form-date').value,
+                mood: document.getElementById('form-mood').value,
+                title: document.getElementById('form-title').value.trim(),
+                location: document.getElementById('form-location').value.trim(),
+                story: document.getElementById('form-story').value.trim(),
+                fav: document.getElementById('form-fav').checked,
+                images: [...currentUploadedImages]
+            };
 
-            if (id) {
-                const index = memories.findIndex(m => m.id === id);
-                if (index !== -1) {
-                    memories[index] = {
-                        ...memories[index],
-                        date, mood, title, location, story,
-                        images: [...currentUploadedImages],
-                        fav
-                    };
-                }
-            } else {
-                const newMemory = {
-                    id: Date.now().toString(),
-                    date, mood, title, location, story,
-                    images: [...currentUploadedImages],
-                    fav,
-                    createdAt: new Date().toISOString()
-                };
-                memories.unshift(newMemory);
-
-                confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
+            // เช็กขนาดคร่าว ๆ ก่อนส่ง (จำกัด ~1 MiB ต่อเหตุการณ์)
+            if (JSON.stringify(data).length > 950000) {
+                alert('รูปรวมใหญ่เกินไป ลองลดจำนวนรูปในเหตุการณ์นี้ลงหน่อยนะ');
+                return;
             }
 
-            saveMemoriesToStorage();
-            renderMemories();
-            closeAddModal();
+            const btn = e.submitter || document.querySelector('#memory-form button[type="submit"]');
+            if (btn) btn.disabled = true;
+            try {
+                if (id) {
+                    await window.firestoreApi.updateMemoryInFirestore(id, data);
+                    const index = memories.findIndex(m => m.id === id);
+                    if (index !== -1) memories[index] = { ...memories[index], ...data };
+                } else {
+                    const created = await window.firestoreApi.addMemoryToFirestore(data);
+                    memories.unshift(created);
+                    confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
+                }
+                renderMemories();
+                closeAddModal();
+            } catch (err) {
+                console.error(err);
+                alert('บันทึกไม่สำเร็จ: ' + err.message);
+            } finally {
+                if (btn) btn.disabled = false;
+            }
         }
 
-        function deleteMemory(id) {
-            if (confirm('คุณแน่ใจไหมว่าต้องการลบบันทึกความทรงจำนี้?')) {
+        async function deleteMemory(id) {
+            if (!confirm('คุณแน่ใจไหมว่าต้องการลบบันทึกความทรงจำนี้?')) return;
+            try {
+                await window.firestoreApi.deleteMemoryFromFirestore(id);
                 memories = memories.filter(m => m.id !== id);
-                saveMemoriesToStorage();
                 renderMemories();
+            } catch (err) {
+                alert('ลบไม่สำเร็จ: ' + err.message);
             }
         }
 
