@@ -80,7 +80,11 @@
             display: flex; width: max-content;
             animation: scroll var(--dur, 60s) linear infinite;
         }
-        .marquee:hover .track, .marquee:focus-within .track { animation-play-state: paused; }
+        /* หยุดตอนเอาเมาส์ชี้ เฉพาะอุปกรณ์ที่มีเมาส์จริง (บนมือถือ :hover จะค้างหลังแตะ ทำให้หยุดเลื่อน) */
+        @media (hover: hover) and (pointer: fine) {
+            .marquee:hover .track { animation-play-state: paused; }
+        }
+        .track { will-change: transform; }
         .group { display: flex; gap: 1.75rem; padding-right: 1.75rem; }
         @keyframes scroll { to { transform: translateX(-50%); } }
 
@@ -96,10 +100,6 @@
 
         .state { text-align: center; color: var(--muted); padding: 3rem 1rem; }
 
-        @media (prefers-reduced-motion: reduce) {
-            .track { animation: none; }
-            .marquee { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
-        }
     </style>
 </head>
 <body>
