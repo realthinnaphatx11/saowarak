@@ -1,614 +1,716 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>แผนที่ความทรงจำของเรา</title>
-<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Mitr:wght@500;600;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แผนที่ความทรงจำ - Our Love Story</title>
+    <meta name="theme-color" content="#FFE8F1">
 
-<style>
-    :root {
-        --pink-fill: #FFD3E4;
-        box-sizing: border-box;
-        padding-top: env(safe-area-inset-top, 0px);
-        padding-bottom: env(safe-area-inset-bottom, 0px);
-    }
-    * { box-sizing: inherit; }
-    html, body {
-        margin: 0;
-        height: 100%;
-        font-family: 'Prompt', sans-serif;
-        background: linear-gradient(150deg, #FFE8F1 0%, #FFF3E6 30%, #FFEFD9 55%, #F1E9FB 80%, #E4F6F2 100%);
-        color: #4A3E3D;
-        overflow: hidden;
-    }
-    header {
-        text-align: center;
-        padding: 14px 16px 10px;
-        padding-top: calc(14px + env(safe-area-inset-top, 0px));
-    }
-    header h1 {
-        font-family: 'Mitr', sans-serif;
-        font-size: 1.25rem;
-        margin: 0 0 3px;
-        background: linear-gradient(90deg, #ec4899, #d946ef, #f59e0b);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-    }
-    header p {
-        font-size: 0.75rem;
-        color: #9c7c7c;
-        margin: 0;
-    }
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('theme_mode');
+                var dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (dark) document.documentElement.classList.add('dark');
+            } catch (e) {}
+        })();
+    </script>
 
-    #map-wrap {
-        position: relative;
-        width: 100%;
-        height: calc(100vh - 100px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
-        min-height: 400px;
-        touch-action: none;
-        overflow: hidden;
-        background: radial-gradient(circle at 50% 30%, #ffffff 0%, #fff3f8 60%, #ffe9f2 100%);
-    }
-    svg#thmap {
-        width: 100%;
-        height: 100%;
-        display: block;
-        cursor: grab;
-    }
-    svg#thmap:active { cursor: grabbing; }
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Prompt:wght@300;400;500;600;700&family=Sacramento&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
 
-    .province {
-        transition: fill 0.15s ease;
-    }
-    .province:hover, .province.touched {
-        fill: #FF9FC1 !important;
-    }
-    .province-label {
-        font-family: 'Prompt', sans-serif;
-        font-weight: 500;
-        font-size: 7px;
-        fill: #7a3350;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.2s ease;
-        paint-order: stroke;
-        stroke: white;
-        stroke-width: 0.6px;
-    }
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: {
+                prompt: ['Prompt', 'sans-serif'], mitr: ['Mitr', 'sans-serif'], cursive: ['Sacramento', 'cursive']
+            } } }
+        }
+    </script>
 
-    .marker-pin { cursor: pointer; }
-    .marker-pin .pin-shape {
-        fill: #FF5B94;
-        stroke: white;
-        stroke-width: 2.4;
-        vector-effect: non-scaling-stroke;
-    }
-    .marker-pin:hover .pin-shape { fill: #FF3D82; }
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: linear-gradient(150deg, #FFE8F1 0%, #FFF3E6 30%, #FFEFD9 55%, #F1E9FB 80%, #E4F6F2 100%);
+            background-attachment: fixed;
+            color: #4A3E3D;
+        }
+        .glass-card {
+            background: rgba(255,255,255,.88); backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,182,193,.35); box-shadow: 0 10px 30px 0 rgba(255,182,193,.18);
+        }
+        .glass-nav {
+            background: rgba(255,255,255,.92); backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(255,182,193,.4);
+        }
+        @keyframes heartPulse { 0%{transform:scale(1)} 14%{transform:scale(1.15)} 28%{transform:scale(1)} 42%{transform:scale(1.15)} 70%{transform:scale(1)} }
+        .animate-heart-pulse { animation: heartPulse 2.5s infinite; }
+        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background:#FFF0F5; }
+        ::-webkit-scrollbar-thumb { background:#FFB6C1; border-radius:4px; }
 
-    /* --- Zoom controls --- */
-    .zoom-controls {
-        position: absolute;
-        right: 14px;
-        bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        z-index: 10;
-    }
-    .zoom-btn {
-        width: 40px;
-        height: 40px;
-        border-radius: 999px;
-        background: white;
-        border: 1.5px solid #ffd4e5;
-        color: #db2777;
-        font-size: 1.1rem;
-        font-weight: 700;
-        box-shadow: 0 4px 12px rgba(255,105,180,0.25);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .zoom-btn:active { background: #fff0f5; }
+        /* theme toggle */
+        .theme-toggle { width:2.25rem;height:2.25rem;display:inline-flex;align-items:center;justify-content:center;border-radius:9999px;background:#EDE7FB;color:#6D4BB3;box-shadow:0 1px 2px rgba(0,0,0,.08);transition:background .2s,transform .2s; }
+        .theme-toggle:active { transform: scale(.92); }
+        .theme-toggle .icon-sun { display:none; }
+        html.dark .theme-toggle { background:rgba(255,200,69,.16); color:#FFD36B; }
+        html.dark .theme-toggle .icon-sun { display:block; }
+        html.dark .theme-toggle .icon-moon { display:none; }
 
-    /* --- Selected location panel (bottom sheet) --- */
-    #panel {
-        position: absolute;
-        left: 0; right: 0; bottom: 0;
-        background: rgba(255,255,255,0.97);
-        border-top: 2px solid #ffd4e5;
-        border-radius: 20px 20px 0 0;
-        box-shadow: 0 -8px 24px rgba(255,105,180,0.2);
-        transform: translateY(100%);
-        transition: transform 0.3s ease;
-        max-height: 62%;
-        overflow-y: auto;
-        z-index: 20;
-        padding: 14px 16px calc(16px + env(safe-area-inset-bottom, 0px));
-    }
-    #panel.open { transform: translateY(0); }
-    #panel .drag-handle {
-        width: 40px; height: 4px; border-radius: 2px;
-        background: #ffd4e5; margin: 0 auto 10px;
-    }
-    #panel h3 {
-        font-family: 'Mitr', sans-serif;
-        color: #db2777;
-        font-size: 1rem;
-        margin: 0 0 10px;
-        display: flex; align-items: center; gap: 6px;
-    }
-    #panel .close-btn {
-        position: absolute; top: 12px; right: 14px;
-        background: #fff0f5; border: 1px solid #ffd4e5; color: #db2777;
-        width: 30px; height: 30px; border-radius: 999px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 0.9rem;
-    }
-    .memory-row {
-        display: flex; gap: 10px; align-items: center;
-        background: #fff8fb; border: 1px solid #ffe3ef;
-        border-radius: 14px; padding: 8px; margin-bottom: 8px;
-    }
-    .memory-row .thumb {
-        width: 52px; height: 52px; border-radius: 12px; object-fit: cover; flex-shrink: 0;
-    }
-    .memory-row .thumb-fallback {
-        width: 52px; height: 52px; border-radius: 12px; flex-shrink: 0;
-        background: #ffe3ef; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;
-    }
-    .memory-row .info h4 { margin: 0 0 2px; font-size: 0.85rem; color: #1f2937; }
-    .memory-row .info p { margin: 0; font-size: 0.72rem; color: #9ca3af; }
-    .memory-row .story {
-        font-size: 0.75rem; color: #4b5563; margin: 8px 0 0; line-height: 1.4;
-    }
+        /* ---------- map ---------- */
+        #map-wrap { position:relative; height:74vh; min-height:460px; border-radius:1.5rem; overflow:hidden;
+            background: radial-gradient(circle at 30% 20%, #FFFFFF 0%, #FFF3F8 55%, #FBE6F0 100%); border:2px solid #FFE0EC; }
+        #map-svg { width:100%; height:100%; display:block; touch-action:none; }
+        .prov { fill:#FFF9FB; stroke:#F0B2CA; stroke-width:.8; vector-effect:non-scaling-stroke; transition:fill .2s; }
+        .prov:hover { fill:#FFE3EF; }
+        .prov.v1 { fill:#FFD9E8; } .prov.v2 { fill:#FFBCD6; } .prov.v3 { fill:#FF9EC2; }
+        .prov.v1:hover,.prov.v2:hover,.prov.v3:hover { filter:brightness(.97); }
+        .pin { cursor: grab; }
+        .pin:active { cursor: grabbing; }
+        .pin .heart { stroke:#fff; stroke-width:2; filter: drop-shadow(0 2px 2px rgba(120,20,60,.35)); transition: transform .15s; transform-origin: 0 0; }
+        .pin:hover .heart { transform: scale(1.18); }
+        .pin.dragging .heart { transform: scale(1.4); }
+        .pin.approx .heart { stroke-dasharray: 3 2; }
+        .pin.placing-target .heart { animation: heartPulse 1s infinite; }
+        .map-btn { width:2.25rem;height:2.25rem;border-radius:.75rem;display:flex;align-items:center;justify-content:center;
+            background:rgba(255,255,255,.92);color:#E0457E;border:1px solid rgba(255,182,193,.6);box-shadow:0 2px 8px rgba(255,105,180,.2); font-weight:600; }
+        .map-btn:hover { background:#FFE3EF; }
+        .chip { background:rgba(255,255,255,.92); border:1px solid rgba(255,182,193,.5); box-shadow:0 2px 8px rgba(255,105,180,.15); }
+        #tooltip { position:absolute; pointer-events:none; padding:.25rem .6rem; border-radius:.6rem; font-size:.72rem; background:rgba(74,62,61,.92); color:#fff; transform:translate(-50%,-140%); white-space:nowrap; display:none; z-index:5; }
+        #toast { position:fixed; left:50%; bottom:calc(1.5rem + env(safe-area-inset-bottom,0px)); transform:translate(-50%,20px); opacity:0; pointer-events:none; z-index:120;
+            transition:all .25s; background:#4A3E3D; color:#fff; padding:.6rem 1rem; border-radius:9999px; font-size:.8rem; display:flex; gap:.75rem; align-items:center; box-shadow:0 8px 24px rgba(0,0,0,.25); }
+        #toast.show { opacity:1; transform:translate(-50%,0); pointer-events:auto; }
+        #toast button { color:#FFB6D0; font-weight:600; }
 
-    #hint {
-        position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-        background: rgba(255,255,255,0.9); border: 1px solid #ffd4e5; color: #9c7c7c;
-        font-size: 0.7rem; padding: 5px 12px; border-radius: 999px; z-index: 10;
-        pointer-events: none; transition: opacity 0.3s ease;
-    }
-    #unplaced-btn {
-        display: none; position: absolute; top: 10px; right: 14px; z-index: 10;
-        background: rgba(255,255,255,0.95); border: 1px solid #ffd4e5; color: #db2777;
-        font-size: 0.7rem; padding: 6px 12px; border-radius: 999px;
-        box-shadow: 0 4px 12px rgba(255,105,180,0.2);
-    }
-</style>
+        /* ---------- dark ---------- */
+        html.dark { color-scheme: dark; }
+        html.dark body { background:linear-gradient(150deg,#1F1426 0%,#251824 30%,#241B22 55%,#1E1A2F 80%,#14232B 100%); background-attachment:fixed; color:#F3E8EC; }
+        html.dark ::-webkit-scrollbar-track { background:#1B1220; } html.dark ::-webkit-scrollbar-thumb { background:#6B3F58; }
+        html.dark .glass-card { background:rgba(44,31,48,.9); border-color:rgba(255,143,184,.22); box-shadow:0 10px 30px rgba(0,0,0,.35); }
+        html.dark .glass-nav { background:rgba(31,20,38,.92); border-bottom-color:rgba(255,143,184,.25); }
+        html.dark #map-wrap { background:radial-gradient(circle at 30% 20%, #33243A 0%, #281B2E 60%, #1F1426 100%); border-color:rgba(255,143,184,.24); }
+        html.dark .prov { fill:#3A2A42; stroke:#7A4A66; }
+        html.dark .prov:hover { fill:#4A3452; }
+        html.dark .prov.v1 { fill:#6E3A58; } html.dark .prov.v2 { fill:#9A4470; } html.dark .prov.v3 { fill:#C24E85; }
+        html.dark .map-btn, html.dark .chip { background:rgba(44,31,48,.92); color:#FF9DC0; border-color:rgba(255,143,184,.28); }
+        html.dark .map-btn:hover { background:#3D2A45; }
+        html.dark .soft-box { background:rgba(255,143,184,.08); border-color:rgba(255,143,184,.24); color:#F3E8EC; }
+        html.dark .modal-card { background:#33243A; }
+        html.dark .txt-title { color:#F3E8EC; } html.dark .txt-body { color:#E6D6DD; } html.dark .txt-muted { color:#B79DAB; }
+        html.dark .nav-pill { background:rgba(255,111,165,.16); color:#FF9DC0; }
+        html.dark .nav-pill-amber { background:rgba(255,200,69,.16); color:#FFD36B; }
+        html.dark .nav-pill-fuchsia { background:rgba(217,70,239,.18); color:#F0A7FF; }
+        html.dark .list-item { background:rgba(255,255,255,.05); border-color:rgba(255,143,184,.22); }
+        html.dark .list-item:hover { background:rgba(255,143,184,.12); }
+        html.dark #map-svg .pin .heart { stroke:#2C1F30; }
+
+        .txt-title { color:#3B2F2E; } .txt-body { color:#4A3E3D; } .txt-muted { color:#8A7A78; }
+        .soft-box { background:rgba(255,240,245,.6); border:1px solid #FFE0EC; }
+        .list-item { background:#fff; border:1px solid #FFE0EC; transition:background .15s; }
+        .list-item:hover { background:#FFF0F5; }
+
+        /* heart cursor */
+        html, body, button, a, [onclick] {
+            cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 32 32'%3E%3Cpath d='M16 28C16 28 4 20 4 12.5C4 8 7.5 5 11 5C13 5 15 6.2 16 8C17 6.2 19 5 21 5C24.5 5 28 8 28 12.5C28 20 16 28 16 28Z' fill='%23FF6FA5' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E") 15 15, auto;
+        }
+        .heart-trail { position:fixed; pointer-events:none; z-index:9999; font-size:16px; will-change:transform,opacity; animation:heartTrailFloat .9s ease-out forwards; }
+        @keyframes heartTrailFloat { 0%{transform:translate(-50%,-50%) scale(1) rotate(0);opacity:.9} 100%{transform:translate(-50%,-160%) scale(.35) rotate(25deg);opacity:0} }
+        body.placing #map-svg { cursor: crosshair; }
+    </style>
 </head>
-<body>
+<body class="min-h-screen pb-16">
 
-<header style="position:relative;">
-    <a href="/memories.html"
-       style="position:absolute; left:14px; top:calc(14px + env(safe-area-inset-top, 0px)); display:inline-flex; align-items:center; gap:4px; background:white; border:1px solid #ffd4e5; color:#db2777; font-size:0.7rem; padding:6px 10px; border-radius:999px; box-shadow:0 4px 12px rgba(255,105,180,0.2); text-decoration:none;">
-        ← กลับหน้าแอปหลัก
-    </a>
-    <h1>💗 แผนที่ความทรงจำของเรา</h1>
-    <p>ทินภัทร &amp; เสาวลักษณ์ — 77 จังหวัด รอให้เราไปเก็บความทรงจำ</p>
-</header>
+    <header class="sticky top-0 z-40 glass-nav overflow-hidden">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center relative">
+            <a href="index.html" class="flex items-center space-x-2">
+                <div class="relative w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 shadow-inner">
+                    <i data-lucide="heart" class="w-6 h-6 fill-pink-400 stroke-pink-500 animate-heart-pulse"></i>
+                    <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-300 flex items-center justify-center text-[9px] shadow">✨</span>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold bg-gradient-to-r from-pink-500 via-fuchsia-500 to-amber-500 bg-clip-text text-transparent font-mitr leading-tight">Our Love Story</h1>
+                    <p class="text-xs text-pink-400 font-light">แผนที่ความทรงจำของเรา</p>
+                </div>
+            </a>
+            <div class="flex items-center space-x-2">
+                <a href="index.html" class="nav-pill px-3 py-1.5 text-xs sm:text-sm bg-pink-100 hover:bg-pink-200 text-pink-700 rounded-full font-medium flex items-center shadow-sm">
+                    <i data-lucide="book-heart" class="w-4 h-4 mr-1 text-pink-500"></i><span class="hidden sm:inline">ไทม์ไลน์</span>
+                </a>
+                <a href="map.html" aria-current="page" class="px-3 py-1.5 text-xs sm:text-sm bg-gradient-to-r from-pink-500 to-rose-400 text-white rounded-full font-medium flex items-center shadow-md">
+                    <i data-lucide="map" class="w-4 h-4 mr-1"></i><span class="hidden sm:inline">แผนที่ความทรงจำ</span>
+                </a>
+                <a href="marquee.html" class="nav-pill-fuchsia px-3 py-1.5 text-xs sm:text-sm bg-fuchsia-100 text-fuchsia-700 rounded-full font-medium flex items-center shadow-sm hover:brightness-95">
+                    <i data-lucide="images" class="w-4 h-4 mr-1 text-fuchsia-500"></i><span class="hidden sm:inline">แกลเลอรีรูป</span>
+                </a>
+                <a href="puzzle.html" class="nav-pill-amber px-3 py-1.5 text-xs sm:text-sm bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-full font-medium flex items-center shadow-sm">
+                    <i data-lucide="puzzle" class="w-4 h-4 mr-1 text-amber-500"></i><span class="hidden sm:inline">จิ๊กซอว์</span>
+                </a>
+                <button id="theme-toggle" type="button" onclick="toggleTheme()" class="theme-toggle" aria-label="สลับธีม" title="สลับธีม">
+                    <i data-lucide="moon" class="icon-moon w-4 h-4"></i><i data-lucide="sun" class="icon-sun w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </header>
 
-<div id="map-wrap">
-    <p id="hint">🔍 ซูมเข้าเพื่อดูชื่อจังหวัด · ลากเพื่อเลื่อนแผนที่</p>
-    <button id="unplaced-btn">📌 <span id="unplaced-count"></span> ไม่ระบุจังหวัด</button>
-
-    <svg id="thmap" viewBox="0 0 324.0 595.08" preserveAspectRatio="xMidYMid meet">
-        <g id="provinces-layer">
-<path class="province" data-name="กระบี่" d="M 55.9 483.4 L 51.1 488.1 L 47.9 492.6 L 46.3 496.7 L 46.2 500.5 L 47.6 504.0 L 49.5 507.1 L 51.8 509.8 L 54.5 512.2 L 57.7 514.1 L 61.1 514.2 L 64.7 512.6 L 68.4 509.2 L 72.3 504.0 L 75.0 499.1 L 76.2 494.5 L 76.2 490.2 L 74.8 486.1 L 73.2 482.8 L 71.3 480.3 L 69.1 478.6 L 66.7 477.7 L 63.6 478.1 L 60.0 480.0 Z" fill="#FFD3E4" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="กรุงเทพมหานคร" d="M 110.4 276.3 L 111.6 277.5 L 112.6 278.4 L 113.5 279.0 L 114.4 279.3 L 115.1 279.4 L 116.3 279.1 L 117.8 278.4 L 119.7 277.3 L 122.0 275.9 L 122.8 274.7 L 121.9 273.7 L 119.4 273.0 L 115.3 272.5 L 112.3 272.3 L 110.2 272.4 L 109.1 272.8 L 108.9 273.5 L 109.1 274.3 L 109.6 275.2 Z" fill="#FFE0EC" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="กาญจนบุรี" d="M 38.2 228.7 L 37.8 234.1 L 37.7 239.0 L 37.7 243.3 L 38.0 247.1 L 38.5 250.4 L 39.9 255.1 L 42.2 261.2 L 45.4 268.8 L 49.6 277.9 L 54.7 283.5 L 60.9 285.7 L 68.1 284.4 L 76.4 279.6 L 82.9 275.2 L 87.6 271.1 L 90.5 267.2 L 91.7 263.8 L 91.2 259.5 L 89.1 254.5 L 85.2 248.7 L 79.8 242.1 L 73.6 236.4 L 66.7 231.7 L 59.2 227.8 L 51.0 224.9 L 44.8 224.1 L 40.5 225.3 Z" fill="#FFC9DD" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="กาฬสินธุ์" d="M 219.4 156.2 L 219.3 160.6 L 220.1 164.6 L 221.8 168.2 L 224.2 171.3 L 227.5 174.0 L 231.4 175.4 L 235.9 175.7 L 241.0 174.7 L 246.7 172.5 L 251.0 170.6 L 253.8 169.0 L 255.2 167.7 L 255.1 166.6 L 253.4 164.4 L 250.1 161.1 L 245.2 156.7 L 238.8 151.1 L 233.3 147.3 L 228.8 145.4 L 225.4 145.3 L 223.1 147.0 L 221.3 149.3 L 220.0 152.4 Z" fill="#FFDCEA" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="กำแพงเพชร" d="M 88.5 159.2 L 84.5 157.0 L 78.9 157.9 L 71.7 161.8 L 62.8 168.8 L 52.4 178.9 L 44.7 187.6 L 39.7 194.8 L 37.4 200.7 L 37.8 205.1 L 40.4 207.4 L 45.2 207.6 L 52.1 205.8 L 61.2 201.8 L 69.2 197.8 L 76.2 193.9 L 82.2 190.0 L 87.2 186.2 L 91.0 182.2 L 93.5 178.1 L 94.7 173.8 L 94.6 169.2 L 93.5 165.3 L 91.5 162.0 Z" fill="#FFCFE0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ขอนแก่น" d="M 214.5 149.9 L 211.3 150.1 L 207.1 151.1 L 201.9 153.0 L 195.7 155.9 L 188.5 159.6 L 184.7 164.4 L 184.2 170.1 L 187.1 176.9 L 193.4 184.6 L 199.1 188.7 L 204.2 189.0 L 208.8 185.6 L 212.9 178.4 L 216.0 172.0 L 218.0 166.2 L 219.1 161.0 L 219.2 156.5 L 218.4 153.2 L 216.8 151.0 Z" fill="#FFE6F0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="จันทบุรี" d="M 192.7 295.6 L 181.5 295.9 L 173.0 297.7 L 167.2 300.8 L 164.0 305.3 L 163.5 311.2 L 163.9 315.9 L 165.2 319.4 L 167.3 321.7 L 170.4 322.8 L 173.2 324.0 L 175.8 325.2 L 178.2 326.5 L 180.3 327.8 L 183.5 327.1 L 187.6 324.4 L 192.8 319.6 L 199.0 312.9 L 203.7 307.3 L 206.9 303.0 L 208.7 299.8 L 209.0 297.9 L 206.5 296.5 L 201.0 295.8 Z" fill="#FFD3E4" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ฉะเชิงเทรา" d="M 131.0 267.7 L 130.2 269.5 L 129.7 271.5 L 129.6 273.6 L 129.8 275.9 L 130.2 278.3 L 132.4 280.7 L 136.3 282.8 L 141.9 284.9 L 149.1 286.8 L 154.5 287.8 L 158.0 287.8 L 159.6 286.8 L 159.4 284.8 L 158.1 282.3 L 155.7 279.5 L 152.2 276.3 L 147.8 272.7 L 143.8 269.8 L 140.5 267.7 L 137.7 266.4 L 135.5 265.8 L 133.7 265.9 L 132.2 266.5 Z" fill="#FFE0EC" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ชลบุรี" d="M 129.7 287.8 L 130.6 289.2 L 131.4 290.7 L 132.1 292.4 L 132.7 294.2 L 133.1 296.2 L 133.6 298.1 L 134.2 299.9 L 134.9 301.6 L 135.6 303.2 L 137.8 303.7 L 141.3 303.1 L 146.2 301.5 L 152.5 298.8 L 157.1 296.5 L 160.0 294.5 L 161.2 293.0 L 160.8 291.8 L 158.5 290.4 L 154.6 288.8 L 149.0 287.0 L 141.7 285.0 L 136.1 283.7 L 132.1 283.2 L 129.8 283.4 L 129.2 284.3 L 129.0 285.4 L 129.1 286.5 Z" fill="#FFC9DD" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ชัยนาท" d="M 120.4 208.9 L 117.6 208.8 L 112.6 210.2 L 105.6 212.9 L 96.6 217.0 L 85.4 222.5 L 77.3 226.7 L 72.1 229.7 L 69.9 231.3 L 70.6 231.7 L 72.9 232.0 L 76.7 232.2 L 82.0 232.3 L 88.8 232.4 L 95.5 231.0 L 102.1 228.1 L 108.7 223.7 L 115.1 217.8 L 119.2 213.4 L 121.0 210.4 Z" fill="#FFDCEA" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ชัยภูมิ" d="M 203.3 198.2 L 203.0 197.3 L 201.2 194.8 L 198.0 190.5 L 193.3 184.7 L 187.2 177.1 L 182.2 171.3 L 178.5 167.3 L 175.8 165.1 L 174.4 164.7 L 171.5 166.9 L 167.1 171.8 L 161.2 179.5 L 153.8 189.8 L 148.6 198.0 L 145.6 204.0 L 144.8 208.0 L 146.2 209.8 L 150.2 210.9 L 156.8 211.4 L 166.1 211.2 L 177.9 210.3 L 187.3 209.1 L 194.3 207.4 L 198.8 205.4 L 200.8 203.1 L 202.2 201.1 L 203.0 199.4 Z" fill="#FFCFE0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ชุมพร" d="M 58.8 384.2 L 55.2 393.3 L 53.8 401.5 L 54.6 408.8 L 57.7 415.2 L 63.0 420.8 L 67.8 424.8 L 71.9 427.4 L 75.5 428.6 L 78.5 428.4 L 80.5 426.7 L 81.5 423.7 L 81.6 419.2 L 80.7 413.3 L 80.0 408.1 L 79.6 403.5 L 79.4 399.5 L 79.6 396.2 L 79.8 393.0 L 80.2 389.7 L 80.7 386.6 L 81.3 383.4 L 80.7 380.6 L 78.7 378.0 L 75.5 375.7 L 71.0 373.6 L 66.7 374.3 L 62.7 377.9 Z" fill="#FFE6F0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ตรัง" d="M 72.4 504.3 L 68.6 509.5 L 66.3 514.0 L 65.6 517.8 L 66.5 521.0 L 69.0 523.5 L 71.4 526.3 L 73.6 529.3 L 75.7 532.6 L 77.6 536.2 L 79.9 538.4 L 82.5 539.4 L 85.6 539.2 L 88.9 537.6 L 91.2 534.3 L 92.5 529.2 L 92.6 522.4 L 91.7 513.8 L 90.2 507.1 L 88.2 502.3 L 85.8 499.3 L 82.8 498.2 L 79.5 498.6 L 76.1 500.7 Z" fill="#FFD3E4" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ตราด" d="M 198.8 313.3 L 192.7 320.0 L 188.5 325.4 L 186.3 329.5 L 186.0 332.2 L 187.7 333.8 L 189.1 334.9 L 190.2 335.8 L 191.0 336.4 L 191.5 336.6 L 192.1 336.8 L 192.7 336.9 L 193.4 337.0 L 194.1 337.0 L 195.0 336.7 L 195.9 336.2 L 196.9 335.3 L 198.1 334.2 L 199.2 332.4 L 200.5 330.0 L 201.7 327.0 L 203.0 323.3 L 204.2 319.6 L 205.2 316.0 L 206.1 312.3 L 206.9 308.7 L 205.9 307.6 L 203.2 309.2 Z" fill="#FFE0EC" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ตาก" d="M 65.3 122.9 L 60.0 121.6 L 53.8 120.7 L 46.9 120.3 L 39.2 120.4 L 30.6 121.1 L 24.9 123.7 L 22.1 128.4 L 22.2 135.1 L 25.1 143.9 L 27.7 152.7 L 30.1 161.7 L 32.1 170.8 L 33.9 180.0 L 37.8 184.3 L 43.9 183.9 L 52.2 178.7 L 62.8 168.6 L 70.3 159.3 L 74.9 150.7 L 76.5 142.8 L 75.2 135.7 L 72.9 130.0 L 69.6 125.8 Z" fill="#FFC9DD" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="นครนายก" d="M 146.4 243.8 L 140.3 249.2 L 135.8 253.5 L 132.7 256.5 L 131.2 258.3 L 131.1 258.9 L 131.1 259.6 L 131.3 260.5 L 131.6 261.6 L 131.9 262.9 L 132.7 263.9 L 133.9 264.8 L 135.5 265.5 L 137.5 266.0 L 140.4 265.0 L 144.3 262.4 L 149.0 258.3 L 154.7 252.7 L 158.5 247.9 L 160.4 244.0 L 160.3 241.0 L 158.4 238.8 L 155.4 238.5 L 151.4 240.2 Z" fill="#FFDCEA" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="นครปฐม" d="M 92.0 264.0 L 90.8 267.3 L 90.4 270.2 L 90.9 272.8 L 92.2 275.0 L 94.3 276.8 L 96.1 278.2 L 97.6 279.2 L 98.7 279.8 L 99.5 280.0 L 100.6 279.7 L 102.0 279.1 L 103.7 278.0 L 105.6 276.5 L 107.1 275.2 L 108.1 274.2 L 108.7 273.3 L 108.8 272.7 L 108.9 271.9 L 108.9 271.0 L 108.8 269.9 L 108.7 268.6 L 108.4 267.2 L 107.9 265.8 L 107.3 264.1 L 106.5 262.4 L 105.1 261.0 L 103.3 260.0 L 100.9 259.5 L 98.1 259.3 L 95.6 260.0 L 93.6 261.5 Z" fill="#FFCFE0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="นครพนม" d="M 265.8 129.6 L 268.8 136.9 L 271.4 142.3 L 273.7 146.0 L 275.6 147.9 L 277.2 148.1 L 278.3 147.7 L 279.1 146.8 L 279.5 145.3 L 279.5 143.4 L 279.4 141.7 L 279.3 140.1 L 279.0 138.7 L 278.7 137.5 L 278.4 136.4 L 278.0 135.3 L 277.5 134.2 L 277.0 133.2 L 276.2 132.0 L 275.2 130.6 L 273.8 129.0 L 272.2 127.2 L 270.4 125.5 L 268.6 123.9 L 266.6 122.3 L 264.4 120.9 L 263.6 121.6 L 264.0 124.5 Z" fill="#FFE6F0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="นครราชสีมา" d="M 178.8 210.4 L 166.7 211.3 L 157.6 212.5 L 151.7 213.8 L 148.8 215.3 L 149.0 217.0 L 149.5 219.2 L 150.4 222.0 L 151.6 225.4 L 153.2 229.3 L 155.2 233.2 L 157.8 236.8 L 160.8 240.4 L 164.4 243.8 L 168.8 246.5 L 174.1 248.3 L 180.2 249.3 L 187.1 249.5 L 192.3 247.1 L 195.7 242.1 L 197.3 234.5 L 197.2 224.3 L 194.1 216.9 L 187.9 212.2 Z" fill="#FFD3E4" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="นครศรีธรรมราช" d="M 75.0 486.0 L 76.3 490.0 L 78.0 493.3 L 80.2 495.9 L 82.8 497.8 L 85.8 499.0 L 89.7 499.6 L 94.6 499.8 L 100.5 499.3 L 107.3 498.4 L 111.8 496.8 L 113.9 494.6 L 113.7 491.7 L 111.1 488.1 L 108.4 484.0 L 105.6 479.4 L 102.8 474.3 L 99.8 468.7 L 96.1 465.7 L 91.8 465.4 L 86.9 467.7 L 81.3 472.6 L 77.5 477.3 L 75.4 481.8 Z" fill="#FFE0EC" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="นครสวรรค์" d="M 89.3 200.4 L 98.7 203.6 L 106.5 206.1 L 112.8 207.7 L 117.5 208.6 L 120.7 208.7 L 123.8 208.4 L 126.7 207.7 L 129.4 206.7 L 132.1 205.3 L 133.4 203.4 L 133.5 201.0 L 132.3 198.0 L 129.9 194.5 L 126.1 191.3 L 121.0 188.5 L 114.5 186.0 L 106.7 183.8 L 99.6 183.1 L 93.2 183.9 L 87.6 186.1 L 82.7 189.9 L 81.3 193.5 L 83.5 197.0 Z" fill="#FFC9DD" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="นนทบุรี" d="M 108.9 268.7 L 109.1 269.8 L 110.1 270.8 L 112.1 271.6 L 115.1 272.2 L 118.9 272.8 L 122.1 273.1 L 124.5 273.2 L 126.2 273.2 L 127.1 273.0 L 127.9 272.6 L 128.5 272.0 L 129.1 271.1 L 129.4 269.9 L 128.4 269.0 L 125.9 268.3 L 122.0 267.8 L 116.7 267.5 L 112.8 267.5 L 110.2 267.9 Z" fill="#FFDCEA" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="นราธิวาส" d="M 162.0 547.3 L 161.0 548.5 L 159.8 551.3 L 158.5 555.7 L 157.1 561.7 L 155.4 569.3 L 154.6 574.9 L 154.4 578.6 L 155.1 580.2 L 156.4 579.8 L 157.7 579.4 L 159.0 578.8 L 160.1 578.2 L 161.2 577.5 L 162.1 576.8 L 163.0 576.0 L 163.9 575.2 L 164.6 574.3 L 165.3 573.4 L 165.9 572.4 L 166.5 571.3 L 167.0 570.2 L 167.4 569.1 L 167.8 567.9 L 168.1 566.8 L 168.4 565.7 L 168.5 564.3 L 168.6 562.8 L 168.6 561.0 L 168.4 559.0 L 168.2 557.1 L 167.9 555.4 L 167.5 553.8 L 167.0 552.4 L 166.5 551.0 L 165.9 549.7 L 165.2 548.5 L 164.5 547.3 L 163.8 546.7 L 162.9 546.7 Z" fill="#FFCFE0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="น่าน" d="M 125.4 43.0 L 124.1 44.0 L 122.2 47.0 L 119.5 51.9 L 116.2 58.7 L 112.1 67.5 L 110.9 76.0 L 112.7 84.0 L 117.3 91.6 L 124.9 98.9 L 131.7 103.5 L 137.7 105.5 L 143.0 104.8 L 147.5 101.5 L 150.0 96.8 L 150.4 90.9 L 148.7 83.7 L 145.0 75.1 L 141.5 67.4 L 138.1 60.5 L 134.9 54.5 L 131.8 49.3 L 129.2 45.6 L 127.1 43.5 Z" fill="#FFE6F0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="บึงกาฬ" d="M 223.1 108.9 L 225.4 113.1 L 227.3 116.4 L 228.9 118.9 L 230.2 120.7 L 231.2 121.6 L 233.4 121.8 L 236.7 121.1 L 241.2 119.7 L 246.8 117.5 L 250.6 115.5 L 252.6 113.7 L 252.8 112.1 L 251.2 110.7 L 249.6 109.1 L 247.9 107.5 L 246.3 105.7 L 244.7 103.8 L 243.2 102.3 L 242.0 101.1 L 240.9 100.2 L 240.1 99.8 L 238.9 99.4 L 237.3 99.1 L 235.5 99.0 L 233.3 99.0 L 231.0 99.2 L 228.6 99.7 L 226.2 100.4 L 223.6 101.3 L 222.2 103.1 L 222.1 105.6 Z" fill="#FFD3E4" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="บุรีรัมย์" d="M 201.5 203.4 L 199.8 205.6 L 198.5 209.7 L 197.8 216.0 L 197.4 224.2 L 197.6 234.5 L 198.7 243.1 L 200.7 250.0 L 203.8 255.2 L 207.8 258.6 L 211.8 257.6 L 215.8 252.2 L 219.8 242.5 L 223.9 228.3 L 226.5 217.4 L 227.6 209.8 L 227.3 205.6 L 225.5 204.7 L 222.9 203.8 L 219.7 202.9 L 215.7 202.1 L 211.0 201.4 L 207.1 201.3 L 203.9 202.0 Z" fill="#FFE0EC" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ปทุมธานี" d="M 106.7 262.4 L 107.5 264.1 L 109.5 265.5 L 112.6 266.5 L 116.8 267.2 L 122.2 267.5 L 126.3 267.6 L 129.3 267.3 L 131.0 266.8 L 131.5 266.0 L 131.8 265.1 L 131.9 264.1 L 131.8 263.0 L 131.5 261.8 L 131.2 260.8 L 130.9 260.2 L 130.6 259.7 L 130.4 259.5 L 128.9 259.2 L 126.1 258.8 L 122.1 258.3 L 116.9 257.7 L 112.7 257.4 L 109.7 257.5 L 107.7 257.9 L 106.8 258.6 L 106.4 259.6 L 106.3 260.9 Z" fill="#FFC9DD" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ประจวบคีรีขันธ์" d="M 68.2 331.4 L 68.8 337.1 L 69.2 342.1 L 69.4 346.3 L 69.3 349.8 L 69.0 352.5 L 68.5 355.4 L 67.8 358.5 L 67.0 361.8 L 66.0 365.2 L 66.4 368.4 L 68.1 371.1 L 71.2 373.5 L 75.6 375.5 L 79.4 375.4 L 82.5 373.3 L 85.0 369.0 L 86.8 362.7 L 88.5 356.3 L 90.1 349.7 L 91.6 342.9 L 92.9 336.1 L 92.2 330.7 L 89.5 326.9 L 84.6 324.6 L 77.7 323.9 L 72.6 324.8 L 69.5 327.2 Z" fill="#FFDCEA" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ปราจีนบุรี" d="M 155.0 252.8 L 149.3 258.4 L 146.1 263.5 L 145.5 268.1 L 147.5 272.2 L 152.0 275.8 L 156.1 276.5 L 159.7 274.3 L 162.9 269.2 L 165.6 261.2 L 167.3 255.0 L 167.9 250.4 L 167.4 247.5 L 165.8 246.3 L 163.2 246.8 L 159.6 249.0 Z" fill="#FFCFE0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ปัตตานี" d="M 133.2 530.7 L 131.5 539.6 L 132.2 546.1 L 135.1 550.2 L 140.3 552.0 L 147.9 551.3 L 153.8 550.5 L 158.1 549.6 L 160.7 548.6 L 161.6 547.4 L 162.3 546.5 L 162.7 545.8 L 162.9 545.3 L 162.8 545.0 L 162.4 544.3 L 161.7 543.2 L 160.6 541.7 L 159.2 539.8 L 156.8 537.2 L 153.4 533.8 L 149.0 529.6 L 143.7 524.7 L 139.3 523.2 L 135.8 525.2 Z" fill="#FFE6F0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="พระนครศรีอยุธยา" d="M 131.0 257.9 L 131.0 257.6 L 130.6 256.5 L 129.7 254.6 L 128.4 252.0 L 126.6 248.7 L 124.5 246.6 L 122.0 245.7 L 119.1 246.0 L 115.9 247.5 L 113.3 249.0 L 111.4 250.6 L 110.2 252.3 L 109.8 254.0 L 110.7 255.4 L 113.1 256.6 L 117.0 257.5 L 122.3 258.2 L 126.3 258.7 L 129.1 258.9 L 130.5 259.0 L 130.7 258.8 L 130.9 258.5 L 131.0 258.3 Z" fill="#FFD3E4" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="พะเยา" d="M 101.8 47.1 L 88.4 48.2 L 79.0 50.6 L 73.7 54.5 L 72.5 59.7 L 75.3 66.3 L 78.4 71.7 L 81.7 75.9 L 85.3 78.9 L 89.2 80.6 L 92.8 81.8 L 96.1 82.3 L 99.1 82.2 L 101.9 81.5 L 104.9 78.8 L 108.3 74.1 L 112.0 67.4 L 116.0 58.6 L 115.6 52.3 L 110.9 48.5 Z" fill="#FFE0EC" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="พังงา" d="M 35.1 460.5 L 34.4 465.3 L 33.8 469.8 L 33.5 474.2 L 33.3 478.2 L 33.4 482.0 L 33.6 485.2 L 33.9 487.8 L 34.2 489.8 L 34.8 491.2 L 35.7 492.3 L 37.0 493.2 L 38.7 493.9 L 40.8 494.3 L 43.6 493.5 L 47.0 491.3 L 51.0 487.9 L 55.7 483.1 L 58.0 478.2 L 57.8 473.0 L 55.2 467.6 L 50.1 461.9 L 45.9 457.7 L 42.6 454.9 L 40.2 453.4 L 38.6 453.3 L 37.2 454.5 L 36.1 456.9 Z" fill="#FFC9DD" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="พัทลุง" d="M 107.4 498.7 L 100.6 499.6 L 95.8 502.4 L 92.9 507.1 L 92.0 513.8 L 93.0 522.2 L 94.0 528.6 L 94.9 532.8 L 95.7 534.8 L 96.5 534.7 L 99.2 533.2 L 103.9 530.5 L 110.4 526.3 L 118.8 520.9 L 124.3 515.9 L 126.8 511.2 L 126.2 506.9 L 122.8 503.1 L 118.4 500.4 L 113.3 498.9 Z" fill="#FFDCEA" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="พิจิตร" d="M 115.3 160.9 L 107.5 162.6 L 101.6 164.7 L 97.6 167.5 L 95.5 170.7 L 95.3 174.5 L 97.1 177.9 L 100.9 180.9 L 106.7 183.5 L 114.5 185.7 L 120.4 185.5 L 124.4 182.7 L 126.5 177.6 L 126.7 169.9 L 124.9 164.6 L 121.1 161.6 Z" fill="#FFCFE0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="พิษณุโลก" d="M 122.0 135.5 L 115.2 136.8 L 109.5 139.2 L 104.8 142.7 L 101.2 147.4 L 98.8 153.1 L 96.9 157.6 L 95.8 160.9 L 95.3 162.9 L 95.5 163.6 L 97.6 163.8 L 101.6 163.3 L 107.5 162.3 L 115.3 160.7 L 121.7 158.4 L 126.6 155.3 L 130.1 151.6 L 132.2 147.2 L 133.5 143.4 L 134.2 140.3 L 134.1 137.9 L 133.4 136.1 L 131.1 135.1 L 127.3 134.9 Z" fill="#FFE6F0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ภูเก็ต" d="M 36.1 495.0 L 36.7 496.2 L 37.3 497.3 L 37.9 498.4 L 38.6 499.4 L 39.4 500.3 L 40.2 501.3 L 41.0 502.2 L 41.9 503.2 L 42.8 504.1 L 43.9 505.0 L 45.0 505.9 L 46.2 506.8 L 47.5 507.7 L 48.2 507.5 L 48.1 506.2 L 47.3 503.8 L 45.9 500.4 L 44.3 497.7 L 42.5 495.7 L 40.6 494.5 L 38.4 494.0 L 37.0 493.9 L 36.2 494.3 Z" fill="#FFD3E4" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="มหาสารคาม" d="M 213.2 178.3 L 209.1 185.5 L 206.1 191.1 L 204.2 195.2 L 203.4 197.7 L 203.6 198.6 L 205.0 199.5 L 207.5 200.3 L 211.0 201.1 L 215.7 201.9 L 219.8 200.9 L 223.4 198.1 L 226.3 193.6 L 228.7 187.4 L 229.7 182.0 L 229.2 177.6 L 227.4 174.1 L 224.1 171.4 L 220.7 171.3 L 217.0 173.5 Z" fill="#FFE0EC" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="มุกดาหาร" d="M 255.3 166.5 L 255.4 167.7 L 255.5 168.8 L 255.7 169.7 L 256.0 170.4 L 256.3 171.1 L 256.9 171.8 L 257.9 172.7 L 259.2 173.8 L 260.8 175.0 L 263.6 176.1 L 267.7 177.1 L 272.9 178.1 L 279.3 178.9 L 283.9 179.2 L 286.6 179.0 L 287.5 178.1 L 286.5 176.7 L 285.5 174.9 L 284.4 172.9 L 283.3 170.6 L 282.2 167.9 L 281.3 165.5 L 280.5 163.2 L 280.0 161.2 L 279.7 159.3 L 279.5 157.4 L 279.4 155.5 L 279.3 153.5 L 279.4 151.5 L 279.1 150.0 L 278.3 148.9 L 277.2 148.3 L 275.6 148.2 L 273.3 149.1 L 270.3 151.2 L 266.5 154.3 L 262.0 158.5 L 258.6 161.9 L 256.4 164.6 Z" fill="#FFC9DD" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ยะลา" d="M 147.9 551.5 L 140.3 552.2 L 134.3 553.3 L 129.9 554.8 L 126.9 556.6 L 125.6 558.9 L 124.5 561.4 L 123.7 564.1 L 123.1 567.0 L 122.9 570.2 L 123.6 573.0 L 125.2 575.2 L 127.8 577.1 L 131.2 578.4 L 134.9 579.5 L 138.7 580.2 L 142.6 580.7 L 146.7 580.8 L 150.1 579.0 L 153.0 575.2 L 155.2 569.6 L 156.8 561.9 L 156.1 556.4 L 153.2 552.9 Z" fill="#FFDCEA" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ยโสธร" d="M 249.6 185.6 L 244.7 194.4 L 241.3 201.4 L 239.6 206.3 L 239.4 209.3 L 240.8 210.4 L 243.5 210.8 L 247.2 210.6 L 252.2 209.8 L 258.3 208.2 L 262.6 205.3 L 265.1 200.9 L 265.8 195.1 L 264.7 187.9 L 263.5 182.1 L 262.2 177.9 L 260.8 175.2 L 259.2 174.0 L 256.9 175.4 L 253.7 179.2 Z" fill="#FFCFE0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ระนอง" d="M 46.8 416.1 L 44.8 421.9 L 42.9 427.7 L 41.2 433.5 L 39.7 439.1 L 38.3 444.7 L 37.7 448.8 L 37.8 451.7 L 38.7 453.1 L 40.3 453.2 L 43.3 451.7 L 47.6 448.7 L 53.3 444.2 L 60.4 438.2 L 64.4 432.4 L 65.2 426.6 L 63.0 421.0 L 57.7 415.5 L 53.2 412.8 L 49.6 413.0 Z" fill="#FFE6F0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ระยอง" d="M 163.4 295.8 L 162.6 295.5 L 160.5 295.9 L 157.1 297.1 L 152.3 299.1 L 146.2 301.9 L 142.1 304.4 L 140.0 306.7 L 140.0 308.7 L 142.0 310.5 L 143.9 312.1 L 145.7 313.4 L 147.4 314.5 L 149.1 315.3 L 151.0 316.1 L 153.2 317.0 L 155.6 317.8 L 158.4 318.7 L 160.6 317.9 L 162.2 315.3 L 163.2 311.1 L 163.8 305.2 L 163.9 300.6 L 163.8 297.5 Z" fill="#FFD3E4" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ราชบุรี" d="M 94.6 277.2 L 92.4 275.3 L 88.6 275.1 L 83.3 276.6 L 76.5 279.7 L 68.2 284.5 L 62.3 288.8 L 58.7 292.4 L 57.5 295.5 L 58.7 298.0 L 61.5 299.3 L 65.7 299.4 L 71.6 298.4 L 78.9 296.1 L 85.0 293.6 L 89.7 290.9 L 93.0 288.0 L 95.0 284.8 L 95.9 281.9 L 95.8 279.4 Z" fill="#FFE0EC" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ร้อยเอ็ด" d="M 246.6 172.9 L 240.9 175.1 L 236.0 178.4 L 232.0 182.6 L 228.8 187.8 L 226.5 194.0 L 225.2 198.8 L 225.0 202.4 L 225.9 204.7 L 227.8 205.6 L 229.7 206.3 L 231.5 206.9 L 233.2 207.2 L 234.8 207.3 L 237.2 205.2 L 240.5 200.9 L 244.5 194.3 L 249.3 185.5 L 252.8 178.7 L 255.1 173.9 L 256.0 171.2 L 255.7 170.5 L 254.0 170.6 L 251.0 171.4 Z" fill="#FFC9DD" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ลพบุรี" d="M 140.0 204.3 L 138.5 203.9 L 136.8 203.9 L 134.8 204.4 L 132.7 205.4 L 130.3 206.8 L 127.9 209.6 L 125.5 213.6 L 123.1 218.8 L 120.7 225.4 L 119.3 230.8 L 118.9 234.9 L 119.6 237.9 L 121.4 239.6 L 124.2 239.5 L 128.2 237.5 L 133.4 233.7 L 139.6 228.0 L 144.3 223.3 L 147.3 219.7 L 148.7 217.0 L 148.5 215.3 L 148.0 213.5 L 147.2 211.7 L 146.0 209.8 L 144.5 207.9 L 143.0 206.3 L 141.5 205.2 Z" fill="#FFDCEA" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ลำปาง" d="M 88.9 81.0 L 85.1 79.3 L 82.1 78.2 L 79.8 77.8 L 78.2 78.1 L 77.3 78.9 L 75.2 82.0 L 71.8 87.4 L 67.1 95.0 L 61.2 104.8 L 58.1 112.4 L 57.8 117.9 L 60.4 121.3 L 65.8 122.5 L 70.8 122.6 L 75.3 121.6 L 79.3 119.5 L 82.9 116.3 L 86.0 112.1 L 88.5 107.0 L 90.6 101.0 L 92.2 94.0 L 92.4 88.3 L 91.3 84.0 Z" fill="#FFCFE0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ลำพูน" d="M 59.2 81.5 L 47.8 82.7 L 38.3 85.0 L 30.7 88.3 L 24.9 92.7 L 21.1 98.1 L 18.3 103.1 L 16.7 107.8 L 16.2 112.1 L 16.8 115.9 L 19.4 118.7 L 24.1 120.3 L 30.7 120.8 L 39.3 120.2 L 47.3 117.2 L 54.6 112.0 L 61.2 104.4 L 67.2 94.6 L 68.9 87.5 L 66.2 83.1 Z" fill="#FFE6F0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="ศรีสะเกษ" d="M 258.8 208.5 L 252.7 210.0 L 248.7 213.3 L 247.0 218.4 L 247.3 225.4 L 249.9 234.1 L 253.4 240.5 L 257.8 244.5 L 263.1 246.2 L 269.4 245.5 L 273.6 242.7 L 275.7 237.8 L 275.8 230.8 L 273.9 221.7 L 272.3 214.7 L 270.9 210.0 L 269.9 207.3 L 269.1 206.9 L 267.0 207.0 L 263.6 207.5 Z" fill="#FFD3E4" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="สกลนคร" d="M 247.1 117.6 L 241.4 119.9 L 237.0 122.7 L 233.7 126.2 L 231.6 130.3 L 230.7 135.0 L 231.6 139.9 L 234.3 145.1 L 238.9 150.5 L 245.3 156.2 L 251.3 159.4 L 256.8 160.2 L 261.8 158.5 L 266.2 154.3 L 268.9 149.3 L 269.6 143.5 L 268.5 136.9 L 265.5 129.6 L 262.9 123.8 L 260.7 119.5 L 258.9 116.9 L 257.6 115.8 L 255.1 115.6 L 251.6 116.2 Z" fill="#FFE0EC" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="สงขลา" d="M 118.7 521.2 L 110.0 526.8 L 105.2 532.6 L 104.1 538.8 L 106.8 545.3 L 113.4 552.2 L 118.7 556.7 L 122.7 559.0 L 125.4 558.8 L 126.8 556.4 L 128.3 552.4 L 129.9 546.8 L 131.4 539.6 L 133.1 530.9 L 134.0 524.0 L 134.4 519.0 L 134.1 516.0 L 133.2 514.8 L 130.3 515.3 L 125.5 517.4 Z" fill="#FFC9DD" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="สตูล" d="M 82.6 545.2 L 83.9 547.6 L 85.1 549.8 L 86.4 551.8 L 87.6 553.5 L 88.9 555.0 L 91.8 557.2 L 96.3 560.2 L 102.6 563.9 L 110.4 568.3 L 116.4 570.9 L 120.4 571.5 L 122.5 570.2 L 122.7 567.0 L 121.2 563.0 L 118.0 558.0 L 113.2 552.1 L 106.6 545.4 L 101.5 540.3 L 97.9 536.9 L 95.8 535.2 L 95.2 535.2 L 93.9 535.6 L 91.9 536.4 L 89.2 537.6 L 85.8 539.2 L 83.6 540.9 L 82.5 542.9 Z" fill="#FFDCEA" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="สมุทรปราการ" d="M 129.8 278.5 L 129.4 276.2 L 128.9 274.5 L 128.3 273.5 L 127.6 273.1 L 126.9 273.4 L 125.7 273.9 L 124.2 274.8 L 122.3 275.9 L 120.0 277.3 L 118.3 278.4 L 117.4 279.1 L 117.2 279.5 L 117.6 279.5 L 118.2 279.6 L 118.8 279.8 L 119.7 280.1 L 120.6 280.4 L 121.5 280.9 L 122.4 281.3 L 123.3 281.8 L 124.2 282.4 L 125.0 283.0 L 125.8 283.6 L 126.4 284.2 L 127.1 284.8 L 127.7 285.0 L 128.3 284.9 L 128.9 284.3 L 129.6 283.4 L 129.9 282.1 L 130.0 280.5 Z" fill="#FFCFE0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="สมุทรสงคราม" d="M 99.7 280.4 L 99.1 280.3 L 98.2 281.1 L 96.9 282.6 L 95.2 284.9 L 93.2 288.1 L 92.2 290.5 L 92.0 292.2 L 92.8 293.2 L 94.5 293.5 L 95.8 293.6 L 96.6 293.3 L 97.1 292.8 L 97.2 292.0 L 97.3 291.1 L 97.6 290.2 L 97.9 289.3 L 98.3 288.4 L 98.8 287.5 L 99.3 286.8 L 99.8 286.1 L 100.4 285.4 L 100.9 284.9 L 101.3 284.6 L 101.6 284.3 L 101.9 284.2 L 102.0 283.9 L 101.9 283.4 L 101.6 282.7 L 101.2 281.8 L 100.7 281.1 L 100.2 280.7 Z" fill="#FFE6F0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="สมุทรสาคร" d="M 111.3 277.5 L 110.2 276.3 L 108.9 275.7 L 107.4 275.8 L 105.8 276.6 L 104.0 277.9 L 102.6 279.0 L 101.6 279.8 L 101.1 280.3 L 100.9 280.5 L 101.0 280.8 L 101.1 281.3 L 101.4 281.9 L 101.8 282.6 L 102.2 283.1 L 102.6 283.4 L 102.9 283.4 L 103.1 283.1 L 103.6 282.8 L 104.3 282.4 L 105.2 281.9 L 106.3 281.3 L 107.3 280.9 L 108.2 280.5 L 108.9 280.2 L 109.6 280.0 L 110.2 279.9 L 110.8 279.8 L 111.4 279.7 L 112.1 279.6 L 112.5 279.5 L 112.8 279.5 L 113.0 279.4 L 113.0 279.3 L 112.7 279.0 L 112.2 278.4 Z" fill="#FFD3E4" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="สระบุรี" d="M 139.9 228.3 L 133.6 234.0 L 128.9 238.3 L 125.8 241.4 L 124.2 243.1 L 124.2 243.4 L 124.7 244.5 L 125.6 246.4 L 126.9 249.0 L 128.6 252.3 L 131.4 253.4 L 135.3 252.3 L 140.2 249.0 L 146.2 243.5 L 150.4 238.4 L 152.6 233.7 L 153.0 229.4 L 151.5 225.6 L 148.8 224.1 L 144.9 225.0 Z" fill="#FFE0EC" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="สระแก้ว" d="M 165.9 261.3 L 163.1 269.4 L 161.3 276.3 L 160.3 281.9 L 160.2 286.4 L 161.0 289.6 L 161.8 292.2 L 162.5 294.0 L 163.2 295.2 L 163.8 295.6 L 167.1 295.8 L 173.0 295.9 L 181.5 295.7 L 192.7 295.3 L 201.2 294.1 L 207.0 291.9 L 210.2 288.9 L 210.6 285.1 L 211.2 281.4 L 211.9 277.8 L 212.8 274.5 L 213.8 271.3 L 214.4 268.8 L 214.8 266.9 L 214.9 265.8 L 214.6 265.2 L 213.4 264.0 L 211.2 261.9 L 208.0 259.1 L 203.8 255.4 L 198.9 252.7 L 193.4 250.8 L 187.2 249.7 L 180.3 249.5 L 174.5 251.4 L 169.7 255.3 Z" fill="#FFC9DD" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="สิงห์บุรี" d="M 126.1 208.7 L 125.7 208.8 L 123.7 210.4 L 120.3 213.4 L 115.3 217.8 L 108.9 223.7 L 104.5 228.4 L 102.2 231.9 L 101.9 234.3 L 103.6 235.5 L 105.6 236.2 L 107.8 236.6 L 110.2 236.6 L 112.8 236.2 L 115.4 234.1 L 118.0 230.5 L 120.5 225.4 L 123.0 218.6 L 124.8 213.6 L 125.8 210.3 Z" fill="#FFDCEA" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="สุพรรณบุรี" d="M 80.2 242.3 L 85.6 248.9 L 90.4 253.9 L 94.6 257.2 L 98.2 259.0 L 101.1 259.2 L 103.5 259.2 L 105.4 258.9 L 106.7 258.5 L 107.5 257.8 L 108.3 256.8 L 108.9 255.6 L 109.5 254.0 L 110.0 252.2 L 110.1 250.1 L 109.8 247.7 L 109.2 245.0 L 108.1 242.0 L 106.9 239.5 L 105.5 237.4 L 104.0 235.8 L 102.3 234.7 L 99.3 233.8 L 95.0 233.2 L 89.3 232.8 L 82.4 232.7 L 78.6 234.2 L 77.8 237.5 Z" fill="#FFCFE0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="สุราษฎร์ธานี" d="M 78.7 428.6 L 75.5 428.9 L 71.4 430.7 L 66.3 433.9 L 60.2 438.5 L 53.2 444.5 L 49.3 450.4 L 48.3 456.3 L 50.4 462.0 L 55.6 467.7 L 60.0 472.2 L 63.7 475.5 L 66.7 477.6 L 69.0 478.4 L 72.2 477.9 L 76.2 475.8 L 81.0 472.3 L 86.7 467.4 L 90.2 461.7 L 91.6 455.2 L 90.8 448.0 L 87.9 440.0 L 84.9 434.1 L 81.8 430.3 Z" fill="#FFE6F0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="สุรินทร์" d="M 234.6 207.6 L 232.9 207.4 L 230.6 210.6 L 227.7 217.4 L 224.2 227.7 L 220.2 241.5 L 217.3 252.1 L 215.5 259.5 L 214.7 263.7 L 215.0 264.6 L 215.7 264.7 L 216.8 264.0 L 218.2 262.5 L 220.0 260.2 L 221.8 258.2 L 223.6 256.6 L 225.3 255.2 L 227.0 254.2 L 229.1 253.2 L 231.6 252.2 L 234.5 251.2 L 237.8 250.1 L 240.9 249.2 L 243.9 248.5 L 246.8 248.0 L 249.5 247.7 L 250.8 245.3 L 250.9 240.8 L 249.7 234.1 L 247.1 225.4 L 244.8 218.5 L 242.8 213.6 L 241.0 210.7 L 239.5 209.6 L 237.9 208.7 L 236.3 208.1 Z" fill="#FFD3E4" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="สุโขทัย" d="M 75.6 135.8 L 76.9 142.9 L 78.8 148.8 L 81.4 153.4 L 84.8 156.8 L 88.8 159.0 L 92.4 159.1 L 95.6 157.3 L 98.5 153.4 L 101.0 147.6 L 100.9 142.3 L 98.3 137.7 L 93.1 133.7 L 85.4 130.3 L 79.9 129.5 L 76.6 131.4 Z" fill="#FFE0EC" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="หนองคาย" d="M 225.4 113.3 L 223.1 109.2 L 220.1 106.6 L 216.2 105.4 L 211.5 105.8 L 206.0 107.7 L 200.8 109.2 L 195.8 110.3 L 191.1 111.1 L 186.7 111.4 L 183.5 112.2 L 181.7 113.4 L 181.1 114.9 L 181.9 116.8 L 182.9 118.5 L 184.1 119.9 L 185.6 121.0 L 187.4 121.8 L 191.1 122.2 L 196.8 122.1 L 204.5 121.7 L 214.2 120.8 L 220.9 119.1 L 224.6 116.6 Z" fill="#FFC9DD" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="หนองบัวลำภู" d="M 177.4 133.7 L 173.6 142.8 L 171.1 150.1 L 169.7 155.6 L 169.6 159.2 L 170.7 161.0 L 171.8 162.5 L 173.0 163.6 L 174.2 164.3 L 175.5 164.7 L 178.3 164.0 L 182.6 162.3 L 188.3 159.6 L 195.5 155.9 L 199.9 151.4 L 201.5 146.1 L 200.2 140.1 L 196.2 133.4 L 192.8 128.1 L 189.9 124.3 L 187.5 122.0 L 185.7 121.2 L 183.4 122.9 L 180.6 127.0 Z" fill="#FFDCEA" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="อำนาจเจริญ" d="M 264.8 187.7 L 266.0 195.0 L 267.1 200.6 L 268.1 204.4 L 269.0 206.5 L 269.8 206.8 L 272.3 206.3 L 276.5 205.2 L 282.4 203.2 L 290.1 200.5 L 295.0 197.5 L 297.3 194.2 L 296.9 190.5 L 293.8 186.5 L 289.9 183.3 L 285.1 180.8 L 279.4 179.1 L 272.8 178.2 L 268.2 179.3 L 265.5 182.5 Z" fill="#FFCFE0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="อุดรธานี" d="M 230.4 135.6 L 231.3 130.9 L 231.8 127.2 L 231.8 124.4 L 231.3 122.4 L 230.4 121.3 L 227.3 120.8 L 222.0 120.7 L 214.6 121.1 L 204.9 121.9 L 198.7 124.3 L 195.9 128.0 L 196.5 133.3 L 200.5 140.0 L 204.3 145.0 L 207.9 148.2 L 211.3 149.8 L 214.5 149.7 L 217.5 149.2 L 220.3 148.2 L 222.9 146.9 L 225.3 145.1 L 227.4 142.7 L 229.1 139.5 Z" fill="#FFE6F0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="อุตรดิตถ์" d="M 85.7 129.9 L 93.8 133.3 L 101.5 135.6 L 108.8 136.7 L 115.8 136.5 L 122.2 135.2 L 127.2 133.1 L 130.7 130.2 L 132.6 126.5 L 132.9 122.0 L 130.4 118.4 L 124.9 115.7 L 116.5 113.9 L 105.2 113.1 L 95.8 113.2 L 88.3 114.4 L 82.7 116.6 L 79.0 119.9 L 78.3 123.2 L 80.5 126.5 Z" fill="#FFD3E4" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="อุทัยธานี" d="M 98.8 203.9 L 89.2 200.6 L 79.8 199.2 L 70.5 199.6 L 61.3 201.8 L 52.2 205.9 L 45.4 209.5 L 40.8 212.5 L 38.6 215.1 L 38.7 217.2 L 40.6 219.3 L 44.4 221.7 L 50.0 224.1 L 57.5 226.7 L 65.9 227.2 L 75.2 225.8 L 85.3 222.3 L 96.4 216.9 L 102.3 212.0 L 103.1 207.7 Z" fill="#FFE0EC" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="อุบลราชธานี" d="M 290.2 200.6 L 282.5 203.4 L 277.3 207.8 L 274.4 213.8 L 274.0 221.4 L 276.0 230.6 L 278.7 237.4 L 282.0 241.6 L 285.9 243.3 L 290.6 242.5 L 294.3 241.7 L 297.3 240.9 L 299.4 240.1 L 300.6 239.4 L 301.9 238.4 L 303.2 237.1 L 304.5 235.6 L 305.8 233.9 L 306.9 232.0 L 307.8 230.0 L 308.6 228.0 L 309.2 225.8 L 309.6 223.7 L 309.9 221.6 L 310.0 219.6 L 310.0 217.7 L 309.8 215.7 L 309.5 213.6 L 309.1 211.6 L 308.4 209.4 L 307.6 207.2 L 306.6 205.0 L 305.3 202.6 L 303.9 200.2 L 300.9 199.0 L 296.3 199.2 Z" fill="#FFC9DD" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="อ่างทอง" d="M 113.0 236.4 L 110.5 236.8 L 108.9 237.9 L 108.2 239.6 L 108.3 242.0 L 109.4 245.0 L 111.0 246.9 L 113.2 247.6 L 115.9 247.2 L 119.1 245.8 L 121.6 244.6 L 123.2 243.7 L 124.0 243.1 L 124.0 242.9 L 123.5 242.3 L 122.6 241.3 L 121.3 240.0 L 119.5 238.3 L 117.5 237.1 L 115.3 236.5 Z" fill="#FFDCEA" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="เชียงราย" d="M 51.3 30.3 L 52.5 33.9 L 54.2 37.2 L 56.5 40.3 L 59.4 43.1 L 62.8 45.7 L 68.8 47.3 L 77.1 48.1 L 88.0 48.0 L 101.3 47.0 L 111.6 46.0 L 119.0 45.0 L 123.5 43.9 L 125.0 42.8 L 125.2 41.0 L 124.0 38.2 L 121.4 34.7 L 117.6 30.3 L 114.2 26.8 L 111.4 24.0 L 109.1 22.1 L 107.4 20.9 L 105.5 20.0 L 103.6 19.1 L 101.7 18.4 L 99.6 17.8 L 96.6 17.5 L 92.7 17.4 L 87.9 17.6 L 82.1 17.9 L 76.3 18.6 L 70.4 19.6 L 64.5 20.9 L 58.5 22.6 L 54.3 24.7 L 51.9 27.3 Z" fill="#FFCFE0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="เชียงใหม่" d="M 63.0 46.1 L 59.5 43.4 L 55.4 44.3 L 50.8 48.5 L 45.5 56.3 L 39.7 67.5 L 38.2 75.6 L 41.0 80.6 L 48.1 82.5 L 59.4 81.3 L 68.2 80.2 L 74.2 79.2 L 77.6 78.4 L 78.4 77.6 L 78.2 75.4 L 77.2 71.7 L 75.3 66.6 L 72.5 59.9 L 69.5 54.3 L 66.3 49.7 Z" fill="#FFE6F0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="เพชรบุรี" d="M 94.3 293.8 L 92.5 293.5 L 89.3 293.8 L 84.8 294.7 L 78.9 296.3 L 71.6 298.5 L 66.6 301.4 L 63.7 305.1 L 63.1 309.5 L 64.7 314.7 L 67.6 318.8 L 71.9 321.8 L 77.5 323.6 L 84.5 324.4 L 89.9 323.0 L 93.6 319.5 L 95.8 313.8 L 96.2 306.0 L 96.2 300.0 L 95.5 296.0 Z" fill="#FFD3E4" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="เพชรบูรณ์" d="M 132.4 147.1 L 130.3 151.4 L 128.8 156.7 L 127.6 162.8 L 127.0 169.7 L 126.8 177.5 L 127.2 184.2 L 128.4 189.9 L 130.2 194.4 L 132.6 197.8 L 134.8 200.5 L 136.8 202.5 L 138.6 203.8 L 140.2 204.2 L 143.2 202.0 L 147.6 197.1 L 153.6 189.4 L 160.9 179.1 L 166.2 170.9 L 169.3 164.8 L 170.3 161.0 L 169.2 159.3 L 166.3 157.0 L 161.8 154.1 L 155.5 150.7 L 147.5 146.6 L 141.0 144.6 L 136.0 144.8 Z" fill="#FFE0EC" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="เลย" d="M 147.4 101.9 L 142.8 105.1 L 139.3 107.9 L 136.7 110.2 L 135.2 112.0 L 134.6 113.3 L 134.1 115.4 L 133.6 118.3 L 133.2 122.0 L 132.8 126.5 L 132.7 130.3 L 133.0 133.4 L 133.5 135.9 L 134.3 137.6 L 136.9 140.0 L 141.3 142.9 L 147.6 146.4 L 155.7 150.6 L 162.6 151.3 L 168.5 148.7 L 173.4 142.8 L 177.1 133.5 L 179.8 126.0 L 181.2 120.4 L 181.6 116.7 L 180.9 114.8 L 179.5 113.2 L 177.5 112.0 L 174.8 111.0 L 171.5 110.3 L 168.7 109.5 L 166.3 108.8 L 164.5 107.9 L 163.2 107.1 L 161.8 105.9 L 160.3 104.3 L 158.6 102.5 L 156.9 100.3 L 154.4 99.5 L 151.3 100.0 Z" fill="#FFC9DD" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="แพร่" d="M 92.4 94.0 L 90.8 101.0 L 92.5 106.5 L 97.4 110.4 L 105.5 112.8 L 116.8 113.7 L 125.4 114.0 L 131.3 113.8 L 134.5 113.1 L 135.0 111.9 L 133.5 109.1 L 130.0 104.9 L 124.6 99.1 L 117.2 91.9 L 110.9 86.6 L 105.8 83.3 L 101.8 81.9 L 99.0 82.6 L 96.5 84.8 L 94.3 88.6 Z" fill="#FFDCEA" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-<path class="province" data-name="แม่ฮ่องสอน" d="M 41.5 28.5 L 36.3 30.7 L 31.9 32.9 L 28.3 35.0 L 25.5 37.2 L 23.5 39.3 L 21.7 43.8 L 20.0 50.7 L 18.5 59.9 L 17.2 71.6 L 16.2 81.3 L 15.6 89.3 L 15.2 95.4 L 15.2 99.6 L 16.2 101.4 L 18.2 100.8 L 21.2 97.8 L 25.1 92.2 L 29.5 85.3 L 34.3 77.0 L 39.6 67.3 L 45.4 56.2 L 49.4 47.0 L 51.7 39.6 L 52.2 34.2 L 51.0 30.6 L 48.8 28.5 L 45.7 27.8 Z" fill="#FFCFE0" stroke="#ffffff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-        </g>
-        <g id="labels-layer">
-<text class="province-label" data-name="กระบี่" data-area="830.2" x="61.7" y="496.1" text-anchor="middle">กระบี่</text>
-<text class="province-label" data-name="กรุงเทพมหานคร" data-area="72.8" x="115.8" y="275.2" text-anchor="middle">กรุงเทพมหานคร</text>
-<text class="province-label" data-name="กาญจนบุรี" data-area="2447.9" x="62.0" y="255.4" text-anchor="middle">กาญจนบุรี</text>
-<text class="province-label" data-name="กาฬสินธุ์" data-area="763.8" x="234.3" y="161.7" text-anchor="middle">กาฬสินธุ์</text>
-<text class="province-label" data-name="กำแพงเพชร" data-area="1673.0" x="67.6" y="182.6" text-anchor="middle">กำแพงเพชร</text>
-<text class="province-label" data-name="ขอนแก่น" data-area="1064.8" x="201.9" y="169.2" text-anchor="middle">ขอนแก่น</text>
-<text class="province-label" data-name="จันทบุรี" data-area="1079.6" x="183.5" y="308.9" text-anchor="middle">จันทบุรี</text>
-<text class="province-label" data-name="ฉะเชิงเทรา" data-area="420.8" x="143.0" y="277.7" text-anchor="middle">ฉะเชิงเทรา</text>
-<text class="province-label" data-name="ชลบุรี" data-area="418.4" x="143.4" y="293.1" text-anchor="middle">ชลบุรี</text>
-<text class="province-label" data-name="ชัยนาท" data-area="529.3" x="98.0" y="222.4" text-anchor="middle">ชัยนาท</text>
-<text class="province-label" data-name="ชัยภูมิ" data-area="1729.9" x="173.8" y="193.4" text-anchor="middle">ชัยภูมิ</text>
-<text class="province-label" data-name="ชุมพร" data-area="1246.1" x="68.4" y="400.7" text-anchor="middle">ชุมพร</text>
-<text class="province-label" data-name="ตรัง" data-area="844.0" x="81.0" y="518.4" text-anchor="middle">ตรัง</text>
-<text class="province-label" data-name="ตราด" data-area="322.1" x="196.7" y="323.8" text-anchor="middle">ตราด</text>
-<text class="province-label" data-name="ตาก" data-area="2681.2" x="48.7" y="148.2" text-anchor="middle">ตาก</text>
-<text class="province-label" data-name="นครนายก" data-area="431.6" x="146.5" y="252.0" text-anchor="middle">นครนายก</text>
-<text class="province-label" data-name="นครปฐม" data-area="304.5" x="99.5" y="269.1" text-anchor="middle">นครปฐม</text>
-<text class="province-label" data-name="นครพนม" data-area="219.8" x="272.2" y="135.1" text-anchor="middle">นครพนม</text>
-<text class="province-label" data-name="นครราชสีมา" data-area="1620.3" x="176.3" y="228.6" text-anchor="middle">นครราชสีมา</text>
-<text class="province-label" data-name="นครศรีธรรมราช" data-area="990.7" x="93.1" y="484.5" text-anchor="middle">นครศรีธรรมราช</text>
-<text class="province-label" data-name="นครสวรรค์" data-area="995.6" x="107.4" y="195.6" text-anchor="middle">นครสวรรค์</text>
-<text class="province-label" data-name="นนทบุรี" data-area="101.1" x="119.3" y="270.1" text-anchor="middle">นนทบุรี</text>
-<text class="province-label" data-name="นราธิวาส" data-area="319.4" x="161.7" y="564.3" text-anchor="middle">นราธิวาส</text>
-<text class="province-label" data-name="น่าน" data-area="1707.6" x="130.1" y="78.4" text-anchor="middle">น่าน</text>
-<text class="province-label" data-name="บึงกาฬ" data-area="501.5" x="236.2" y="110.0" text-anchor="middle">บึงกาฬ</text>
-<text class="province-label" data-name="บุรีรัมย์" data-area="1396.2" x="211.0" y="227.4" text-anchor="middle">บุรีรัมย์</text>
-<text class="province-label" data-name="ปทุมธานี" data-area="228.3" x="118.9" y="262.6" text-anchor="middle">ปทุมธานี</text>
-<text class="province-label" data-name="ประจวบคีรีขันธ์" data-area="1104.5" x="79.2" y="348.1" text-anchor="middle">ประจวบคีรีขันธ์</text>
-<text class="province-label" data-name="ปราจีนบุรี" data-area="496.9" x="156.8" y="262.7" text-anchor="middle">ปราจีนบุรี</text>
-<text class="province-label" data-name="ปัตตานี" data-area="685.5" x="143.9" y="539.3" text-anchor="middle">ปัตตานี</text>
-<text class="province-label" data-name="พระนครศรีอยุธยา" data-area="203.8" x="120.4" y="252.6" text-anchor="middle">พระนครศรีอยุธยา</text>
-<text class="province-label" data-name="พะเยา" data-area="1287.9" x="95.0" y="62.2" text-anchor="middle">พะเยา</text>
-<text class="province-label" data-name="พังงา" data-area="778.6" x="44.4" y="474.9" text-anchor="middle">พังงา</text>
-<text class="province-label" data-name="พัทลุง" data-area="930.6" x="107.4" y="513.4" text-anchor="middle">พัทลุง</text>
-<text class="province-label" data-name="พิจิตร" data-area="717.0" x="112.7" y="173.3" text-anchor="middle">พิจิตร</text>
-<text class="province-label" data-name="พิษณุโลก" data-area="776.7" x="115.6" y="148.9" text-anchor="middle">พิษณุโลก</text>
-<text class="province-label" data-name="ภูเก็ต" data-area="77.0" x="42.5" y="500.0" text-anchor="middle">ภูเก็ต</text>
-<text class="province-label" data-name="มหาสารคาม" data-area="583.4" x="218.2" y="187.4" text-anchor="middle">มหาสารคาม</text>
-<text class="province-label" data-name="มุกดาหาร" data-area="607.4" x="271.2" y="165.9" text-anchor="middle">มุกดาหาร</text>
-<text class="province-label" data-name="ยะลา" data-area="882.7" x="140.8" y="565.9" text-anchor="middle">ยะลา</text>
-<text class="province-label" data-name="ยโสธร" data-area="670.6" x="254.3" y="195.5" text-anchor="middle">ยโสธร</text>
-<text class="province-label" data-name="ระนอง" data-area="742.4" x="51.7" y="431.5" text-anchor="middle">ระนอง</text>
-<text class="province-label" data-name="ระยอง" data-area="399.0" x="153.8" y="307.4" text-anchor="middle">ระยอง</text>
-<text class="province-label" data-name="ราชบุรี" data-area="603.0" x="77.7" y="287.8" text-anchor="middle">ราชบุรี</text>
-<text class="province-label" data-name="ร้อยเอ็ด" data-area="611.9" x="238.5" y="188.9" text-anchor="middle">ร้อยเอ็ด</text>
-<text class="province-label" data-name="ลพบุรี" data-area="683.6" x="132.8" y="221.4" text-anchor="middle">ลพบุรี</text>
-<text class="province-label" data-name="ลำปาง" data-area="1093.7" x="75.9" y="102.4" text-anchor="middle">ลำปาง</text>
-<text class="province-label" data-name="ลำพูน" data-area="1611.0" x="42.5" y="100.9" text-anchor="middle">ลำพูน</text>
-<text class="province-label" data-name="ศรีสะเกษ" data-area="999.7" x="261.7" y="227.1" text-anchor="middle">ศรีสะเกษ</text>
-<text class="province-label" data-name="สกลนคร" data-area="1363.4" x="251.0" y="138.6" text-anchor="middle">สกลนคร</text>
-<text class="province-label" data-name="สงขลา" data-area="947.7" x="119.7" y="536.6" text-anchor="middle">สงขลา</text>
-<text class="province-label" data-name="สตูล" data-area="756.9" x="102.5" y="553.7" text-anchor="middle">สตูล</text>
-<text class="province-label" data-name="สมุทรปราการ" data-area="83.5" x="125.5" y="279.0" text-anchor="middle">สมุทรปราการ</text>
-<text class="province-label" data-name="สมุทรสงคราม" data-area="69.4" x="96.5" y="287.4" text-anchor="middle">สมุทรสงคราม</text>
-<text class="province-label" data-name="สมุทรสาคร" data-area="47.6" x="106.6" y="279.1" text-anchor="middle">สมุทรสาคร</text>
-<text class="province-label" data-name="สระบุรี" data-area="524.0" x="139.9" y="238.7" text-anchor="middle">สระบุรี</text>
-<text class="province-label" data-name="สระแก้ว" data-area="2133.9" x="186.5" y="274.0" text-anchor="middle">สระแก้ว</text>
-<text class="province-label" data-name="สิงห์บุรี" data-area="295.2" x="113.7" y="226.1" text-anchor="middle">สิงห์บุรี</text>
-<text class="province-label" data-name="สุพรรณบุรี" data-area="651.4" x="94.7" y="244.5" text-anchor="middle">สุพรรณบุรี</text>
-<text class="province-label" data-name="สุราษฎร์ธานี" data-area="1588.4" x="71.1" y="453.9" text-anchor="middle">สุราษฎร์ธานี</text>
-<text class="province-label" data-name="สุรินทร์" data-area="1094.7" x="234.2" y="234.7" text-anchor="middle">สุรินทร์</text>
-<text class="province-label" data-name="สุโขทัย" data-area="635.2" x="88.3" y="143.7" text-anchor="middle">สุโขทัย</text>
-<text class="province-label" data-name="หนองคาย" data-area="561.5" x="205.5" y="114.9" text-anchor="middle">หนองคาย</text>
-<text class="province-label" data-name="หนองบัวลำภู" data-area="935.1" x="185.8" y="144.9" text-anchor="middle">หนองบัวลำภู</text>
-<text class="province-label" data-name="อำนาจเจริญ" data-area="739.2" x="279.5" y="191.5" text-anchor="middle">อำนาจเจริญ</text>
-<text class="province-label" data-name="อุดรธานี" data-area="880.4" x="213.9" y="133.5" text-anchor="middle">อุดรธานี</text>
-<text class="province-label" data-name="อุตรดิตถ์" data-area="1126.3" x="106.5" y="124.3" text-anchor="middle">อุตรดิตถ์</text>
-<text class="province-label" data-name="อุทัยธานี" data-area="1400.4" x="72.0" y="213.0" text-anchor="middle">อุทัยธานี</text>
-<text class="province-label" data-name="อุบลราชธานี" data-area="1359.3" x="291.4" y="220.7" text-anchor="middle">อุบลราชธานี</text>
-<text class="province-label" data-name="อ่างทอง" data-area="140.6" x="114.7" y="242.0" text-anchor="middle">อ่างทอง</text>
-<text class="province-label" data-name="เชียงราย" data-area="1842.3" x="87.0" y="33.5" text-anchor="middle">เชียงราย</text>
-<text class="province-label" data-name="เชียงใหม่" data-area="1186.5" x="56.6" y="66.2" text-anchor="middle">เชียงใหม่</text>
-<text class="province-label" data-name="เพชรบุรี" data-area="892.0" x="81.1" y="309.6" text-anchor="middle">เพชรบุรี</text>
-<text class="province-label" data-name="เพชรบูรณ์" data-area="1790.4" x="144.8" y="171.3" text-anchor="middle">เพชรบูรณ์</text>
-<text class="province-label" data-name="เลย" data-area="1880.1" x="156.4" y="126.6" text-anchor="middle">เลย</text>
-<text class="province-label" data-name="แพร่" data-area="977.7" x="109.0" y="100.8" text-anchor="middle">แพร่</text>
-<text class="province-label" data-name="แม่ฮ่องสอน" data-area="1489.1" x="31.9" y="58.3" text-anchor="middle">แม่ฮ่องสอน</text>
-        </g>
-        <g id="markers-layer">
-<g class="marker-pin" data-key="พระนครศรีอยุธยา" transform="translate(119.69,251.3)">
-        <path class="pin-shape" d="M 0 0 C -14 -18 -26 -34 -26 -50 A 26 26 0 1 1 26 -50 C 26 -34 14 -18 0 0 Z"/>
-        <clipPath id="clip-19029"><circle cx="0" cy="-50" r="20"/></clipPath>
-        <image data-img-id="temple-2023-01-11" x="-20" y="-70" width="40" height="40" clip-path="url(#clip-19029)" preserveAspectRatio="xMidYMid slice"/>
-        <circle cx="0" cy="-50" r="20" fill="none" stroke="white" stroke-width="1.6"/>
-    </g>
-<g class="marker-pin" data-key="ประจวบคีรีขันธ์" transform="translate(90.18,351.02)">
-        <path class="pin-shape" d="M 0 0 C -14 -18 -26 -34 -26 -50 A 26 26 0 1 1 26 -50 C 26 -34 14 -18 0 0 Z"/>
-        <text x="0" y="-44" text-anchor="middle" font-size="20" style="pointer-events:none;">❤️</text>
-    </g>
-        </g>
-    </svg>
-
-    <div class="zoom-controls">
-        <button class="zoom-btn" id="zoom-in">＋</button>
-        <button class="zoom-btn" id="zoom-out">－</button>
-        <button class="zoom-btn" id="zoom-reset" style="font-size:0.85rem;">⟲</button>
-    </div>
-
-    <div id="panel">
-        <button class="close-btn" onclick="closePanel()">✕</button>
-        <div class="drag-handle"></div>
-        <h3 id="panel-title"></h3>
-        <div id="panel-body"></div>
-    </div>
-</div>
-
-<script>
-const IMAGES = {"temple-2023-01-11": "images/photo-5ef05729.jpg"};
-const MAP_GROUPS = {"พระนครศรีอยุธยา": {"items": [{"title": "วัดแรกของเรา 2 คน", "date": "2023-01-11", "mood": "✈️", "imageId": "temple-2023-01-11", "story": "ทริปแรกด้วยกันที่อยุธยา พาเที่ยววัดใหญ่ชัยมงคล เดินขึ้นบันไดสูงๆ ไปดูเจดีย์เก่าแก่ที่อยู่คู่เมืองมานานหลายร้อยปี วันนั้นคนเยอะและอากาศไม่ค่อยดี เลยต้องใส่แมสก์กันทั้งคู่ แต่ก็ยังแอบถ่ายรูปคู่กันไว้เป็นที่ระลึก"}]}, "ประจวบคีรีขันธ์": {"items": [{"title": "เดทครบรอบ 1 ปี ที่ชายหาดหัวหิน 🌊", "date": "2024-02-14", "mood": "❤️", "imageId": null, "story": "เดินทางไปเที่ยวทะเลด้วยกัน ลมเย็นมากๆ เรากอดกันนั่งดูพระอาทิตย์ตกดินด้วยกัน ทานอาหารทะเลอร่อยสุดๆ เป็นวันที่มีความสุขมากๆ เลยนะ ❤️"}]}, "__unplaced__": {"items": [{"title": "เซอไพรส์วันเกิดครบรอบ 24 ปี 🎂", "date": "2024-06-10", "mood": "🥰", "imageId": null, "story": "แอบซื้อเค้กสตรอว์เบอร์รีที่คุณชอบที่สุดมาให้ตอนเที่ยงคืน เห็นรอยยิ้มของคุณแล้วเราก็มีความสุขตามไปด้วย"}, {"title": "ลองทำต้มยำกุ้งกินกันครั้งแรก 🍲", "date": "2024-09-01", "mood": "😋", "imageId": null, "story": "ช่วยกันเตรียมวัตถุดิบจนครัวเลอะเทอะไปหมด แม้รสชาติจะเปรี้ยวไปนิดหน่อย แต่มื้อนี้สนุกและอร่อยที่สุดเพราะเราทำด้วยกัน!"}]}};
-const UNPLACED_COUNT = 2;
-
-    // ---------------- Pan / Zoom ----------------
-    const svg = document.getElementById('thmap');
-    const FULL = { x: 0, y: 0, w: 324.0, h: 595.08 };
-    let view = { ...FULL };
-    const MIN_W = FULL.w * 0.16;   // most zoomed-in
-    const MAX_W = FULL.w;          // fully zoomed-out (fit)
-    const ZOOM_LABEL_THRESHOLD_W = FULL.w * 0.55; // start considering labels below this width
-
-    let rafPending = false;
-    function scheduleLabelUpdate() {
-        if (rafPending) return;
-        rafPending = true;
-        requestAnimationFrame(() => {
-            updateLabelVisibility();
-            rafPending = false;
-        });
-    }
-
-    function applyView() {
-        svg.setAttribute('viewBox', `${view.x} ${view.y} ${view.w} ${view.h}`);
-        const hint = document.getElementById('hint');
-        if (hint) hint.style.opacity = view.w < MAX_W - 5 ? '0' : '1';
-        scheduleLabelUpdate();
-    }
-
-    // Hide labels that would visually overlap at the current zoom/pan.
-    // Bigger provinces (by rendered area) get priority to stay visible.
-    const allLabels = Array.from(document.querySelectorAll('.province-label'))
-        .sort((a, b) => parseFloat(b.dataset.area) - parseFloat(a.dataset.area));
-
-    function updateLabelVisibility() {
-        if (view.w >= ZOOM_LABEL_THRESHOLD_W) {
-            allLabels.forEach(l => { l.style.opacity = '0'; });
-            return;
-        }
-        const accepted = [];
-        allLabels.forEach(l => {
-            const rect = l.getBoundingClientRect();
-            const padded = { left: rect.left - 2, right: rect.right + 2, top: rect.top - 1, bottom: rect.bottom + 1 };
-            const overlaps = accepted.some(r =>
-                !(padded.right < r.left || padded.left > r.right || padded.bottom < r.top || padded.top > r.bottom)
-            );
-            if (!overlaps && rect.width > 0) {
-                l.style.opacity = '1';
-                accepted.push(padded);
-            } else {
-                l.style.opacity = '0';
-            }
-        });
-    }
-
-    function clampView(v) {
-        v.w = Math.max(MIN_W, Math.min(MAX_W, v.w));
-        v.h = v.w * (FULL.h / FULL.w);
-        v.x = Math.max(0, Math.min(FULL.w - v.w, v.x));
-        v.y = Math.max(0, Math.min(FULL.h - v.h, v.y));
-        return v;
-    }
-
-    function screenToSvgPoint(clientX, clientY) {
-        const rect = svg.getBoundingClientRect();
-        const scaleFitX = view.w / rect.width;
-        const scaleFitY = view.h / rect.height;
-        return {
-            x: view.x + (clientX - rect.left) * scaleFitX,
-            y: view.y + (clientY - rect.top) * scaleFitY
-        };
-    }
-
-    function zoomAt(clientX, clientY, factor) {
-        const before = screenToSvgPoint(clientX, clientY);
-        const newW = view.w / factor;
-        const newH = newW * (FULL.h / FULL.w);
-        const ratioX = (before.x - view.x) / view.w;
-        const ratioY = (before.y - view.y) / view.h;
-        view.w = newW; view.h = newH;
-        view.x = before.x - ratioX * view.w;
-        view.y = before.y - ratioY * view.h;
-        clampView(view);
-        applyView();
-    }
-
-    svg.addEventListener('wheel', (e) => {
-        e.preventDefault();
-        const factor = e.deltaY < 0 ? 1.2 : 1 / 1.2;
-        zoomAt(e.clientX, e.clientY, factor);
-    }, { passive: false });
-
-    const pointers = new Map();
-    let panLast = null;
-    let pinchStartDist = null;
-    let pinchStartView = null;
-
-    function dist(p1, p2) { return Math.hypot(p1.x - p2.x, p1.y - p2.y); }
-    function midpoint(p1, p2) { return { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 }; }
-
-    svg.addEventListener('pointerdown', (e) => {
-        svg.setPointerCapture(e.pointerId);
-        pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-        if (pointers.size === 1) {
-            panLast = { x: e.clientX, y: e.clientY };
-        } else if (pointers.size === 2) {
-            const pts = Array.from(pointers.values());
-            pinchStartDist = dist(pts[0], pts[1]);
-            pinchStartView = { ...view };
-        }
-    });
-
-    svg.addEventListener('pointermove', (e) => {
-        if (!pointers.has(e.pointerId)) return;
-        pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-
-        if (pointers.size === 1 && panLast) {
-            const rect = svg.getBoundingClientRect();
-            const dxScreen = e.clientX - panLast.x;
-            const dyScreen = e.clientY - panLast.y;
-            const dxSvg = dxScreen * (view.w / rect.width);
-            const dySvg = dyScreen * (view.h / rect.height);
-            view.x -= dxSvg;
-            view.y -= dySvg;
-            clampView(view);
-            applyView();
-            panLast = { x: e.clientX, y: e.clientY };
-        } else if (pointers.size === 2 && pinchStartDist) {
-            const pts = Array.from(pointers.values());
-            const newDist = dist(pts[0], pts[1]);
-            const factor = newDist / pinchStartDist;
-            const mid = midpoint(pts[0], pts[1]);
-            const rect = svg.getBoundingClientRect();
-            const beforeMid = {
-                x: pinchStartView.x + ((mid.x - rect.left) * (pinchStartView.w / rect.width)),
-                y: pinchStartView.y + ((mid.y - rect.top) * (pinchStartView.h / rect.height))
-            };
-            const ratioX = (beforeMid.x - pinchStartView.x) / pinchStartView.w;
-            const ratioY = (beforeMid.y - pinchStartView.y) / pinchStartView.h;
-            let newW = pinchStartView.w / factor;
-            let newH = newW * (FULL.h / FULL.w);
-            view.w = newW; view.h = newH;
-            view.x = beforeMid.x - ratioX * view.w;
-            view.y = beforeMid.y - ratioY * view.h;
-            clampView(view);
-            applyView();
-        }
-    });
-
-    function endPointer(e) {
-        pointers.delete(e.pointerId);
-        if (pointers.size < 2) { pinchStartDist = null; }
-        if (pointers.size < 1) { panLast = null; }
-    }
-    svg.addEventListener('pointerup', endPointer);
-    svg.addEventListener('pointercancel', endPointer);
-    svg.addEventListener('pointerleave', endPointer);
-
-    document.getElementById('zoom-in').addEventListener('click', () => {
-        const rect = svg.getBoundingClientRect();
-        zoomAt(rect.left + rect.width / 2, rect.top + rect.height / 2, 1.4);
-    });
-    document.getElementById('zoom-out').addEventListener('click', () => {
-        const rect = svg.getBoundingClientRect();
-        zoomAt(rect.left + rect.width / 2, rect.top + rect.height / 2, 1 / 1.4);
-    });
-    document.getElementById('zoom-reset').addEventListener('click', () => {
-        view = { ...FULL };
-        applyView();
-    });
-
-    applyView();
-
-    // Hydrate marker photo placeholders with their actual image data
-    document.querySelectorAll('image[data-img-id]').forEach(el => {
-        const id = el.getAttribute('data-img-id');
-        if (IMAGES[id]) {
-            el.setAttributeNS('http://www.w3.org/1999/xlink', 'href', IMAGES[id]);
-            el.setAttribute('href', IMAGES[id]);
-        }
-    });
-
-    if (UNPLACED_COUNT > 0) {
-        document.getElementById('unplaced-count').textContent = UNPLACED_COUNT;
-        const btn = document.getElementById('unplaced-btn');
-        btn.style.display = 'inline-flex';
-        btn.addEventListener('click', () => openPanelFor('__unplaced__'));
-    }
-
-    // ---------------- Panel ----------------
-    function formatDateThai(dateStr) {
-        const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-        const d = new Date(dateStr);
-        return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
-    }
-
-    function openPanelFor(groupKey) {
-        const group = MAP_GROUPS[groupKey];
-        if (!group) return;
-        const titleLabel = groupKey === '__unplaced__' ? 'ไม่ระบุจังหวัดชัดเจน' : groupKey;
-        document.getElementById('panel-title').innerHTML = `📍 <span>${titleLabel}</span>`;
-        document.getElementById('panel-body').innerHTML = group.items.map(m => {
-            const imgSrc = m.imageId ? IMAGES[m.imageId] : null;
-            return `
-            <div class="memory-row">
-                ${imgSrc ? `<img class="thumb" src="${imgSrc}">` : `<div class="thumb-fallback">${m.mood || '❤️'}</div>`}
-                <div class="info">
-                    <h4>${m.title}</h4>
-                    <p>${formatDateThai(m.date)}</p>
+    <main class="max-w-5xl mx-auto px-4 pt-6">
+        <section class="glass-card rounded-3xl p-4 sm:p-6 border-2 border-pink-100">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-bold font-mitr text-rose-600 flex items-center">
+                        <i data-lucide="map-pinned" class="w-6 h-6 mr-2"></i> แผนที่ความทรงจำ
+                    </h2>
+                    <p class="text-xs txt-muted mt-0.5">คลิกหมุดหัวใจเพื่ออ่านไดอารี่ · ลากหมุดไปวางให้ตรงใจได้ (บันทึกอัตโนมัติ)</p>
+                </div>
+                <div class="flex items-center gap-2 text-xs">
+                    <span class="chip rounded-full px-3 py-1.5 flex items-center text-rose-600 font-medium"><i data-lucide="heart" class="w-3.5 h-3.5 mr-1 fill-pink-500 text-pink-500"></i><span id="stat-pins">0</span> หมุด</span>
+                    <span class="chip rounded-full px-3 py-1.5 flex items-center text-rose-600 font-medium"><i data-lucide="map" class="w-3.5 h-3.5 mr-1"></i><span id="stat-provs">0</span> / 77 จังหวัด</span>
                 </div>
             </div>
-            <p class="story">${m.story}</p>
-        `;
-        }).join('');
-        document.getElementById('panel').classList.add('open');
-    }
-    function closePanel() {
-        document.getElementById('panel').classList.remove('open');
+
+            <div id="map-wrap">
+                <svg id="map-svg" viewBox="0 0 620 900" preserveAspectRatio="xMidYMid meet" aria-label="แผนที่ประเทศไทยแบ่งตามจังหวัด"></svg>
+                <div id="tooltip"></div>
+
+                <div id="loading" class="absolute inset-0 flex flex-col items-center justify-center text-rose-500 text-sm gap-2">
+                    <i data-lucide="heart" class="w-8 h-8 fill-pink-400 text-pink-500 animate-heart-pulse"></i>
+                    <span id="loading-text">กำลังโหลดแผนที่ประเทศไทย...</span>
+                </div>
+
+                <div class="absolute top-3 right-3 flex flex-col gap-2">
+                    <button class="map-btn" onclick="zoomBy(1.6)" aria-label="ซูมเข้า">+</button>
+                    <button class="map-btn" onclick="zoomBy(1/1.6)" aria-label="ซูมออก">−</button>
+                    <button class="map-btn" onclick="resetZoom()" aria-label="รีเซ็ตมุมมอง"><i data-lucide="maximize" class="w-4 h-4"></i></button>
+                </div>
+
+                <div id="geo-status" class="absolute top-3 left-3 chip rounded-full px-3 py-1.5 text-xs text-rose-600 font-medium items-center hidden">
+                    <i data-lucide="loader" class="w-3.5 h-3.5 mr-1 animate-spin"></i><span id="geo-status-text"></span>
+                </div>
+
+                <div id="placing-banner" class="hidden absolute bottom-3 left-1/2 -translate-x-1/2 chip rounded-full px-4 py-2 text-xs text-rose-600 font-medium items-center gap-2">
+                    <span id="placing-text"></span>
+                    <button onclick="cancelPlacing()" class="underline">ยกเลิก</button>
+                </div>
+
+                <div class="absolute bottom-3 left-3 chip rounded-xl px-3 py-2 text-[11px] txt-muted hidden sm:block">
+                    <div class="font-medium text-rose-500 mb-0.5">คู่มือ</div>
+                    ลากเพื่อเลื่อนแผนที่ · เลื่อนล้อเมาส์เพื่อซูม<br>
+                    หมุดขอบประ = ตำแหน่งโดยประมาณ ลากเพื่อปรับได้
+                </div>
+            </div>
+
+            <!-- unplaced -->
+            <div id="unplaced-box" class="hidden mt-5">
+                <h3 class="text-sm font-semibold text-rose-600 flex items-center mb-2 font-mitr">
+                    <i data-lucide="map-pin-off" class="w-4 h-4 mr-1.5"></i> ความทรงจำที่ยังไม่มีหมุด (<span id="unplaced-count">0</span>)
+                </h3>
+                <p class="text-xs txt-muted mb-3">ไม่มีข้อมูลสถานที่ หรือระบบหาตำแหน่งไม่เจอ — กดที่รายการแล้วแตะบนแผนที่เพื่อวางหมุดเอง</p>
+                <div id="unplaced-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Memory popup -->
+    <div id="memory-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/50 backdrop-blur-md" onclick="if(event.target===this)closeMemory()">
+        <div class="glass-card modal-card bg-white/95 rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl relative border-2 border-pink-200">
+            <button onclick="closeMemory()" class="absolute top-4 right-4 bg-white text-rose-500 hover:text-white hover:bg-rose-500 p-2 rounded-full shadow-lg border border-pink-200 transition z-20" aria-label="ปิด">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div id="memory-content"></div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="fixed inset-0 hidden items-center justify-center bg-black/90 backdrop-blur-sm" style="z-index:100" onclick="if(event.target===this||event.target.id==='lb-wrap')closeLightbox()">
+        <button onclick="closeLightbox()" class="absolute top-4 right-4 text-white bg-white/10 hover:bg-white/20 p-2 rounded-full" style="z-index:110" aria-label="ปิด"><i data-lucide="x" class="w-7 h-7"></i></button>
+        <button onclick="stepLightbox(-1)" class="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-white/10 hover:bg-white/20 p-3 rounded-full" style="z-index:110"><i data-lucide="chevron-left" class="w-6 h-6"></i></button>
+        <button onclick="stepLightbox(1)" class="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-white/10 hover:bg-white/20 p-3 rounded-full" style="z-index:110"><i data-lucide="chevron-right" class="w-6 h-6"></i></button>
+        <div id="lb-wrap" class="max-w-4xl max-h-[85vh] flex flex-col items-center justify-center">
+            <img id="lb-img" src="" class="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl">
+            <p id="lb-count" class="text-white/80 text-xs mt-3"></p>
+        </div>
+    </div>
+
+    <div id="toast"><span id="toast-text"></span><button id="toast-undo" class="hidden">ย้อนกลับ</button></div>
+
+    <!-- Firebase (เหมือนหน้าไทม์ไลน์) -->
+    <script src="./firebase-config.js"></script>
+    <script>window.firebaseConfig = firebaseConfig;</script>
+    <script type="module" src="./firebase-app.js"></script>
+
+    <script>
+    /* =====================================================================
+       ตั้งค่า
+       ===================================================================== */
+    // แหล่งข้อมูลขอบเขตจังหวัด (ลองตามลำดับ ถ้าอันแรกโหลดไม่ได้จะใช้อันถัดไป)
+    const GEOJSON_URLS = [
+        'https://cdn.jsdelivr.net/gh/chingchai/OpenGISData-Thailand@master/provinces.geojson',
+        'https://raw.githubusercontent.com/chingchai/OpenGISData-Thailand/master/provinces.geojson',
+        'https://cdn.jsdelivr.net/gh/apisit/thailand.json@master/thailand.json'
+    ];
+    const GEO_CACHE_KEY = 'map_pin_cache_v1'; // สำรองตำแหน่งไว้ในเครื่อง เผื่อบันทึกขึ้น Firebase ไม่สำเร็จ
+    const MOOD_COLORS = { '❤️':'#FF4F8B', '🥰':'#FF8FB8', '😊':'#FFB020', '😋':'#FF7A3D', '✈️':'#3BB6E0', '🥺':'#A374DB', '🎁':'#2FC48D' };
+    const W = 620, H = 900;
+    const HEART_PATH = 'M0 0 C-15 -11 -15 -25 -7.5 -25 C-3.5 -25 0 -22 0 -18.5 C0 -22 3.5 -25 7.5 -25 C15 -25 15 -11 0 0 Z';
+
+    /* =====================================================================
+       สถานะ
+       ===================================================================== */
+    let memories = [];
+    let features = [];
+    let projection, path, svg, gZoom, gProv, gPins, zoomBehavior;
+    let zoomK = 1;
+    let placingId = null;
+    let currentMemory = null;
+    let lbImages = [], lbIndex = 0;
+    let localCache = {};
+    try { localCache = JSON.parse(localStorage.getItem(GEO_CACHE_KEY) || '{}'); } catch (e) {}
+
+    /* =====================================================================
+       ธีม
+       ===================================================================== */
+    function toggleTheme() {
+        const dark = document.documentElement.classList.toggle('dark');
+        try { localStorage.setItem('theme_mode', dark ? 'dark' : 'light'); } catch (e) {}
+        const m = document.querySelector('meta[name="theme-color"]');
+        if (m) m.setAttribute('content', dark ? '#1F1426' : '#FFE8F1');
     }
 
-    document.querySelectorAll('.marker-pin').forEach(el => {
-        el.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openPanelFor(el.getAttribute('data-key'));
+    /* =====================================================================
+       Helpers
+       ===================================================================== */
+    function escapeHtml(s) {
+        return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+    }
+    function formatDateThai(str) {
+        if (!str) return '';
+        const mo = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+        const d = new Date(str); if (isNaN(d)) return str;
+        return `${d.getDate()} ${mo[d.getMonth()]} ${d.getFullYear() + 543}`;
+    }
+    function memImages(m) { return m.images || (m.image ? [m.image] : []); }
+    function inThailand(lat, lng) { return lat >= 5.4 && lat <= 20.6 && lng >= 97.3 && lng <= 105.7; }
+    function moodColor(m) { return MOOD_COLORS[m] || '#FF6FA5'; }
+    function saveLocalCache() { try { localStorage.setItem(GEO_CACHE_KEY, JSON.stringify(localCache)); } catch (e) {} }
+    function waitForFirebase() {
+        return new Promise((resolve, reject) => {
+            if (window.firestoreApi) return resolve();
+            window.addEventListener('firebase-ready', resolve, { once: true });
+            setTimeout(() => reject(new Error('เชื่อมต่อ Firebase ไม่สำเร็จ (ตรวจสอบว่ามีไฟล์ firebase-config.js และ firebase-app.js อยู่โฟลเดอร์เดียวกัน)')), 20000);
         });
-    });
-</script>
+    }
 
+    let toastTimer;
+    function showToast(text, undoFn) {
+        const t = document.getElementById('toast'), u = document.getElementById('toast-undo');
+        document.getElementById('toast-text').textContent = text;
+        u.classList.toggle('hidden', !undoFn);
+        u.onclick = undoFn ? () => { undoFn(); t.classList.remove('show'); } : null;
+        t.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => t.classList.remove('show'), undoFn ? 6000 : 2500);
+    }
+
+    /* =====================================================================
+       โหลดแผนที่
+       ===================================================================== */
+    function provinceName(f) {
+        const p = f.properties || {};
+        return p.pro_th || p.PRO_TH || p.name_th || p.NAME_TH || p.name || p.NAME_1 || p.CHA_NE || p.pro_en || '';
+    }
+    async function loadGeo() {
+        let lastErr;
+        for (const url of GEOJSON_URLS) {
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+                if (data.type === 'FeatureCollection' && data.features?.length) return data;
+                if (data.type === 'Topology') throw new Error('unsupported topojson');
+            } catch (e) { lastErr = e; }
+        }
+        throw lastErr || new Error('โหลดข้อมูลแผนที่ไม่ได้');
+    }
+
+    function drawMap(geo) {
+        features = geo.features;
+        projection = d3.geoMercator().fitExtent([[12, 12], [W - 12, H - 12]], geo);
+        path = d3.geoPath(projection);
+        svg = d3.select('#map-svg');
+        svg.selectAll('*').remove();
+        gZoom = svg.append('g');
+        gProv = gZoom.append('g');
+        gPins = gZoom.append('g');
+
+        const tip = document.getElementById('tooltip'), wrap = document.getElementById('map-wrap');
+        gProv.selectAll('path').data(features).join('path')
+            .attr('class', 'prov').attr('d', path)
+            .on('mousemove', (ev, d) => {
+                const r = wrap.getBoundingClientRect();
+                tip.style.display = 'block'; tip.textContent = provinceName(d);
+                tip.style.left = (ev.clientX - r.left) + 'px'; tip.style.top = (ev.clientY - r.top) + 'px';
+            })
+            .on('mouseleave', () => tip.style.display = 'none')
+            .on('click', (ev) => { if (placingId) placeManually(ev); });
+
+        zoomBehavior = d3.zoom().scaleExtent([1, 60]).translateExtent([[0, 0], [W, H]])
+            .on('zoom', (ev) => {
+                gZoom.attr('transform', ev.transform);
+                zoomK = ev.transform.k;
+                updatePinScale();
+            });
+        svg.call(zoomBehavior).on('dblclick.zoom', null);
+        svg.on('click', (ev) => { if (placingId && ev.target === svg.node()) placeManually(ev); });
+    }
+    function zoomBy(f) { svg.transition().duration(300).call(zoomBehavior.scaleBy, f); }
+    function resetZoom() { svg.transition().duration(400).call(zoomBehavior.transform, d3.zoomIdentity); }
+    function pinScale() { return 0.95 / Math.pow(zoomK, 0.72); }
+    function updatePinScale() {
+        if (!gPins) return;
+        gPins.selectAll('g.pin').attr('transform', d => `translate(${d._x},${d._y}) scale(${pinScale()})`);
+    }
+
+    /* =====================================================================
+       หาตำแหน่งของแต่ละความทรงจำ
+       ===================================================================== */
+    // 1) พิกัดที่พิมพ์ไว้ในช่องสถานที่ เช่น "13.7563, 100.5018" หรือลิงก์ Google Maps
+    function parseCoords(text) {
+        if (!text) return null;
+        const t = String(text);
+        let m = t.match(/@(-?\d{1,2}\.\d+),(-?\d{2,3}\.\d+)/) || t.match(/(-?\d{1,2}\.\d{3,})\s*[,\s]\s*(-?\d{2,3}\.\d{3,})/);
+        if (!m) return null;
+        const lat = parseFloat(m[1]), lng = parseFloat(m[2]);
+        return inThailand(lat, lng) ? { lat, lng } : null;
+    }
+    // 2) ชื่อจังหวัดในข้อความ
+    const PROVINCE_ALIASES = { 'กทม': 'กรุงเทพมหานคร', 'กรุงเทพ': 'กรุงเทพมหานคร', 'โคราช': 'นครราชสีมา', 'อยุธยา': 'พระนครศรีอยุธยา', 'หัวหิน': 'ประจวบคีรีขันธ์', 'ชะอำ': 'เพชรบุรี' };
+    function findProvinceFeature(text) {
+        if (!text || !features.length) return null;
+        let best = null;
+        for (const f of features) {
+            const name = provinceName(f).replace(/^จังหวัด/, '').trim();
+            if (name && text.includes(name) && (!best || name.length > best.len)) best = { f, len: name.length };
+        }
+        if (best) return best.f;
+        for (const k in PROVINCE_ALIASES) {
+            if (text.includes(k)) return features.find(f => provinceName(f).includes(PROVINCE_ALIASES[k])) || null;
+        }
+        return null;
+    }
+    function centroidLatLng(f) { const c = d3.geoCentroid(f); return { lat: c[1], lng: c[0] }; }
+
+    // 3) ค้นหาชื่อสถานที่ผ่าน OpenStreetMap Nominatim (จำกัด 1 คำขอ/วินาที)
+    let geoQueue = Promise.resolve(), lastGeoAt = 0;
+    function geocode(query) {
+        geoQueue = geoQueue.then(async () => {
+            const wait = 1100 - (Date.now() - lastGeoAt);
+            if (wait > 0) await new Promise(r => setTimeout(r, wait));
+            lastGeoAt = Date.now();
+            try {
+                const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=th&accept-language=th&q=' + encodeURIComponent(query);
+                const res = await fetch(url);
+                if (!res.ok) return null;
+                const j = await res.json();
+                if (!j.length) return null;
+                const lat = parseFloat(j[0].lat), lng = parseFloat(j[0].lon);
+                return inThailand(lat, lng) ? { lat, lng } : null;
+            } catch (e) { return null; }
+        });
+        return geoQueue;
+    }
+
+    async function persistPos(m, lat, lng, source) {
+        m.lat = lat; m.lng = lng; m.geoSource = source;
+        localCache[m.id] = { lat, lng, geoSource: source };
+        saveLocalCache();
+        try {
+            await window.firestoreApi.updateMemoryInFirestore(m.id, { lat, lng, geoSource: source });
+            return true;
+        } catch (e) {
+            console.error(e);
+            showToast('บันทึกขึ้น Firebase ไม่สำเร็จ (เก็บไว้ในเครื่องแล้ว)');
+            return false;
+        }
+    }
+
+    function hasPos(m) { return typeof m.lat === 'number' && typeof m.lng === 'number'; }
+
+    function applyKnownPositions() {
+        for (const m of memories) {
+            if (hasPos(m)) { m._approx = false; continue; }
+            const c = localCache[m.id];
+            if (c && typeof c.lat === 'number') { m.lat = c.lat; m.lng = c.lng; m.geoSource = c.geoSource; continue; }
+            const p = parseCoords(m.location);
+            if (p) { m.lat = p.lat; m.lng = p.lng; m.geoSource = 'coords'; m._needSave = true; }
+        }
+    }
+
+    async function resolveMissing() {
+        const todo = memories.filter(m => !hasPos(m) && m.location && m.location.trim());
+        const status = document.getElementById('geo-status');
+        let done = 0;
+        if (todo.length) { status.classList.remove('hidden'); status.classList.add('flex'); }
+        for (const m of todo) {
+            document.getElementById('geo-status-text').textContent = `กำลังปักหมุดจากชื่อสถานที่ ${done + 1}/${todo.length}`;
+            const pf = findProvinceFeature(m.location);
+            let pos = await geocode(m.location);
+            let source = 'auto';
+            if (!pos && pf) {
+                // ลองใส่ชื่อจังหวัดช่วย ถ้ายังไม่เจอใช้จุดกลางจังหวัด (ตำแหน่งโดยประมาณ)
+                pos = centroidLatLng(pf); source = 'province';
+            }
+            if (pos) {
+                const spot = nudge(pos.lat, pos.lng, m.id);
+                await persistPos(m, spot.lat, spot.lng, source);
+            }
+            done++;
+            renderPins();
+        }
+        status.classList.add('hidden'); status.classList.remove('flex');
+        // บันทึกพิกัดที่อ่านจากข้อความ
+        for (const m of memories) if (m._needSave) { m._needSave = false; persistPos(m, m.lat, m.lng, 'coords'); }
+    }
+
+    // เลี่ยงหมุดซ้อนกันพอดี (ช่วยให้ยังเห็นหลายหมุดในที่เดียวกัน)
+    function nudge(lat, lng, selfId) {
+        const others = memories.filter(o => o.id !== selfId && hasPos(o));
+        let a = 0, r = 0, tries = 0;
+        let p = { lat, lng };
+        while (others.some(o => Math.abs(o.lat - p.lat) < 0.004 && Math.abs(o.lng - p.lng) < 0.004) && tries < 40) {
+            tries++; a += 2.4; r = 0.006 * Math.sqrt(tries);
+            p = { lat: lat + r * Math.sin(a), lng: lng + r * Math.cos(a) };
+        }
+        return p;
+    }
+
+    /* =====================================================================
+       วาดหมุด
+       ===================================================================== */
+    function renderPins() {
+        if (!gPins) return;
+        const placed = memories.filter(hasPos).map(m => {
+            const xy = projection([m.lng, m.lat]);
+            m._x = xy[0]; m._y = xy[1];
+            return m;
+        });
+
+        const sel = gPins.selectAll('g.pin').data(placed, d => d.id);
+        sel.exit().remove();
+        const enter = sel.enter().append('g').attr('class', 'pin');
+        enter.append('path').attr('class', 'heart').attr('d', HEART_PATH);
+        enter.append('title');
+        enter.call(dragBehavior());
+        enter.on('click', (ev, d) => { if (ev.defaultPrevented) return; if (placingId) return; openMemory(d.id); });
+
+        const all = enter.merge(sel);
+        all.attr('class', d => 'pin' + (d.geoSource === 'province' ? ' approx' : ''))
+            .attr('transform', d => `translate(${d._x},${d._y}) scale(${pinScale()})`);
+        all.select('path.heart').attr('fill', d => moodColor(d.mood));
+        all.select('title').text(d => `${d.title}${d.location ? ' · ' + d.location : ''}`);
+
+        updateStats();
+        renderUnplaced();
+    }
+
+    function dragBehavior() {
+        let startLat, startLng;
+        return d3.drag().clickDistance(4)
+            .on('start', function (ev, d) {
+                d3.select(this).raise().classed('dragging', true);
+                startLat = d.lat; startLng = d.lng;
+                document.getElementById('tooltip').style.display = 'none';
+            })
+            .on('drag', function (ev, d) {
+                const [px, py] = d3.pointer(ev.sourceEvent, gZoom.node());
+                d._x = Math.max(0, Math.min(W, px)); d._y = Math.max(0, Math.min(H, py));
+                d3.select(this).attr('transform', `translate(${d._x},${d._y}) scale(${pinScale()})`);
+            })
+            .on('end', async function (ev, d) {
+                d3.select(this).classed('dragging', false);
+                const [lng, lat] = projection.invert([d._x, d._y]);
+                if (Math.abs(lat - startLat) < 1e-6 && Math.abs(lng - startLng) < 1e-6) return;
+                const pl = startLat, pg = startLng, prevSrc = d.geoSource;
+                d3.select(this).classed('approx', false);
+                await persistPos(d, lat, lng, 'manual');
+                updateStats();
+                showToast('บันทึกตำแหน่งหมุดแล้ว 💗', async () => {
+                    await persistPos(d, pl, pg, prevSrc || 'auto');
+                    renderPins();
+                });
+            });
+    }
+
+    function updateStats() {
+        const placed = memories.filter(hasPos);
+        document.getElementById('stat-pins').textContent = placed.length;
+        const counts = new Map();
+        for (const m of placed) {
+            const f = features.find(ft => d3.geoContains(ft, [m.lng, m.lat]));
+            if (f) counts.set(f, (counts.get(f) || 0) + 1);
+        }
+        document.getElementById('stat-provs').textContent = counts.size;
+        gProv.selectAll('path').attr('class', d => {
+            const c = counts.get(d) || 0;
+            return 'prov' + (c >= 5 ? ' v3' : c >= 2 ? ' v2' : c >= 1 ? ' v1' : '');
+        });
+    }
+
+    /* =====================================================================
+       ความทรงจำที่ยังไม่มีหมุด + วางหมุดเอง
+       ===================================================================== */
+    function renderUnplaced() {
+        const list = memories.filter(m => !hasPos(m)).sort((a, b) => new Date(b.date) - new Date(a.date));
+        const box = document.getElementById('unplaced-box');
+        box.classList.toggle('hidden', list.length === 0);
+        document.getElementById('unplaced-count').textContent = list.length;
+        document.getElementById('unplaced-list').innerHTML = list.map(m => `
+            <button onclick="startPlacing('${m.id}')" class="list-item rounded-2xl px-3 py-2.5 text-left flex items-center gap-3">
+                <span class="text-xl">${escapeHtml(m.mood || '❤️')}</span>
+                <span class="min-w-0 flex-1">
+                    <span class="block text-sm font-medium txt-title truncate">${escapeHtml(m.title)}</span>
+                    <span class="block text-[11px] txt-muted truncate">${formatDateThai(m.date)}${m.location ? ' · ' + escapeHtml(m.location) : ' · ไม่ได้ระบุสถานที่'}</span>
+                </span>
+                <i data-lucide="map-pin-plus" class="w-4 h-4 text-pink-500 shrink-0"></i>
+            </button>`).join('');
+        lucide.createIcons();
+    }
+    function startPlacing(id) {
+        const m = memories.find(x => x.id === id); if (!m) return;
+        placingId = id;
+        document.body.classList.add('placing');
+        const b = document.getElementById('placing-banner');
+        b.classList.remove('hidden'); b.classList.add('flex');
+        document.getElementById('placing-text').textContent = `แตะบนแผนที่เพื่อวางหมุด “${m.title}”`;
+        document.getElementById('map-wrap').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    function cancelPlacing() {
+        placingId = null;
+        document.body.classList.remove('placing');
+        const b = document.getElementById('placing-banner'); b.classList.add('hidden'); b.classList.remove('flex');
+    }
+    async function placeManually(ev) {
+        const m = memories.find(x => x.id === placingId); if (!m) return cancelPlacing();
+        const [px, py] = d3.pointer(ev, gZoom.node());
+        const [lng, lat] = projection.invert([px, py]);
+        cancelPlacing();
+        await persistPos(m, lat, lng, 'manual');
+        renderPins();
+        confetti({ particleCount: 40, spread: 50, origin: { y: 0.6 } });
+        showToast('วางหมุดเรียบร้อย 💗');
+    }
+    async function resetPin(id) {
+        const m = memories.find(x => x.id === id); if (!m) return;
+        closeMemory();
+        const geo = document.getElementById('geo-status');
+        delete localCache[id]; saveLocalCache();
+        m.lat = m.lng = null; m.geoSource = null;
+        try { await window.firestoreApi.updateMemoryInFirestore(id, { lat: null, lng: null, geoSource: null }); } catch (e) {}
+        renderPins();
+        await resolveMissing();
+        if (!hasPos(m)) showToast('ยังหาตำแหน่งไม่เจอ ลองวางหมุดเองจากรายการด้านล่างนะ');
+    }
+
+    /* =====================================================================
+       Popup ความทรงจำ
+       ===================================================================== */
+    function openMemory(id) {
+        const m = memories.find(x => x.id === id); if (!m) return;
+        currentMemory = m;
+        const imgs = memImages(m);
+        const near = memories.filter(o => o.id !== m.id && hasPos(o) && Math.hypot(o.lat - m.lat, o.lng - m.lng) < 0.15)
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
+        document.getElementById('memory-content').innerHTML = `
+            ${imgs.length ? `
+                <div class="mb-4">
+                    <div class="grid ${imgs.length === 1 ? 'grid-cols-1' : 'grid-cols-2 sm:grid-cols-3'} gap-2 rounded-2xl overflow-hidden border border-pink-100">
+                        ${imgs.map((src, i) => `<img src="${src}" onclick="openLightbox(${i})" class="w-full ${imgs.length === 1 ? 'h-60' : 'h-28'} object-cover cursor-pointer hover:opacity-90 transition" loading="lazy">`).join('')}
+                    </div>
+                    ${imgs.length > 1 ? '<p class="text-[11px] txt-muted mt-1 text-center">คลิกที่รูปเพื่อเปิดดูขนาดใหญ่</p>' : ''}
+                </div>` : ''}
+            <div class="flex items-center space-x-2 text-xs font-medium mb-2" style="color:${moodColor(m.mood)}">
+                <span class="px-2.5 py-1 rounded-full text-sm" style="background:${moodColor(m.mood)}22">${escapeHtml(m.mood || '❤️')}</span>
+                <i data-lucide="calendar" class="w-4 h-4"></i><span>${formatDateThai(m.date)}</span>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-bold txt-title font-mitr mb-2 leading-tight pr-10">${escapeHtml(m.title)}</h2>
+            ${m.location ? `<div class="flex items-center text-xs text-rose-500 font-medium mb-4"><i data-lucide="map-pin" class="w-3.5 h-3.5 mr-1"></i><span>${escapeHtml(m.location)}</span></div>` : ''}
+            <div class="soft-box p-4 rounded-2xl text-sm txt-body leading-relaxed whitespace-pre-line mb-4">${escapeHtml(m.story)}</div>
+            ${near.length ? `
+                <div class="mb-4">
+                    <p class="text-xs font-medium text-rose-500 mb-2 flex items-center"><i data-lucide="heart" class="w-3.5 h-3.5 mr-1 fill-pink-400"></i> ความทรงจำแถวๆ นี้</p>
+                    <div class="flex flex-wrap gap-2">
+                        ${near.slice(0, 6).map(o => `<button onclick="openMemory('${o.id}')" class="list-item rounded-full px-3 py-1 text-xs txt-body">${escapeHtml(o.mood || '❤️')} ${escapeHtml(o.title)}</button>`).join('')}
+                    </div>
+                </div>` : ''}
+            <div class="flex flex-wrap justify-between items-center gap-2 pt-3 border-t border-pink-100">
+                <button onclick="resetPin('${m.id}')" class="text-xs txt-muted hover:text-rose-500 flex items-center"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5 mr-1"></i> ให้ระบบหาตำแหน่งใหม่</button>
+                <a href="index.html" class="text-xs font-medium text-pink-600 bg-pink-50 hover:bg-pink-100 px-3 py-1.5 rounded-full flex items-center"><i data-lucide="book-heart" class="w-3.5 h-3.5 mr-1"></i> ดูในไทม์ไลน์</a>
+            </div>`;
+        document.getElementById('memory-modal').classList.remove('hidden');
+        lucide.createIcons();
+    }
+    function closeMemory() { document.getElementById('memory-modal').classList.add('hidden'); }
+
+    function openLightbox(i) {
+        lbImages = memImages(currentMemory); lbIndex = i;
+        const lb = document.getElementById('lightbox'); lb.classList.remove('hidden'); lb.classList.add('flex');
+        showLb();
+    }
+    function showLb() {
+        document.getElementById('lb-img').src = lbImages[lbIndex];
+        document.getElementById('lb-count').textContent = `${lbIndex + 1} / ${lbImages.length}`;
+    }
+    function stepLightbox(d) { lbIndex = (lbIndex + d + lbImages.length) % lbImages.length; showLb(); }
+    function closeLightbox() { const lb = document.getElementById('lightbox'); lb.classList.add('hidden'); lb.classList.remove('flex'); }
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') { if (!document.getElementById('lightbox').classList.contains('hidden')) closeLightbox(); else if (placingId) cancelPlacing(); else closeMemory(); }
+        if (!document.getElementById('lightbox').classList.contains('hidden')) { if (e.key === 'ArrowLeft') stepLightbox(-1); if (e.key === 'ArrowRight') stepLightbox(1); }
+    });
+
+    /* =====================================================================
+       เริ่มทำงาน
+       ===================================================================== */
+    window.addEventListener('load', async () => {
+        lucide.createIcons();
+        const loadingText = document.getElementById('loading-text');
+        try {
+            const geo = await loadGeo();
+            drawMap(geo);
+        } catch (e) {
+            console.error(e);
+            loadingText.textContent = 'โหลดแผนที่ไม่สำเร็จ ลองรีเฟรชหน้านี้อีกครั้ง';
+            return;
+        }
+        loadingText.textContent = 'กำลังโหลดความทรงจำ...';
+        try {
+            await waitForFirebase();
+            memories = await window.firestoreApi.loadMemoriesFromFirestore();
+        } catch (e) {
+            console.error(e);
+            loadingText.textContent = 'โหลดความทรงจำไม่สำเร็จ: ' + e.message;
+            return;
+        }
+        document.getElementById('loading').style.display = 'none';
+        applyKnownPositions();
+        renderPins();
+        lucide.createIcons();
+        await resolveMissing();
+        renderPins();
+    });
+
+    /* เอฟเฟกต์หัวใจตามเมาส์ */
+    (function () {
+        const HEARTS = ['💗', '💕', '💖', '❤️']; let last = 0;
+        function spawn(x, y) {
+            const now = Date.now(); if (now - last < 60) return; last = now;
+            const el = document.createElement('div');
+            el.className = 'heart-trail'; el.textContent = HEARTS[Math.floor(Math.random() * HEARTS.length)];
+            el.style.left = x + 'px'; el.style.top = y + 'px';
+            document.body.appendChild(el); setTimeout(() => el.remove(), 900);
+        }
+        window.addEventListener('mousemove', (e) => { const lb = document.getElementById('lightbox'); if (lb && !lb.classList.contains('hidden')) return; spawn(e.clientX, e.clientY); });
+    })();
+    </script>
 </body>
 </html>
