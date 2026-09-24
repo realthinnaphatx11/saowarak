@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>จิ๊กซอว์ความทรงจำ - Our Love Story</title>
+<meta name="theme-color" content="#FFE8F1">
+<script>
+(function () {
+    try {
+        var saved = localStorage.getItem('theme_mode');
+        var dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (dark) document.documentElement.classList.add('dark');
+    } catch (e) {}
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Prompt:wght@300;400;500;600;700&family=Sacramento&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+:root{--ink:#4A3E3D;--sub:#8a7378;--card:rgba(255,255,255,.88);--line:rgba(255,182,193,.4);--tray:rgba(255,240,245,.8);--chip:#FFE3EF;--chipInk:#d6407e;--rim:#fff}
+html.dark{--ink:#F3E8EC;--sub:#B8A7B2;--card:rgba(44,31,48,.9);--line:rgba(255,143,184,.25);--tray:rgba(255,255,255,.05);--chip:rgba(255,111,165,.18);--chipInk:#FF9CC0;--rim:#3a2942;color-scheme:dark}
+body{font-family:'Prompt',sans-serif;color:var(--ink);background:linear-gradient(150deg,#FFE8F1 0%,#FFF3E6 30%,#FFEFD9 55%,#F1E9FB 80%,#E4F6F2 100%);background-attachment:fixed}
+html.dark body{background:linear-gradient(150deg,#1F1426 0%,#251824 30%,#241B22 55%,#1E1A2F 80%,#14232B 100%);background-attachment:fixed}
+html,body,button,a{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 32 32'%3E%3Cpath d='M16 28C16 28 4 20 4 12.5C4 8 7.5 5 11 5C13 5 15 6.2 16 8C17 6.2 19 5 21 5C24.5 5 28 8 28 12.5C28 20 16 28 16 28Z' fill='%23FF6FA5' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E") 15 15,auto}
+.font-cursive{font-family:'Sacramento',cursive}
+.glass-card{background:var(--card);backdrop-filter:blur(12px);border:1px solid var(--line);box-shadow:0 10px 30px rgba(255,182,193,.18)}
+html.dark .glass-card{box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.glass-nav{background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+html.dark .glass-nav{background:rgba(31,20,38,.92)}
+@keyframes heartPulse{0%{transform:scale(1)}14%{transform:scale(1.15)}28%{transform:scale(1)}42%{transform:scale(1.15)}70%{transform:scale(1)}}
+.animate-heart-pulse{animation:heartPulse 2.5s infinite}
+.pill{display:inline-flex;align-items:center;gap:.3rem;padding:.4rem .85rem;border-radius:9999px;font-size:.8rem;font-weight:500;background:var(--chip);color:var(--chipInk);transition:filter .15s,transform .15s}
+.pill:hover{filter:brightness(.96)}.pill:active{transform:scale(.95)}
+.pill.on{background:#FF6FA5;color:#fff}
+.pill.solid{background:linear-gradient(90deg,#FF6FA5,#FF9F5A);color:#fff;box-shadow:0 4px 12px rgba(255,111,165,.35)}
+.theme-toggle{width:2.25rem;height:2.25rem;display:inline-flex;align-items:center;justify-content:center;border-radius:9999px;background:#EDE7FB;color:#6D4BB3}
+.theme-toggle .icon-sun{display:none}
+html.dark .theme-toggle{background:rgba(255,200,69,.16);color:#FFD36B}
+html.dark .theme-toggle .icon-sun{display:block}html.dark .theme-toggle .icon-moon{display:none}
+/* puzzle */
+#stage{position:relative;margin:0 auto;user-select:none;-webkit-user-select:none}
+#board{position:absolute;border-radius:14px;background:var(--tray);border:2px dashed var(--line);overflow:hidden;
+ background-image:linear-gradient(to right,var(--line) 1px,transparent 1px),linear-gradient(to bottom,var(--line) 1px,transparent 1px)}
+#board canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.12;transition:opacity .8s}
+#stage.peek #board canvas{opacity:.5}
+#stage.done #board canvas{opacity:1}
+#stage.done #board{border-style:solid;border-color:#fff;box-shadow:0 8px 28px rgba(255,111,165,.35);background-image:none}
+#tray{position:absolute;left:0;right:0;border-radius:22px;background:var(--tray);border:2px dashed var(--line)}
+#tray-label{position:absolute;top:6px;left:0;right:0;text-align:center;font-size:.7rem;color:var(--sub);pointer-events:none}
+.piece{position:absolute;left:0;top:0;touch-action:none;will-change:transform;filter:drop-shadow(0 3px 4px rgba(120,60,90,.3))}
+.piece canvas{display:block}
+.piece.drag{filter:drop-shadow(0 10px 12px rgba(120,60,90,.4));transform-origin:center}
+.piece.snap{transition:transform .28s cubic-bezier(.3,1.5,.5,1)}
+.piece.placed{pointer-events:none;filter:none}
+#stage.done .piece{opacity:0;transition:opacity .6s .15s}
+.spark{position:absolute;pointer-events:none;font-size:18px;animation:spark .8s ease-out forwards;z-index:9999}
+@keyframes spark{0%{transform:translate(-50%,-50%) scale(.4);opacity:1}100%{transform:translate(-50%,-160%) scale(1.3) rotate(20deg);opacity:0}}
+.thumb{aspect-ratio:1;object-fit:cover;width:100%;border-radius:14px;border:3px solid #fff;box-shadow:0 3px 10px rgba(255,111,165,.25);transition:transform .15s}
+.thumb:hover{transform:scale(1.05) rotate(-1.5deg)}
+@media (prefers-reduced-motion:reduce){.animate-heart-pulse{animation:none}.piece.snap{transition:none}}
+</style>
+</head>
+<body class="min-h-screen pb-16">
+
+<header class="sticky top-0 z-40 glass-nav">
+  <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+    <a href="index.html" class="flex items-center space-x-2">
+      <div class="relative w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center shadow-inner" style="background:var(--chip)">
+        <i data-lucide="heart" class="w-6 h-6 fill-pink-400 stroke-pink-500 animate-heart-pulse"></i>
+        <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-300 flex items-center justify-center text-[9px] shadow">✨</span>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold bg-gradient-to-r from-pink-500 via-fuchsia-500 to-amber-500 bg-clip-text text-transparent font-mitr leading-tight">Our Love Story</h1>
+        <p class="text-xs text-pink-400 font-light">จิ๊กซอว์ความทรงจำ</p>
+      </div>
+    </a>
+    <div class="flex items-center space-x-2">
+      <a href="index.html" class="pill"><i data-lucide="heart" class="w-4 h-4"></i><span class="hidden sm:inline">ไทม์ไลน์</span></a>
+      <a href="marquee.html" class="pill" style="background:rgba(217,70,239,.14);color:#c026d3"><i data-lucide="images" class="w-4 h-4"></i><span class="hidden sm:inline">แกลเลอรีรูป</span></a>
+      <button id="theme-toggle" type="button" onclick="toggleTheme()" class="theme-toggle" aria-label="สลับโหมดมืด/สว่าง">
+        <i data-lucide="moon" class="icon-moon w-4 h-4"></i><i data-lucide="sun" class="icon-sun w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-3xl mx-auto px-4 pt-6">
+  <section class="text-center mb-4">
+    <p class="font-cursive text-4xl text-pink-400 leading-none">Memory Puzzle</p>
+    <h2 class="font-mitr text-2xl mt-1">จิ๊กซอว์ความทรงจำ</h2>
+    <p class="text-sm mt-1" style="color:var(--sub)">ลากชิ้นส่วนไปวางให้ครบ แล้วมาดูว่าวันนั้นคือวันอะไร 💕</p>
+  </section>
+
+  <div class="glass-card rounded-3xl p-4 sm:p-5">
+    <!-- ข้อมูลรูปที่สุ่มได้ -->
+    <div class="flex items-center justify-between gap-3 mb-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <div id="mood" class="w-11 h-11 shrink-0 rounded-full flex items-center justify-center text-2xl" style="background:var(--chip)">🧩</div>
+        <div class="min-w-0">
+          <div id="ev-title" class="font-mitr text-base truncate">กำลังโหลดความทรงจำ...</div>
+          <div id="ev-date" class="text-xs" style="color:var(--sub)">&nbsp;</div>
+        </div>
+      </div>
+      <div class="text-right shrink-0">
+        <div class="font-mitr text-lg tabular-nums" id="timer">00:00</div>
+        <div class="text-xs" style="color:var(--sub)"><span id="prog">0/0</span> ชิ้น</div>
+      </div>
+    </div>
+
+    <!-- ปุ่มควบคุม -->
+    <div class="flex flex-wrap items-center gap-2 mb-4">
+      <button class="pill solid" onclick="randomPhoto()"><i data-lucide="shuffle" class="w-4 h-4"></i>สุ่มรูปใหม่</button>
+      <button class="pill" onclick="openPicker()"><i data-lucide="image" class="w-4 h-4"></i>เลือกเอง</button>
+      <button class="pill" onclick="document.getElementById('upl').click()"><i data-lucide="upload" class="w-4 h-4"></i>รูปอื่น</button>
+      <input id="upl" type="file" accept="image/*" class="hidden" onchange="onUpload(this)">
+      <span class="flex-1"></span>
+      <div class="inline-flex gap-1 p-1 rounded-full" style="background:var(--tray)" id="levels"></div>
+      <button id="peek" class="pill" onclick="togglePeek()"><i data-lucide="eye" class="w-4 h-4"></i>ดูตัวอย่าง</button>
+      <button class="pill" onclick="hint()"><i data-lucide="lightbulb" class="w-4 h-4"></i>ช่วยหน่อย</button>
+    </div>
+
+    <div id="wrap" class="w-full">
+      <div id="stage"></div>
+    </div>
+    <p id="msg" class="text-center text-sm mt-3" style="color:var(--sub)"></p>
+
+    <!-- ผลลัพธ์ -->
+    <div id="result" class="hidden mt-5 rounded-2xl p-4 text-center" style="background:var(--tray);border:1px solid var(--line)">
+      <div class="font-cursive text-3xl text-pink-400 leading-none">Well done!</div>
+      <div class="font-mitr text-lg mt-1" id="r-title"></div>
+      <div class="text-xs mb-2" style="color:var(--sub)" id="r-date"></div>
+      <p class="text-sm italic leading-relaxed max-w-md mx-auto" id="r-story"></p>
+      <div class="text-xs mt-3" id="r-time" style="color:var(--chipInk)"></div>
+      <div class="flex justify-center gap-2 mt-3">
+        <button class="pill solid" onclick="randomPhoto()"><i data-lucide="shuffle" class="w-4 h-4"></i>เล่นรูปต่อไป</button>
+        <a class="pill" href="index.html"><i data-lucide="heart" class="w-4 h-4"></i>กลับไปดูไทม์ไลน์</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- เลือกรูปเอง -->
+<div id="picker" class="hidden fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="if(event.target===this)closePicker()">
+  <div class="glass-card w-full sm:max-w-2xl max-h-[85vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl p-4" style="background:var(--card)">
+    <div class="flex justify-between items-center mb-3">
+      <h3 class="font-mitr text-lg">เลือกรูปที่อยากต่อ</h3>
+      <button class="pill" onclick="closePicker()"><i data-lucide="x" class="w-4 h-4"></i>ปิด</button>
+    </div>
+    <div id="picker-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-3"></div>
+  </div>
+</div>
+
+<!-- Firebase (ใช้ไฟล์ชุดเดียวกับหน้าไทม์ไลน์) -->
+<script src="./firebase-config.js"></script>
+<script>try { window.firebaseConfig = firebaseConfig; } catch (e) {}</script>
+<script type="module" src="./firebase-app.js"></script>
+
+<script>
+const LEVELS = [{k:3,t:'ง่าย'},{k:4,t:'กลาง'},{k:5,t:'ยาก'}];
+const S = { cols: 3, photo: null, img: null, pieces: [], placed: 0, t0: 0, tick: null, z: 10, all: [], lastW: 0 };
+const $ = id => document.getElementById(id);
+const stage = $('stage'), wrap = $('wrap');
+const esc = s => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const MONTHS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+function dateTh(s) { const d = new Date(s); return isNaN(d) ? (s || '') : `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear() + 543}`; }
+
+/* ---------- ธีมมืด ---------- */
+function toggleTheme() {
+    const dark = document.documentElement.classList.toggle('dark');
+    try { localStorage.setItem('theme_mode', dark ? 'dark' : 'light'); } catch (e) {}
+}
+
+/* ---------- โหลดรูปจากเหตุการณ์ ---------- */
+function waitForFirebase() {
+    return new Promise(res => {
+        if (window.firestoreApi) return res(true);
+        window.addEventListener('firebase-ready', () => res(true), { once: true });
+        setTimeout(() => res(!!window.firestoreApi), 8000);
+    });
+}
+async function init() {
+    lucide.createIcons();
+    renderLevels();
+    const ok = await waitForFirebase();
+    let memories = [];
+    if (ok) { try { memories = await window.firestoreApi.loadMemoriesFromFirestore(); } catch (e) { console.error(e); } }
+    S.all = [];
+    memories.forEach(m => {
+        const imgs = m.images || (m.image ? [m.image] : []);
+        imgs.forEach((src, i) => src && S.all.push({ src, mem: m, i }));
+    });
+    if (!S.all.length) {
+        $('ev-title').textContent = 'ยังไม่มีรูปจากเหตุการณ์';
+        $('msg').textContent = ok ? 'เพิ่มรูปในไทม์ไลน์ก่อน หรือกด "รูปอื่น" เพื่อลองต่อรูปจากเครื่องได้เลย' : 'เชื่อมต่อ Firebase ไม่ได้ ลองกด "รูปอื่น" เพื่อเล่นด้วยรูปจากเครื่องได้เลย';
+        return;
+    }
+    randomPhoto();
+}
+
+function randomPhoto() {
+    if (!S.all.length) { $('upl').click(); return; }
+    // สุ่มเหตุการณ์ก่อน แล้วค่อยสุ่มรูปหนึ่งรูปในเหตุการณ์นั้น (เหตุการณ์รูปเยอะจะไม่ได้เปรียบ)
+    const groups = [...new Set(S.all.map(p => p.mem))].filter(m => !S.photo || m !== S.photo.mem || S.all.length < 2);
+    const mem = groups[Math.floor(Math.random() * groups.length)] || S.all[0].mem;
+    const opts = S.all.filter(p => p.mem === mem);
+    usePhoto(opts[Math.floor(Math.random() * opts.length)]);
+}
+function usePhoto(p) {
+    S.photo = p;
+    const m = p.mem;
+    $('mood').textContent = m.mood || '❤️';
+    $('ev-title').textContent = m.title || 'ความทรงจำของเรา';
+    $('ev-date').textContent = dateTh(m.date);
+    $('msg').textContent = 'กำลังเตรียมจิ๊กซอว์...';
+    const img = new Image();
+    img.onload = () => { S.img = img; build(); };
+    img.onerror = () => { $('msg').textContent = 'โหลดรูปนี้ไม่ได้ ลองสุ่มใหม่อีกครั้งนะ'; };
+    img.src = p.src;
+    closePicker();
+}
+function onUpload(inp) {
+    const f = inp.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => usePhoto({ src: r.result, mem: { title: 'รูปที่เลือกเอง', mood: '📷', date: '', story: '' }, i: 0 });
+    r.readAsDataURL(f); inp.value = '';
+}
+
+/* ---------- ตัวเลือกความยาก / ตัวช่วย ---------- */
+function renderLevels() {
+    $('levels').innerHTML = LEVELS.map(l => `<button class="pill ${l.k === S.cols ? 'on' : ''}" onclick="setLevel(${l.k})">${l.t}</button>`).join('');
+}
+function setLevel(k) { S.cols = k; renderLevels(); if (S.img) build(); }
+function togglePeek() { const on = stage.classList.toggle('peek'); $('peek').classList.toggle('on', on); }
+function openPicker() {
+    if (!S.all.length) { $('upl').click(); return; }
+    const list = [...S.all].sort((a, b) => String(b.mem.date).localeCompare(String(a.mem.date)));
+    $('picker-grid').innerHTML = list.map((p, n) => `<button onclick="usePhoto(S.all[${S.all.indexOf(p)}])" class="text-left"><img class="thumb" loading="lazy" decoding="async" src="${p.src}" alt=""><div class="text-[11px] mt-1 truncate">${p.mem.mood || ''} ${esc(p.mem.title)}</div></button>`).join('');
+    $('picker').classList.remove('hidden');
+}
+function closePicker() { $('picker').classList.add('hidden'); }
+function hint() {
+    const left = S.pieces.filter(p => !p.placed);
+    if (!left.length) return;
+    const p = left[Math.floor(Math.random() * left.length)];
+    startTimer(); snapTo(p);
+}
+
+/* ---------- วาดขอบจิ๊กซอว์ (ปุ่มกลม ๆ น่ารัก) ---------- */
+const KNOB = [[.38,0],[.38,.06,.30,.10,.32,.17],[.34,.25,.44,.27,.5,.27],[.56,.27,.66,.25,.68,.17],[.70,.10,.62,.06,.62,0]];
+function buildPath(t, e, ox, oy, cw, ch, m) {
+    const c = [[ox, oy], [ox + cw, oy], [ox + cw, oy + ch], [ox, oy + ch]];
+    const sides = [e.top, e.right, e.bottom, e.left];
+    t.moveTo(c[0][0], c[0][1]);
+    for (let i = 0; i < 4; i++) {
+        const a = c[i], b = c[(i + 1) % 4], L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+        const dx = (b[0] - a[0]) / L, dy = (b[1] - a[1]) / L, nx = dy, ny = -dx, s = sides[i];
+        const P = (x, y) => [a[0] + dx * x * L + nx * y * m * s, a[1] + dy * x * L + ny * y * m * s];
+        if (s) {
+            let p = P(.38, 0); t.lineTo(p[0], p[1]);
+            for (let k = 1; k < 5; k++) {
+                const q = KNOB[k], c1 = P(q[0], q[1]), c2 = P(q[2], q[3]), e2 = P(q[4], q[5]);
+                t.bezierCurveTo(c1[0], c1[1], c2[0], c2[1], e2[0], e2[1]);
+            }
+        }
+        t.lineTo(b[0], b[1]);
+    }
+    t.closePath();
+}
+
+/* ---------- สร้างเกม ---------- */
+function build() {
+    clearInterval(S.tick); S.tick = null; S.placed = 0; S.t0 = 0;
+    $('timer').textContent = '00:00'; $('result').classList.add('hidden'); $('msg').textContent = 'ลากชิ้นส่วนจากถาดไปวางบนกรอบด้านบนได้เลย';
+    stage.className = ''; stage.innerHTML = '';
+    if ($('peek').classList.contains('on')) stage.classList.add('peek');
+
+    const cols = S.cols, img = S.img, dpr = Math.min(2, window.devicePixelRatio || 1);
+    S.lastW = wrap.clientWidth;
+    const bw = Math.min(S.lastW / (1 + .68 / cols), 500);
+    const asp = Math.min(1.333, Math.max(.75, img.width / img.height));
+    const cw = bw / cols, rows = Math.max(2, Math.round(bw / asp / cw)), ch = bw / asp / rows, m = Math.min(cw, ch);
+    const pad = Math.round(m * .34), bh = ch * rows, W = bw + pad * 2, Wp = cw + pad * 2, Hp = ch + pad * 2;
+    stage.style.width = W + 'px';
+
+    // ภาพต้นฉบับ (ครอปให้พอดีกรอบ เอียงขึ้นบนนิดหน่อยจะได้ไม่ตัดหน้า)
+    const sc = document.createElement('canvas'); sc.width = bw * dpr; sc.height = bh * dpr;
+    let sw = img.width, sh = img.height, sx = 0, sy = 0;
+    if (img.width / img.height > bw / bh) { sw = img.height * bw / bh; sx = (img.width - sw) / 2; }
+    else { sh = img.width * bh / bw; sy = (img.height - sh) * .35; }
+    sc.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, sc.width, sc.height);
+
+    const board = document.createElement('div'); board.id = 'board';
+    Object.assign(board.style, { left: pad + 'px', top: pad + 'px', width: bw + 'px', height: bh + 'px', backgroundSize: `${cw}px ${ch}px` });
+    board.appendChild(sc); stage.appendChild(board);
+
+    // ถาดวางชิ้นส่วน
+    const n = cols * rows, tcols = Math.max(1, Math.floor(W / (cw * .85))), trows = Math.ceil(n / tcols);
+    const trayTop = pad * 2 + bh + 10, trayH = trows * ch * .9 + pad * 2 + 18;
+    const tray = document.createElement('div'); tray.id = 'tray';
+    Object.assign(tray.style, { top: trayTop + 'px', height: trayH + 'px' });
+    tray.innerHTML = '<div id="tray-label">ถาดจิ๊กซอว์</div>'; stage.appendChild(tray);
+    stage.style.height = trayTop + trayH + 'px';
+
+    // ปุ่ม/ช่องว่างของแต่ละขอบ (1 = ปุ่มยื่นออก, -1 = รอยเว้า, 0 = ขอบตรง)
+    const rnd = () => Math.random() < .5 ? 1 : -1;
+    const R = Array.from({ length: rows }, () => Array.from({ length: cols - 1 }, rnd));
+    const D = Array.from({ length: rows - 1 }, () => Array.from({ length: cols }, rnd));
+    const slots = [...Array(n).keys()].sort(() => Math.random() - .5);
+    S.pieces = [];
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+        const e = { top: r ? -D[r - 1][c] : 0, bottom: r < rows - 1 ? D[r][c] : 0, left: c ? -R[r][c - 1] : 0, right: c < cols - 1 ? R[r][c] : 0 };
+        const cv = document.createElement('canvas'); cv.width = Wp * dpr; cv.height = Hp * dpr;
+        cv.style.width = Wp + 'px'; cv.style.height = Hp + 'px';
+        const x = cv.getContext('2d'); x.scale(dpr, dpr);
+        const path = new Path2D(); buildPath(path, e, pad, pad, cw, ch, m);
+        x.save(); x.clip(path);
+        x.drawImage(sc, pad - c * cw, pad - r * ch, bw, bh);
+        x.lineWidth = 5; x.strokeStyle = 'rgba(255,255,255,.7)'; x.stroke(path);
+        x.restore();
+        x.lineWidth = 1.2; x.strokeStyle = 'rgba(214,64,126,.45)'; x.stroke(path);
+
+        const el = document.createElement('div'); el.className = 'piece'; el.appendChild(cv); stage.appendChild(el);
+        const slot = slots.pop(), jx = (Math.random() - .5) * cw * .25, jy = (Math.random() - .5) * ch * .2;
+        const px = tcols > 1 ? (slot % tcols) * (W - Wp) / (tcols - 1) : (W - Wp) / 2;
+        const p = { r, c, el, path, w: Wp, h: Hp, tx: c * cw, ty: r * ch, snapD: m * .35,
+            x: Math.max(0, Math.min(W - Wp, px + jx)), y: trayTop + 14 + Math.floor(slot / tcols) * ch * .9 + jy, z: ++S.z, placed: false };
+        el.style.zIndex = p.z; S.pieces.push(p); move(p);
+    }
+    $('prog').textContent = `0/${n}`;
+}
+function move(p) { p.el.style.transform = `translate(${p.x}px,${p.y}px)`; }
+
+/* ---------- ลากวาง ---------- */
+const sctx = document.createElement('canvas').getContext('2d');
+let drag = null;
+stage.addEventListener('pointerdown', e => {
+    if (e.button > 0 && e.pointerType === 'mouse') return;
+    const rc = stage.getBoundingClientRect(), mx = e.clientX - rc.left, my = e.clientY - rc.top;
+    const hit = S.pieces.filter(p => !p.placed).sort((a, b) => b.z - a.z).find(p => sctx.isPointInPath(p.path, mx - p.x, my - p.y));
+    if (!hit) return;
+    e.preventDefault(); stage.setPointerCapture(e.pointerId);
+    hit.z = ++S.z; hit.el.style.zIndex = hit.z; hit.el.classList.remove('snap'); hit.el.classList.add('drag');
+    drag = { p: hit, ox: mx - hit.x, oy: my - hit.y };
+    startTimer();
+});
+stage.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const rc = stage.getBoundingClientRect(), p = drag.p;
+    p.x = Math.max(0, Math.min(rc.width - p.w, e.clientX - rc.left - drag.ox));
+    p.y = Math.max(0, Math.min(rc.height - p.h, e.clientY - rc.top - drag.oy));
+    move(p);
+});
+function endDrag() {
+    if (!drag) return; const p = drag.p; drag = null;
+    p.el.classList.remove('drag');
+    if (Math.hypot(p.x - p.tx, p.y - p.ty) < p.snapD) snapTo(p);
+}
+stage.addEventListener('pointerup', endDrag);
+stage.addEventListener('pointercancel', endDrag);
+
+function snapTo(p) {
+    p.placed = true; p.x = p.tx; p.y = p.ty; p.z = 1; p.el.style.zIndex = 1;
+    p.el.classList.add('snap', 'placed'); move(p);
+    const s = document.createElement('span'); s.className = 'spark'; s.textContent = ['✨', '💗', '⭐'][Math.floor(Math.random() * 3)];
+    s.style.left = (p.tx + p.w / 2) + 'px'; s.style.top = (p.ty + p.h / 2) + 'px';
+    stage.appendChild(s); setTimeout(() => s.remove(), 850);
+    S.placed++; $('prog').textContent = `${S.placed}/${S.pieces.length}`;
+    if (S.placed === S.pieces.length) win();
+}
+
+/* ---------- จับเวลา / จบเกม ---------- */
+const fmt = t => `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
+function startTimer() {
+    if (S.tick) return; S.t0 = Date.now();
+    S.tick = setInterval(() => $('timer').textContent = fmt(Math.floor((Date.now() - S.t0) / 1000)), 500);
+}
+function win() {
+    clearInterval(S.tick); S.tick = null;
+    const secs = S.t0 ? Math.floor((Date.now() - S.t0) / 1000) : 0;
+    $('timer').textContent = fmt(secs);
+    stage.classList.add('done'); stage.classList.remove('peek');
+    const m = S.photo.mem;
+    $('r-title').textContent = `${m.mood || '❤️'} ${m.title || ''}`;
+    $('r-date').textContent = dateTh(m.date);
+    $('r-story').textContent = m.story ? `"${m.story.length > 220 ? m.story.slice(0, 220) + '…' : m.story}"` : '';
+    let best = '', key = 'puzzle_best_' + S.cols;
+    try {
+        const old = +localStorage.getItem(key) || 0;
+        if (!old || secs < old) { localStorage.setItem(key, secs); best = old ? ' 🎉 สถิติใหม่!' : ''; }
+        else best = ` (สถิติที่ดีที่สุด ${fmt(old)})`;
+    } catch (e) {}
+    $('r-time').textContent = `ใช้เวลา ${fmt(secs)}${best}`;
+    $('msg').textContent = '';
+    setTimeout(() => {
+        $('result').classList.remove('hidden'); lucide.createIcons();
+        $('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 900);
+    const cols = ['#FF6FA5', '#FFC845', '#A374DB', '#5AC8E8', '#5ED1A6'];
+    confetti({ particleCount: 90, spread: 80, origin: { y: .6 }, colors: cols });
+    setTimeout(() => confetti({ particleCount: 60, angle: 60, spread: 60, origin: { x: 0, y: .7 }, colors: cols }), 250);
+    setTimeout(() => confetti({ particleCount: 60, angle: 120, spread: 60, origin: { x: 1, y: .7 }, colors: cols }), 250);
+}
+
+/* ---------- ปรับขนาดหน้าจอ ---------- */
+let rt; window.addEventListener('resize', () => {
+    clearTimeout(rt);
+    rt = setTimeout(() => { if (S.img && !stage.classList.contains('done') && Math.abs(wrap.clientWidth - S.lastW) > 30) build(); }, 300);
+});
+init();
+</script>
+</body>
+</html>
