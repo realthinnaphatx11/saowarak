@@ -549,7 +549,7 @@
     </div>
 
     <div id="random-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-opacity">
-        <div class="glass-card bg-white/95 rounded-3xl max-w-md w-full p-6 shadow-2xl relative border-2 border-amber-200 text-center">
+        <div class="glass-card bg-white/95 rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl relative border-2 border-amber-200 text-center">
             <button onclick="closeRandomModal()" class="absolute top-3 right-3 text-gray-400 hover:text-amber-500 p-1 rounded-full hover:bg-amber-50 transition">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
@@ -564,6 +564,9 @@
                 <!-- Content here -->
             </div>
 
+            <button id="random-detail-btn" onclick="openRandomMemoryDetail()" class="w-full mb-2 py-2 bg-white hover:bg-pink-50 text-pink-600 border border-pink-200 rounded-xl text-sm font-medium transition">
+                📖 ดูแบบเต็ม (รูปและเรื่องราวทั้งหมด)
+            </button>
             <div class="flex gap-2">
                 <button onclick="openRandomMemoryModal()" class="flex-1 py-2 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-xl text-sm font-medium transition">
                     🔄 สุ่มอีกรอบ
@@ -1304,25 +1307,45 @@
         });
 
         // --- Random Memory Feature ---
+        let currentRandomMemoryId = null;
+
         function openRandomMemoryModal() {
             if (memories.length === 0) {
                 alert('ยังไม่มีบันทึกความทรงจำเลย ลองเพิ่มความทรงจำก่อนนะ!');
                 return;
             }
 
-            const randomIndex = Math.floor(Math.random() * memories.length);
-            const randomMem = memories[randomIndex];
+            // Avoid showing the same memory twice in a row (when there is more than one)
+            let randomMem;
+            do {
+                randomMem = memories[Math.floor(Math.random() * memories.length)];
+            } while (memories.length > 1 && randomMem.id === currentRandomMemoryId);
+            currentRandomMemoryId = randomMem.id;
+
             const images = randomMem.images || (randomMem.image ? [randomMem.image] : []);
+
+            const imagesHtml = images.length === 0 ? '' : `
+                <div class="relative mb-3 cursor-pointer" onclick="openLightboxFromCard('${randomMem.id}', 0)">
+                    <img src="${images[0]}" class="w-full max-h-64 object-cover rounded-xl border border-pink-100 hover:opacity-90 transition">
+                    ${images.length > 1 ? `<span class="absolute bottom-2 right-2 bg-black/60 text-white text-[11px] px-2 py-0.5 rounded-full">+${images.length - 1} รูป</span>` : ''}
+                </div>
+                ${images.length > 1 ? `
+                    <div class="grid grid-cols-4 gap-1.5 mb-3">
+                        ${images.slice(1).map((img, i) => `
+                            <img src="${img}" onclick="openLightboxFromCard('${randomMem.id}', ${i + 1})" class="w-full h-16 object-cover rounded-lg cursor-pointer hover:opacity-80 transition border border-pink-100">
+                        `).join('')}
+                    </div>` : ''}
+                <p class="text-[11px] text-gray-400 -mt-1 mb-3">แตะที่รูปเพื่อดูขนาดเต็ม</p>
+            `;
 
             const html = `
                 <div class="text-center">
                     <div class="text-2xl mb-1">${randomMem.mood || '❤️'}</div>
                     <span class="text-xs text-pink-500 font-medium block mb-1">${formatDateThai(randomMem.date)}</span>
                     <h4 class="text-base font-bold text-gray-800 font-mitr mb-2">${escapeHtml(randomMem.title)}</h4>
-                    ${images.length > 0 ? `<img src="${images[0]}" class="w-full h-36 object-cover rounded-xl mb-3 border border-pink-100">` : ''}
-                    <p class="text-xs text-gray-600 line-clamp-4 leading-relaxed italic text-left">
-                        "${escapeHtml(randomMem.story)}"
-                    </p>
+                    ${randomMem.location ? `<div class="text-xs text-rose-500 mb-2">📍 ${escapeHtml(randomMem.location)}</div>` : ''}
+                    ${imagesHtml}
+                    <p class="text-xs text-gray-600 leading-relaxed italic text-left whitespace-pre-line break-words">${escapeHtml(randomMem.story)}</p>
                 </div>
             `;
 
@@ -1330,6 +1353,13 @@
             document.getElementById('random-modal').classList.remove('hidden');
 
             confetti({ particleCount: 30, spread: 50, origin: { y: 0.5 } });
+        }
+
+        function openRandomMemoryDetail() {
+            if (!currentRandomMemoryId) return;
+            const id = currentRandomMemoryId;
+            closeRandomModal();
+            openDetailModal(id);
         }
 
         function closeRandomModal() {
