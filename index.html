@@ -6,6 +6,9 @@
     <title>Our Love Story - เส้นทางความทรงจำของเรา</title>
     <meta name="theme-color" content="#FFE8F1">
 
+    <!-- Favicon: หัวใจไล่สีชมพู-ส้มพร้อมประกาย ให้เข้ากับโลโก้ในหัวเว็บ -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cdefs%3E%3ClinearGradient%20id='g'%20x1='0'%20y1='0'%20x2='1'%20y2='1'%3E%3Cstop%20offset='0'%20stop-color='%23FF6FA5'/%3E%3Cstop%20offset='1'%20stop-color='%23FF9F5A'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle%20cx='32'%20cy='32'%20r='30'%20fill='%23FFF0F5'/%3E%3Cpath%20d='M32%2050C32%2050%2010%2036%2010%2021C10%2013%2016%208%2022%208C26%208%2030%2010%2032%2014C34%2010%2038%208%2042%208C48%208%2054%2013%2054%2021C54%2036%2032%2050%2032%2050Z'%20fill='url(%23g)'/%3E%3Ccircle%20cx='47'%20cy='14'%20r='4'%20fill='%23FFC845'/%3E%3C/svg%3E">
+
     <!-- Dark mode: ตั้งค่าธีมก่อนหน้าเว็บวาดเสร็จ จะได้ไม่กะพริบ (จำค่าที่เลือก หรือใช้ตามระบบ) -->
     <script>
         (function () {
@@ -204,6 +207,13 @@
         html.dark .bg-purple-100 { background-color: rgba(168, 85, 247, 0.2); }
         html.dark .bg-emerald-100 { background-color: rgba(16, 185, 129, 0.18); }
         html.dark .bg-red-50 { background-color: rgba(239, 68, 68, 0.14); }
+        html.dark .bg-rose-100 { background-color: rgba(255, 111, 165, 0.16); }
+        html.dark .hover\:bg-rose-200:hover { background-color: rgba(255, 111, 165, 0.28); }
+        html.dark .bg-rose-50\/50 { background-color: rgba(255, 143, 184, 0.08); }
+        html.dark .hover\:bg-rose-50:hover { background-color: rgba(255, 143, 184, 0.14); }
+        html.dark .text-rose-700 { color: #FFA3C4; }
+        html.dark .border-rose-100 { border-color: rgba(255, 143, 184, 0.24); }
+        html.dark .border-rose-200 { border-color: rgba(255, 143, 184, 0.28); }
         html.dark .border-white { border-color: #251824; } /* วงกลมบนไทม์ไลน์ */
 
         /* เส้นขอบ */
@@ -259,9 +269,40 @@
         @media (prefers-reduced-motion: reduce) {
             .theme-toggle { transition: none; }
         }
+
+        /* Page loader: โชว์ระหว่างรอโหลดข้อมูลจาก Firebase */
+        #page-loader {
+            position: fixed; inset: 0; z-index: 200;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(150deg, #FFE8F1 0%, #FFF3E6 30%, #FFEFD9 55%, #F1E9FB 80%, #E4F6F2 100%);
+            transition: opacity .4s ease, visibility .4s ease;
+        }
+        #page-loader.loader-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        html.dark #page-loader {
+            background: linear-gradient(150deg, #1F1426 0%, #251824 30%, #241B22 55%, #1E1A2F 80%, #14232B 100%);
+        }
+        .loader-heart {
+            width: 3.5rem; height: 3.5rem; border-radius: 9999px;
+            background: #FFE3EF; display: flex; align-items: center; justify-content: center;
+            color: #FF6FA5; margin: 0 auto 0.75rem;
+        }
+        html.dark .loader-heart { background: rgba(255, 111, 165, 0.16); color: #FF8FB8; }
+        @media (prefers-reduced-motion: reduce) {
+            #page-loader { transition: none; }
+        }
     </style>
 </head>
 <body class="min-h-screen pb-16">
+
+    <!-- Loading Overlay: ซ่อนอัตโนมัติทันทีที่โหลดความทรงจำเสร็จ -->
+    <div id="page-loader" role="status" aria-live="polite">
+        <div class="text-center">
+            <div class="loader-heart animate-heart-pulse">
+                <i data-lucide="heart" class="w-7 h-7 fill-current"></i>
+            </div>
+            <p class="text-sm text-pink-500 font-medium font-mitr">กำลังโหลดความทรงจำของเรา...</p>
+        </div>
+    </div>
 
     <header class="sticky top-0 z-40 glass-nav transition-all duration-300 overflow-hidden">
         <!-- Decorative floating symbols -->
@@ -298,6 +339,15 @@
                 <button onclick="openRandomMemoryModal()" class="px-3 py-1.5 text-xs sm:text-sm bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-full font-medium transition duration-200 flex items-center shadow-sm">
                     <i data-lucide="sparkles" class="w-4 h-4 mr-1 text-amber-500"></i>
                     <span class="hidden sm:inline">สุ่มความทรงจำ</span>
+                </button>
+                <button onclick="openOnThisDayModal()" id="on-this-day-btn" class="relative px-3 py-1.5 text-xs sm:text-sm bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-full font-medium transition duration-200 flex items-center shadow-sm">
+                    <i data-lucide="history" class="w-4 h-4 mr-1 text-rose-500"></i>
+                    <span class="hidden sm:inline">วันนี้เมื่อปีก่อน</span>
+                    <span id="on-this-day-badge" class="hidden absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-rose-500 border-2 border-white"></span>
+                </button>
+                <button id="music-toggle" type="button" onclick="toggleMusic()" class="theme-toggle" aria-pressed="false" aria-label="เปิดเพลงประกอบ" title="เปิด/ปิดเพลงประกอบ">
+                    <i data-lucide="music" class="icon-music-off w-4 h-4"></i>
+                    <i data-lucide="volume-2" class="icon-music-on w-4 h-4 hidden"></i>
                 </button>
                 <button id="theme-toggle" type="button" onclick="toggleTheme()" class="theme-toggle" aria-pressed="false" aria-label="สลับเป็นโหมดมืด" title="สลับเป็นโหมดมืด">
                     <i data-lucide="moon" class="icon-moon w-4 h-4"></i>
@@ -578,6 +628,28 @@
         </div>
     </div>
 
+    <!-- On This Day Modal -->
+    <div id="on-this-day-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-opacity">
+        <div class="glass-card bg-white/95 rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl relative border-2 border-rose-200 text-center">
+            <button onclick="closeOnThisDayModal()" class="absolute top-3 right-3 text-gray-400 hover:text-rose-500 p-1 rounded-full hover:bg-rose-50 transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="w-12 h-12 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i data-lucide="history" class="w-6 h-6"></i>
+            </div>
+
+            <h3 class="text-xs font-bold text-rose-600 uppercase tracking-wider mb-1">วันนี้เมื่อปีก่อน ✨</h3>
+            <p id="on-this-day-date" class="text-[11px] text-gray-400 mb-3"></p>
+
+            <div id="on-this-day-content" class="my-2 text-left"></div>
+
+            <button onclick="closeOnThisDayModal()" class="w-full mt-2 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-sm font-medium transition">
+                ปิดหน้าต่าง
+            </button>
+        </div>
+    </div>
+
     <div id="settings-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
         <div class="glass-card bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl relative border-2 border-pink-200">
             <button onclick="closeSettingsModal()" class="absolute top-3 right-3 text-gray-400 hover:text-pink-500 p-1">
@@ -607,6 +679,11 @@
             </div>
         </div>
     </div>
+
+    <!-- เพลงประกอบ: วางไฟล์เพลงของคุณไว้ชื่อ bgm.mp3 ในโฟลเดอร์เดียวกับ index.html (หรือแก้ path ด้านล่างตามต้องการ) -->
+    <audio id="bgm-audio" loop preload="none">
+        <source src="./bgm.mp3" type="audio/mpeg">
+    </audio>
 
     <!-- Firebase: config -> window.firebaseConfig -> firebase-app.js (module) -->
     <script src="./firebase-config.js"></script>
@@ -646,12 +723,24 @@
             loadSettings();
             calculateDaysTogether();
             renderMemories();
+            initMusicToggle();
             lucide.createIcons();
-            await waitForFirebase();
-            await loadMemories();
-            renderMemories();
-            lucide.createIcons();
+            try {
+                await waitForFirebase();
+                await loadMemories();
+            } finally {
+                renderMemories();
+                lucide.createIcons();
+                checkOnThisDay();
+                hidePageLoader();
+            }
         };
+
+        // --- Page Loader ---
+        function hidePageLoader() {
+            const loader = document.getElementById('page-loader');
+            if (loader) loader.classList.add('loader-hidden');
+        }
 
         function scrollToTop() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1364,6 +1453,109 @@
 
         function closeRandomModal() {
             document.getElementById('random-modal').classList.add('hidden');
+        }
+
+        // --- On This Day Feature ---
+        // หาความทรงจำเก่าที่ตรงกับ วัน+เดือน ของวันนี้ (คนละปี) เหมือนฟีเจอร์ "ความทรงจำ" ของ Facebook
+        function getOnThisDayMemories() {
+            const today = new Date();
+            return memories
+                .filter(m => {
+                    const d = new Date(m.date);
+                    if (isNaN(d.getTime())) return false;
+                    return d.getDate() === today.getDate() &&
+                        d.getMonth() === today.getMonth() &&
+                        d.getFullYear() !== today.getFullYear();
+                })
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+        }
+
+        // เช็กเงียบๆ ตอนโหลดหน้า ถ้ามีความทรงจำวันนี้เมื่อปีก่อน จะขึ้นจุดแดงเตือนที่ปุ่ม (ไม่เด้ง popup กวนใจ)
+        function checkOnThisDay() {
+            const badge = document.getElementById('on-this-day-badge');
+            if (!badge) return;
+            const hasMatch = getOnThisDayMemories().length > 0;
+            badge.classList.toggle('hidden', !hasMatch);
+        }
+
+        function openOnThisDayModal() {
+            const today = new Date();
+            const matches = getOnThisDayMemories();
+            const content = document.getElementById('on-this-day-content');
+            document.getElementById('on-this-day-date').innerText = formatDateThai(today.toISOString().slice(0, 10));
+
+            if (matches.length === 0) {
+                content.innerHTML = `
+                    <div class="text-center py-4">
+                        <div class="text-3xl mb-2">🕰️</div>
+                        <p class="text-sm text-gray-500">วันนี้ยังไม่มีความทรงจำเก่าที่ตรงกันเลย<br>ลองเพิ่มความทรงจำวันนี้ไว้ เผื่อปีหน้าได้ย้อนกลับมาดูกันนะ</p>
+                    </div>
+                `;
+            } else {
+                content.innerHTML = matches.map(m => {
+                    const images = m.images || (m.image ? [m.image] : []);
+                    const yearsAgo = today.getFullYear() - new Date(m.date).getFullYear();
+                    return `
+                        <div class="bg-rose-50/50 p-4 rounded-2xl border border-rose-100 mb-3 cursor-pointer hover:shadow-md transition" onclick="closeOnThisDayModal(); openDetailModal('${m.id}');">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-semibold text-rose-600 bg-rose-100 px-2.5 py-0.5 rounded-full">${yearsAgo} ปีที่แล้ว</span>
+                                <span class="text-lg">${m.mood || '❤️'}</span>
+                            </div>
+                            ${images.length > 0 ? `<img src="${images[0]}" alt="${escapeHtml(m.title)}" class="w-full h-36 object-cover rounded-xl mb-2 border border-rose-100">` : ''}
+                            <h4 class="text-sm font-bold text-gray-800 font-mitr mb-1">${escapeHtml(m.title)}</h4>
+                            <p class="text-xs text-gray-600 line-clamp-2 leading-relaxed">${escapeHtml(m.story)}</p>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            document.getElementById('on-this-day-modal').classList.remove('hidden');
+            lucide.createIcons();
+            if (matches.length > 0) confetti({ particleCount: 40, spread: 55, origin: { y: 0.4 } });
+        }
+
+        function closeOnThisDayModal() {
+            document.getElementById('on-this-day-modal').classList.add('hidden');
+        }
+
+        // --- Background Music Toggle ---
+        const MUSIC_KEY = 'bgm_enabled';
+
+        function initMusicToggle() {
+            let enabled = false;
+            try { enabled = localStorage.getItem(MUSIC_KEY) === 'on'; } catch (e) {}
+            if (enabled) {
+                const audio = document.getElementById('bgm-audio');
+                // เบราว์เซอร์ส่วนใหญ่บล็อก autoplay จนกว่าจะมีการคลิกก่อน จึงลองเล่นเงียบๆ แล้วอัปเดต UI ตามผลจริง
+                audio.play().then(() => setMusicUI(true)).catch(() => setMusicUI(false));
+            }
+        }
+
+        function setMusicUI(playing) {
+            const btn = document.getElementById('music-toggle');
+            if (!btn) return;
+            btn.querySelector('.icon-music-off').classList.toggle('hidden', playing);
+            btn.querySelector('.icon-music-on').classList.toggle('hidden', !playing);
+            const label = playing ? 'ปิดเพลงประกอบ' : 'เปิดเพลงประกอบ';
+            btn.setAttribute('aria-pressed', String(playing));
+            btn.setAttribute('aria-label', label);
+            btn.setAttribute('title', label);
+        }
+
+        function toggleMusic() {
+            const audio = document.getElementById('bgm-audio');
+            if (audio.paused) {
+                audio.play().then(() => {
+                    setMusicUI(true);
+                    try { localStorage.setItem(MUSIC_KEY, 'on'); } catch (e) {}
+                }).catch((err) => {
+                    console.warn('เล่นเพลงไม่สำเร็จ (ตรวจสอบว่ามีไฟล์ bgm.mp3 หรือยัง):', err);
+                });
+            } else {
+                audio.pause();
+                setMusicUI(false);
+                try { localStorage.setItem(MUSIC_KEY, 'off'); } catch (e) {}
+            }
         }
 
         // --- Mood Color Theme Helper ---
