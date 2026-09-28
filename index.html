@@ -101,6 +101,8 @@
             border-bottom: 1px solid rgba(255, 182, 193, 0.4);
         }
 
+        /* Hide story text in cards when toggled off */
+        body.hide-stories .story-text { display: none; }
         /* Timeline vertical line background */
         .timeline-line {
             position: absolute;
@@ -420,6 +422,12 @@
                 <button onclick="toggleSortOrder()" id="sort-order-btn" class="px-3 py-2 bg-white border border-pink-200 text-gray-700 hover:text-pink-600 rounded-xl text-xs sm:text-sm font-medium transition flex items-center shadow-sm" title="เปลี่ยนการเรียงลำดับเวลา">
                     <i data-lucide="arrow-down-up" class="w-4 h-4 mr-1 text-pink-400"></i>
                     <span id="sort-order-text">ล่าสุดไปอดีต</span>
+                </button>
+
+                <!-- Toggle Story Visibility Button -->
+                <button onclick="toggleStories()" id="toggle-story-btn" class="px-3 py-2 bg-white border border-pink-200 text-gray-700 hover:text-pink-600 rounded-xl text-xs sm:text-sm font-medium transition flex items-center shadow-sm" title="แสดง/ซ่อนเรื่องราวในการ์ด">
+                    <i data-lucide="book-open" class="w-4 h-4 mr-1 text-pink-400"></i>
+                    <span id="toggle-story-text">ซ่อนเรื่องราว</span>
                 </button>
             </div>
 
@@ -986,6 +994,22 @@
             renderMemories();
         }
 
+        // --- Show / Hide Story Text ---
+        function toggleStories(force) {
+            const hide = typeof force === 'boolean' ? force : !document.body.classList.contains('hide-stories');
+            document.body.classList.toggle('hide-stories', hide);
+            const label = document.getElementById('toggle-story-text');
+            const btn = document.getElementById('toggle-story-btn');
+            if (label) label.innerText = hide ? 'แสดงเรื่องราว' : 'ซ่อนเรื่องราว';
+            if (btn) btn.classList.toggle('bg-pink-100', hide);
+            try { localStorage.setItem('hideStories', hide ? '1' : '0'); } catch (e) {}
+        }
+        (function initStoryToggle() {
+            let hide = false;
+            try { hide = localStorage.getItem('hideStories') === '1'; } catch (e) {}
+            if (hide) toggleStories(true);
+        })();
+
         function toggleSortOrder() {
             sortDesc = !sortDesc;
             document.getElementById('sort-order-text').innerText = sortDesc ? 'ล่าสุดไปอดีต' : 'อดีตไปล่าสุด';
@@ -1109,7 +1133,7 @@
                                 <!-- Multiple Images Preview Grid in Card -->
                                 ${renderImagesGridHTML(m)}
 
-                                <p class="text-xs sm:text-sm text-gray-600 line-clamp-3 leading-relaxed mb-4 text-left">
+                                <p class="story-text text-xs sm:text-sm text-gray-600 line-clamp-3 leading-relaxed mb-4 text-left">
                                     ${escapeHtml(m.story)}
                                 </p>
 
@@ -1156,7 +1180,7 @@
                                 <h3 onclick="openDetailModal('${m.id}')" class="text-base font-bold text-gray-800 font-mitr cursor-pointer hover:text-pink-600 mb-1">
                                     ${escapeHtml(m.title)}
                                 </h3>
-                                <p class="text-xs text-gray-600 line-clamp-2 leading-relaxed mb-3">${escapeHtml(m.story)}</p>
+                                <p class="story-text text-xs text-gray-600 line-clamp-2 leading-relaxed mb-3">${escapeHtml(m.story)}</p>
                             </div>
                         </div>
 
