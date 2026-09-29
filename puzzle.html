@@ -10,7 +10,11 @@
     try {
         var saved = localStorage.getItem('theme_mode');
         var dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (dark) document.documentElement.classList.add('dark');
+        if (dark) {
+            document.documentElement.classList.add('dark');
+            var m = document.querySelector('meta[name="theme-color"]');
+            if (m) m.setAttribute('content', '#1F1426');
+        }
     } catch (e) {}
 })();
 </script>
@@ -18,7 +22,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Prompt:wght@300;400;500;600;700&family=Sacramento&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://unpkg.com/lucide@0.525.0/dist/umd/lucide.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <style>
 :root{--ink:#4A3E3D;--sub:#8a7378;--card:rgba(255,255,255,.88);--line:rgba(255,182,193,.4);--tray:rgba(255,240,245,.8);--chip:#FFE3EF;--chipInk:#d6407e;--rim:#fff}
@@ -27,10 +31,13 @@ body{font-family:'Prompt',sans-serif;color:var(--ink);background:linear-gradient
 html.dark body{background:linear-gradient(150deg,#1F1426 0%,#251824 30%,#241B22 55%,#1E1A2F 80%,#14232B 100%);background-attachment:fixed}
 html,body,button,a{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 32 32'%3E%3Cpath d='M16 28C16 28 4 20 4 12.5C4 8 7.5 5 11 5C13 5 15 6.2 16 8C17 6.2 19 5 21 5C24.5 5 28 8 28 12.5C28 20 16 28 16 28Z' fill='%23FF6FA5' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E") 15 15,auto}
 .font-cursive{font-family:'Sacramento',cursive}
-.glass-card{background:var(--card);backdrop-filter:blur(12px);border:1px solid var(--line);box-shadow:0 10px 30px rgba(255,182,193,.18)}
+.font-mitr{font-family:'Mitr','Prompt',sans-serif}
+.glass-card{background:var(--card);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid var(--line);box-shadow:0 10px 30px rgba(255,182,193,.18)}
 html.dark .glass-card{box-shadow:0 10px 30px rgba(0,0,0,.35)}
-.glass-nav{background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.glass-nav{background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
 html.dark .glass-nav{background:rgba(31,20,38,.92)}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:#FF6FA5;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:4px}
+@keyframes spin{to{transform:rotate(360deg)}}
 @keyframes heartPulse{0%{transform:scale(1)}14%{transform:scale(1.15)}28%{transform:scale(1)}42%{transform:scale(1.15)}70%{transform:scale(1)}}
 .animate-heart-pulse{animation:heartPulse 2.5s infinite}
 .pill{display:inline-flex;align-items:center;gap:.3rem;padding:.4rem .85rem;border-radius:9999px;font-size:.8rem;font-weight:500;background:var(--chip);color:var(--chipInk);transition:filter .15s,transform .15s}
@@ -43,20 +50,23 @@ html.dark .theme-toggle{background:rgba(255,200,69,.16);color:#FFD36B}
 html.dark .theme-toggle .icon-sun{display:block}html.dark .theme-toggle .icon-moon{display:none}
 /* puzzle */
 #stage{position:relative;margin:0 auto;user-select:none;-webkit-user-select:none}
-#board{position:absolute;border-radius:14px;background:var(--tray);border:2px dashed var(--line);overflow:hidden;
+#board{position:absolute;border-radius:14px;background:var(--tray);outline:2px dashed var(--line);outline-offset:-2px;overflow:hidden;
  background-image:linear-gradient(to right,var(--line) 1px,transparent 1px),linear-gradient(to bottom,var(--line) 1px,transparent 1px)}
 #board canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.12;transition:opacity .8s}
 #stage.peek #board canvas{opacity:.5}
 #stage.done #board canvas{opacity:1}
-#stage.done #board{border-style:solid;border-color:#fff;box-shadow:0 8px 28px rgba(255,111,165,.35);background-image:none}
+#stage.done #board{outline-style:solid;outline-color:#fff;box-shadow:0 8px 28px rgba(255,111,165,.35);background-image:none}
 #tray{position:absolute;left:0;right:0;border-radius:22px;background:var(--tray);border:2px dashed var(--line)}
 #tray-label{position:absolute;top:6px;left:0;right:0;text-align:center;font-size:.7rem;color:var(--sub);pointer-events:none}
-.piece{position:absolute;left:0;top:0;touch-action:none;will-change:transform;filter:drop-shadow(0 3px 4px rgba(120,60,90,.3))}
+.piece{position:absolute;left:0;top:0;will-change:transform;filter:drop-shadow(0 3px 4px rgba(120,60,90,.3))}
 .piece canvas{display:block}
 .piece.drag{filter:drop-shadow(0 10px 12px rgba(120,60,90,.4));transform-origin:center}
 .piece.snap{transition:transform .28s cubic-bezier(.3,1.5,.5,1)}
 .piece.placed{pointer-events:none;filter:none}
 #stage.done .piece{opacity:0;transition:opacity .6s .15s}
+#stage.paused .piece{pointer-events:none}
+#stage.paused::after{content:'⏸ หยุดชั่วคราว';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.65);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);font-family:'Mitr','Prompt',sans-serif;font-size:1.1rem;color:var(--ink);border-radius:14px;z-index:50}
+html.dark #stage.paused::after{background:rgba(20,10,25,.65)}
 .spark{position:absolute;pointer-events:none;font-size:18px;animation:spark .8s ease-out forwards;z-index:9999}
 @keyframes spark{0%{transform:translate(-50%,-50%) scale(.4);opacity:1}100%{transform:translate(-50%,-160%) scale(1.3) rotate(20deg);opacity:0}}
 .thumb{aspect-ratio:1;object-fit:cover;width:100%;border-radius:14px;border:3px solid #fff;box-shadow:0 3px 10px rgba(255,111,165,.25);transition:transform .15s}
@@ -79,8 +89,8 @@ html.dark .theme-toggle .icon-sun{display:block}html.dark .theme-toggle .icon-mo
       </div>
     </a>
     <div class="flex items-center space-x-2">
-      <a href="index.html" class="pill"><i data-lucide="heart" class="w-4 h-4"></i><span class="hidden sm:inline">ไทม์ไลน์</span></a>
-      <a href="marquee.html" class="pill" style="background:rgba(217,70,239,.14);color:#c026d3"><i data-lucide="images" class="w-4 h-4"></i><span class="hidden sm:inline">แกลเลอรีรูป</span></a>
+      <a href="index.html" class="pill" aria-label="ไปหน้าไทม์ไลน์"><i data-lucide="heart" class="w-4 h-4"></i><span class="hidden sm:inline">ไทม์ไลน์</span></a>
+      <a href="marquee.html" class="pill" aria-label="ไปหน้าแกลเลอรีรูป" style="background:rgba(217,70,239,.14);color:#c026d3"><i data-lucide="images" class="w-4 h-4"></i><span class="hidden sm:inline">แกลเลอรีรูป</span></a>
       <button id="theme-toggle" type="button" onclick="toggleTheme()" class="theme-toggle" aria-label="สลับโหมดมืด/สว่าง">
         <i data-lucide="moon" class="icon-moon w-4 h-4"></i><i data-lucide="sun" class="icon-sun w-4 h-4"></i>
       </button>
@@ -108,6 +118,7 @@ html.dark .theme-toggle .icon-sun{display:block}html.dark .theme-toggle .icon-mo
       <div class="text-right shrink-0">
         <div class="font-mitr text-lg tabular-nums" id="timer">00:00</div>
         <div class="text-xs" style="color:var(--sub)"><span id="prog">0/0</span> ชิ้น</div>
+        <div class="text-[11px] mt-0.5" id="best-stat" style="color:var(--sub)"></div>
       </div>
     </div>
 
@@ -119,14 +130,15 @@ html.dark .theme-toggle .icon-sun{display:block}html.dark .theme-toggle .icon-mo
       <input id="upl" type="file" accept="image/*" class="hidden" onchange="onUpload(this)">
       <span class="flex-1"></span>
       <div class="inline-flex gap-1 p-1 rounded-full" style="background:var(--tray)" id="levels"></div>
-      <button id="peek" class="pill" onclick="togglePeek()"><i data-lucide="eye" class="w-4 h-4"></i>ดูตัวอย่าง</button>
+      <button id="peek" class="pill" onclick="togglePeek()" aria-pressed="false"><i data-lucide="eye" class="w-4 h-4"></i>ดูตัวอย่าง</button>
+      <button id="pause" class="pill" onclick="togglePause()" aria-pressed="false"><i data-lucide="pause" class="w-4 h-4"></i>พัก</button>
       <button class="pill" onclick="hint()"><i data-lucide="lightbulb" class="w-4 h-4"></i>ช่วยหน่อย</button>
     </div>
 
     <div id="wrap" class="w-full">
       <div id="stage"></div>
     </div>
-    <p id="msg" class="text-center text-sm mt-3" style="color:var(--sub)"></p>
+    <p id="msg" class="text-center text-sm mt-3" style="color:var(--sub)" aria-live="polite"></p>
 
     <!-- ผลลัพธ์ -->
     <div id="result" class="hidden mt-5 rounded-2xl p-4 text-center" style="background:var(--tray);border:1px solid var(--line)">
@@ -161,17 +173,34 @@ html.dark .theme-toggle .icon-sun{display:block}html.dark .theme-toggle .icon-mo
 
 <script>
 const LEVELS = [{k:3,t:'ง่าย'},{k:4,t:'กลาง'},{k:5,t:'ยาก'}];
-const S = { cols: 3, photo: null, img: null, pieces: [], placed: 0, t0: 0, tick: null, z: 10, all: [], lastW: 0 };
+const S = { cols: 3, photo: null, img: null, pieces: [], placed: 0, t0: 0, tick: null, z: 10, all: [], lastW: 0, hints: 0, rows: 0, paused: false, pausedElapsed: 0, actx: null };
 const $ = id => document.getElementById(id);
 const stage = $('stage'), wrap = $('wrap');
 const esc = s => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 const MONTHS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 function dateTh(s) { const d = new Date(s); return isNaN(d) ? (s || '') : `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear() + 543}`; }
+// กันพังถ้า CDN ของ lucide / confetti โหลดไม่สำเร็จ
+function icons() { try { window.lucide && lucide.createIcons(); } catch (e) {} }
+function confettiSafe(opts) { try { window.confetti && confetti(opts); } catch (e) {} }
+// สั่น/เสียงเบา ๆ ตอนชิ้นเข้าที่
+function feedback() {
+    try { navigator.vibrate && navigator.vibrate(15); } catch (e) {}
+    try {
+        if (!S.actx) S.actx = new (window.AudioContext || window.webkitAudioContext)();
+        const ctx = S.actx, o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = 'sine'; o.frequency.value = 880; g.gain.value = .05;
+        o.connect(g); g.connect(ctx.destination); o.start();
+        g.gain.exponentialRampToValueAtTime(.0001, ctx.currentTime + .15);
+        o.stop(ctx.currentTime + .16);
+    } catch (e) {}
+}
 
 /* ---------- ธีมมืด ---------- */
 function toggleTheme() {
     const dark = document.documentElement.classList.toggle('dark');
     try { localStorage.setItem('theme_mode', dark ? 'dark' : 'light'); } catch (e) {}
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', dark ? '#1F1426' : '#FFE8F1');
 }
 
 /* ---------- โหลดรูปจากเหตุการณ์ ---------- */
@@ -183,30 +212,47 @@ function waitForFirebase() {
     });
 }
 async function init() {
-    lucide.createIcons();
+    icons();
     renderLevels();
+    $('msg').innerHTML = '<span class="spinner" aria-hidden="true"></span> กำลังเชื่อมต่อฐานข้อมูล...';
+    await loadAndStart();
+}
+async function loadAndStart() {
     const ok = await waitForFirebase();
-    let memories = [];
-    if (ok) { try { memories = await window.firestoreApi.loadMemoriesFromFirestore(); } catch (e) { console.error(e); } }
+    let memories = [], loadError = false;
+    if (ok) { try { memories = await window.firestoreApi.loadMemoriesFromFirestore(); } catch (e) { console.error(e); loadError = true; } }
     S.all = [];
     memories.forEach(m => {
         const imgs = m.images || (m.image ? [m.image] : []);
-        imgs.forEach((src, i) => src && S.all.push({ src, mem: m, i }));
+        imgs.forEach(src => src && S.all.push({ src, mem: m }));
     });
     if (!S.all.length) {
         $('ev-title').textContent = 'ยังไม่มีรูปจากเหตุการณ์';
-        $('msg').textContent = ok ? 'เพิ่มรูปในไทม์ไลน์ก่อน หรือกด "รูปอื่น" เพื่อลองต่อรูปจากเครื่องได้เลย' : 'เชื่อมต่อ Firebase ไม่ได้ ลองกด "รูปอื่น" เพื่อเล่นด้วยรูปจากเครื่องได้เลย';
+        let msg;
+        if (!ok) msg = 'เชื่อมต่อฐานข้อมูลไม่ได้';
+        else if (loadError) msg = 'โหลดข้อมูลความทรงจำไม่สำเร็จ';
+        else msg = 'เพิ่มรูปในไทม์ไลน์ก่อน';
+        $('msg').innerHTML = `${msg} ลองกด "รูปอื่น" เพื่อเล่นด้วยรูปจากเครื่องได้เลย หรือ <button type="button" class="underline" onclick="retryLoad(this)">ลองใหม่</button>`;
         return;
     }
     randomPhoto();
+}
+function retryLoad(btn) {
+    if (btn) btn.disabled = true;
+    $('msg').innerHTML = '<span class="spinner" aria-hidden="true"></span> กำลังลองใหม่...';
+    loadAndStart();
 }
 
 function randomPhoto() {
     if (!S.all.length) { $('upl').click(); return; }
     // สุ่มเหตุการณ์ก่อน แล้วค่อยสุ่มรูปหนึ่งรูปในเหตุการณ์นั้น (เหตุการณ์รูปเยอะจะไม่ได้เปรียบ)
-    const groups = [...new Set(S.all.map(p => p.mem))].filter(m => !S.photo || m !== S.photo.mem || S.all.length < 2);
-    const mem = groups[Math.floor(Math.random() * groups.length)] || S.all[0].mem;
-    const opts = S.all.filter(p => p.mem === mem);
+    // กันได้รูปซ้ำเดิม แม้จะมีแค่ 1 เหตุการณ์แต่หลายรูป
+    let pool = S.all.filter(p => !S.photo || p.mem !== S.photo.mem);
+    if (!pool.length) pool = S.all.filter(p => !S.photo || p.src !== S.photo.src);
+    if (!pool.length) pool = S.all;
+    const groups = [...new Set(pool.map(p => p.mem))];
+    const mem = groups[Math.floor(Math.random() * groups.length)];
+    const opts = pool.filter(p => p.mem === mem);
     usePhoto(opts[Math.floor(Math.random() * opts.length)]);
 }
 function usePhoto(p) {
@@ -215,10 +261,11 @@ function usePhoto(p) {
     $('mood').textContent = m.mood || '❤️';
     $('ev-title').textContent = m.title || 'ความทรงจำของเรา';
     $('ev-date').textContent = dateTh(m.date);
-    $('msg').textContent = 'กำลังเตรียมจิ๊กซอว์...';
+    $('msg').innerHTML = '<span class="spinner" aria-hidden="true"></span> กำลังเตรียมจิ๊กซอว์...';
     const img = new Image();
-    img.onload = () => { S.img = img; build(); };
-    img.onerror = () => { $('msg').textContent = 'โหลดรูปนี้ไม่ได้ ลองสุ่มใหม่อีกครั้งนะ'; };
+    // กัน race condition: ถ้าสุ่มรูปใหม่ระหว่างรอโหลด รูปเก่าที่โหลดเสร็จทีหลังต้องไม่ทับรูปใหม่
+    img.onload = () => { if (S.photo !== p) return; S.img = img; build(); };
+    img.onerror = () => { if (S.photo !== p) return; $('msg').textContent = 'โหลดรูปนี้ไม่ได้ ลองสุ่มใหม่อีกครั้งนะ'; };
     img.src = p.src;
     closePicker();
 }
@@ -231,22 +278,98 @@ function onUpload(inp) {
 
 /* ---------- ตัวเลือกความยาก / ตัวช่วย ---------- */
 function renderLevels() {
-    $('levels').innerHTML = LEVELS.map(l => `<button class="pill ${l.k === S.cols ? 'on' : ''}" onclick="setLevel(${l.k})">${l.t}</button>`).join('');
+    $('levels').innerHTML = LEVELS.map(l => `<button class="pill ${l.k === S.cols ? 'on' : ''}" aria-pressed="${l.k === S.cols}" onclick="setLevel(${l.k})">${l.t}</button>`).join('');
 }
-function setLevel(k) { S.cols = k; renderLevels(); if (S.img) build(); }
-function togglePeek() { const on = stage.classList.toggle('peek'); $('peek').classList.toggle('on', on); }
+function setLevel(k) {
+    if (k === S.cols) return;
+    if (S.img && S.placed > 0 && S.placed < S.pieces.length && !stage.classList.contains('done')) {
+        if (!confirm('เปลี่ยนระดับตอนนี้ ความคืบหน้าปัจจุบันจะหายไปนะ ต้องการเปลี่ยนเลยไหม?')) return;
+    }
+    S.cols = k; renderLevels(); if (S.img) build();
+}
+function togglePeek() {
+    const on = stage.classList.toggle('peek');
+    $('peek').classList.toggle('on', on); $('peek').setAttribute('aria-pressed', on ? 'true' : 'false');
+}
+
+/* ---------- พักเกม ---------- */
+function pauseTimer() {
+    if (!S.tick || S.paused) return;
+    S.pausedElapsed = Math.floor((Date.now() - S.t0) / 1000);
+    clearInterval(S.tick); S.tick = null; S.paused = true;
+    stage.classList.add('paused'); updatePauseBtn();
+}
+function resumeTimer() {
+    if (!S.paused) return;
+    S.t0 = Date.now() - S.pausedElapsed * 1000; S.paused = false;
+    stage.classList.remove('paused');
+    S.tick = setInterval(() => $('timer').textContent = fmt(Math.floor((Date.now() - S.t0) / 1000)), 500);
+    updatePauseBtn();
+}
+function togglePause() {
+    if (!S.img || stage.classList.contains('done') || !S.pieces.length) return;
+    if (S.paused) resumeTimer(); else pauseTimer();
+}
+function updatePauseBtn() {
+    const b = $('pause'); if (!b) return;
+    b.innerHTML = S.paused ? '<i data-lucide="play" class="w-4 h-4"></i>เล่นต่อ' : '<i data-lucide="pause" class="w-4 h-4"></i>พัก';
+    b.setAttribute('aria-pressed', S.paused ? 'true' : 'false');
+    icons();
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden) pauseTimer(); });
+
+/* ---------- ย่อรูปเป็น thumbnail สำหรับ picker ---------- */
+function getThumb(p, cb) {
+    if (p.thumb) { cb(p.thumb); return; }
+    const img = new Image(); img.crossOrigin = 'anonymous';
+    img.onload = () => {
+        try {
+            const size = 160, c = document.createElement('canvas'); c.width = size; c.height = size;
+            const ctx = c.getContext('2d'), s = Math.min(img.width, img.height);
+            ctx.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, size, size);
+            p.thumb = c.toDataURL('image/jpeg', .7);
+        } catch (e) { p.thumb = p.src; } // รูปข้าม origin ที่ไม่ได้ตั้ง CORS จะย่อไม่ได้ ใช้รูปเต็มแทน
+        cb(p.thumb);
+    };
+    img.onerror = () => { p.thumb = p.src; cb(p.thumb); };
+    img.src = p.src;
+}
 function openPicker() {
     if (!S.all.length) { $('upl').click(); return; }
     const list = [...S.all].sort((a, b) => String(b.mem.date).localeCompare(String(a.mem.date)));
-    $('picker-grid').innerHTML = list.map((p, n) => `<button onclick="usePhoto(S.all[${S.all.indexOf(p)}])" class="text-left"><img class="thumb" loading="lazy" decoding="async" src="${p.src}" alt=""><div class="text-[11px] mt-1 truncate">${p.mem.mood || ''} ${esc(p.mem.title)}</div></button>`).join('');
+    $('picker-grid').innerHTML = list.map(p => {
+        const idx = S.all.indexOf(p);
+        return `<button onclick="usePhoto(S.all[${idx}])" class="text-left"><img class="thumb" loading="lazy" decoding="async" src="${esc(p.thumb || p.src)}" alt=""><div class="text-[11px] mt-1 truncate">${esc(p.mem.mood || '')} ${esc(p.mem.title)}</div></button>`;
+    }).join('');
     $('picker').classList.remove('hidden');
+    list.forEach((p, i) => {
+        if (p.thumb) return;
+        getThumb(p, thumb => {
+            const btn = $('picker-grid').children[i], im = btn && btn.querySelector('img');
+            if (im) im.src = thumb;
+        });
+    });
 }
 function closePicker() { $('picker').classList.add('hidden'); }
 function hint() {
+    if (S.paused) return;
     const left = S.pieces.filter(p => !p.placed);
     if (!left.length) return;
-    const p = left[Math.floor(Math.random() * left.length)];
+    // เลือกชิ้นที่ติดกับชิ้นที่วางแล้วก่อน ถ้าไม่มีให้เลือกชิ้นขอบ/มุม ถ้ายังไม่มีค่อยสุ่ม
+    let cand = left.filter(p => S.pieces.some(q => q.placed && ((Math.abs(q.r - p.r) === 1 && q.c === p.c) || (Math.abs(q.c - p.c) === 1 && q.r === p.r))));
+    if (!cand.length) cand = left.filter(p => p.r === 0 || p.c === 0 || p.r === S.rows - 1 || p.c === S.cols - 1);
+    if (!cand.length) cand = left;
+    const p = cand[Math.floor(Math.random() * cand.length)];
+    S.hints++;
     startTimer(); snapTo(p);
+}
+
+function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
 }
 
 /* ---------- วาดขอบจิ๊กซอว์ (ปุ่มกลม ๆ น่ารัก) ---------- */
@@ -273,8 +396,9 @@ function buildPath(t, e, ox, oy, cw, ch, m) {
 
 /* ---------- สร้างเกม ---------- */
 function build() {
-    clearInterval(S.tick); S.tick = null; S.placed = 0; S.t0 = 0;
+    clearInterval(S.tick); S.tick = null; S.placed = 0; S.t0 = 0; S.hints = 0; S.paused = false; drag = null;
     $('timer').textContent = '00:00'; $('result').classList.add('hidden'); $('msg').textContent = 'ลากชิ้นส่วนจากถาดไปวางบนกรอบด้านบนได้เลย';
+    updatePauseBtn();
     stage.className = ''; stage.innerHTML = '';
     if ($('peek').classList.contains('on')) stage.classList.add('peek');
 
@@ -284,6 +408,7 @@ function build() {
     const asp = Math.min(1.333, Math.max(.75, img.width / img.height));
     const cw = bw / cols, rows = Math.max(2, Math.round(bw / asp / cw)), ch = bw / asp / rows, m = Math.min(cw, ch);
     const pad = Math.round(m * .34), bh = ch * rows, W = bw + pad * 2, Wp = cw + pad * 2, Hp = ch + pad * 2;
+    S.rows = rows;
     stage.style.width = W + 'px';
 
     // ภาพต้นฉบับ (ครอปให้พอดีกรอบ เอียงขึ้นบนนิดหน่อยจะได้ไม่ตัดหน้า)
@@ -297,9 +422,9 @@ function build() {
     Object.assign(board.style, { left: pad + 'px', top: pad + 'px', width: bw + 'px', height: bh + 'px', backgroundSize: `${cw}px ${ch}px` });
     board.appendChild(sc); stage.appendChild(board);
 
-    // ถาดวางชิ้นส่วน
-    const n = cols * rows, tcols = Math.max(1, Math.floor(W / (cw * .85))), trows = Math.ceil(n / tcols);
-    const trayTop = pad * 2 + bh + 10, trayH = trows * ch * .9 + pad * 2 + 18;
+    // ถาดวางชิ้นส่วน (เว้นระยะตามขนาดกล่องชิ้นจริง Wp/Hp กันซ้อนทับกัน)
+    const n = cols * rows, tcols = Math.max(1, Math.floor(W / (Wp * .92))), trows = Math.ceil(n / tcols), rowH = Hp * .92;
+    const trayTop = pad * 2 + bh + 10, trayH = trows * rowH + pad * 2 + 18;
     const tray = document.createElement('div'); tray.id = 'tray';
     Object.assign(tray.style, { top: trayTop + 'px', height: trayH + 'px' });
     tray.innerHTML = '<div id="tray-label">ถาดจิ๊กซอว์</div>'; stage.appendChild(tray);
@@ -309,7 +434,7 @@ function build() {
     const rnd = () => Math.random() < .5 ? 1 : -1;
     const R = Array.from({ length: rows }, () => Array.from({ length: cols - 1 }, rnd));
     const D = Array.from({ length: rows - 1 }, () => Array.from({ length: cols }, rnd));
-    const slots = [...Array(n).keys()].sort(() => Math.random() - .5);
+    const slots = shuffle([...Array(n).keys()]);
     S.pieces = [];
     for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
         const e = { top: r ? -D[r - 1][c] : 0, bottom: r < rows - 1 ? D[r][c] : 0, left: c ? -R[r][c - 1] : 0, right: c < cols - 1 ? R[r][c] : 0 };
@@ -324,13 +449,25 @@ function build() {
         x.lineWidth = 1.2; x.strokeStyle = 'rgba(214,64,126,.45)'; x.stroke(path);
 
         const el = document.createElement('div'); el.className = 'piece'; el.appendChild(cv); stage.appendChild(el);
-        const slot = slots.pop(), jx = (Math.random() - .5) * cw * .25, jy = (Math.random() - .5) * ch * .2;
+        const slot = slots.pop(), jx = (Math.random() - .5) * cw * .18, jy = (Math.random() - .5) * ch * .12;
         const px = tcols > 1 ? (slot % tcols) * (W - Wp) / (tcols - 1) : (W - Wp) / 2;
         const p = { r, c, el, path, w: Wp, h: Hp, tx: c * cw, ty: r * ch, snapD: m * .35,
-            x: Math.max(0, Math.min(W - Wp, px + jx)), y: trayTop + 14 + Math.floor(slot / tcols) * ch * .9 + jy, z: ++S.z, placed: false };
+            x: Math.max(0, Math.min(W - Wp, px + jx)), y: trayTop + 14 + Math.floor(slot / tcols) * rowH + jy, z: ++S.z, placed: false };
         el.style.zIndex = p.z; S.pieces.push(p); move(p);
     }
-    $('prog').textContent = `0/${n}`;
+    updateProg(); showBestStat();
+}
+function updateProg() {
+    $('prog').textContent = `${S.placed}/${S.pieces.length}${S.hints ? ' • ใช้ตัวช่วย ' + S.hints + ' ครั้ง' : ''}`;
+}
+function showBestStat() {
+    const key = 'puzzle_best_' + S.pieces.length;
+    let old = null;
+    try { old = JSON.parse(localStorage.getItem(key)); } catch (e) {}
+    const el = $('best-stat'); if (!el) return;
+    if (old && typeof old.time === 'number') {
+        el.textContent = `สถิติที่ดีที่สุด ${fmt(old.time)}${old.hints ? ' (ใช้ตัวช่วย ' + old.hints + ' ครั้ง)' : ''}`;
+    } else el.textContent = 'ยังไม่มีสถิติของระดับนี้';
 }
 function move(p) { p.el.style.transform = `translate(${p.x}px,${p.y}px)`; }
 
@@ -338,24 +475,26 @@ function move(p) { p.el.style.transform = `translate(${p.x}px,${p.y}px)`; }
 const sctx = document.createElement('canvas').getContext('2d');
 let drag = null;
 stage.addEventListener('pointerdown', e => {
+    if (drag || S.paused) return; // กันนิ้ว/เมาส์ที่สองมาแย่งสถานะ drag เดิม
     if (e.button > 0 && e.pointerType === 'mouse') return;
     const rc = stage.getBoundingClientRect(), mx = e.clientX - rc.left, my = e.clientY - rc.top;
     const hit = S.pieces.filter(p => !p.placed).sort((a, b) => b.z - a.z).find(p => sctx.isPointInPath(p.path, mx - p.x, my - p.y));
-    if (!hit) return;
+    if (!hit) return; // ไม่โดนชิ้นไหน ปล่อยให้เบราว์เซอร์เลื่อนหน้าจอตามปกติ (ไม่มี touch-action:none ครอบไว้แล้ว)
     e.preventDefault(); stage.setPointerCapture(e.pointerId);
     hit.z = ++S.z; hit.el.style.zIndex = hit.z; hit.el.classList.remove('snap'); hit.el.classList.add('drag');
-    drag = { p: hit, ox: mx - hit.x, oy: my - hit.y };
+    drag = { p: hit, ox: mx - hit.x, oy: my - hit.y, id: e.pointerId };
     startTimer();
 });
 stage.addEventListener('pointermove', e => {
-    if (!drag) return;
+    if (!drag || e.pointerId !== drag.id) return;
     const rc = stage.getBoundingClientRect(), p = drag.p;
     p.x = Math.max(0, Math.min(rc.width - p.w, e.clientX - rc.left - drag.ox));
     p.y = Math.max(0, Math.min(rc.height - p.h, e.clientY - rc.top - drag.oy));
     move(p);
 });
-function endDrag() {
-    if (!drag) return; const p = drag.p; drag = null;
+function endDrag(e) {
+    if (!drag || (e && e.pointerId !== drag.id)) return;
+    const p = drag.p; drag = null;
     p.el.classList.remove('drag');
     if (Math.hypot(p.x - p.tx, p.y - p.ty) < p.snapD) snapTo(p);
 }
@@ -365,10 +504,11 @@ stage.addEventListener('pointercancel', endDrag);
 function snapTo(p) {
     p.placed = true; p.x = p.tx; p.y = p.ty; p.z = 1; p.el.style.zIndex = 1;
     p.el.classList.add('snap', 'placed'); move(p);
+    feedback();
     const s = document.createElement('span'); s.className = 'spark'; s.textContent = ['✨', '💗', '⭐'][Math.floor(Math.random() * 3)];
     s.style.left = (p.tx + p.w / 2) + 'px'; s.style.top = (p.ty + p.h / 2) + 'px';
     stage.appendChild(s); setTimeout(() => s.remove(), 850);
-    S.placed++; $('prog').textContent = `${S.placed}/${S.pieces.length}`;
+    S.placed++; updateProg();
     if (S.placed === S.pieces.length) win();
 }
 
@@ -379,36 +519,55 @@ function startTimer() {
     S.tick = setInterval(() => $('timer').textContent = fmt(Math.floor((Date.now() - S.t0) / 1000)), 500);
 }
 function win() {
-    clearInterval(S.tick); S.tick = null;
+    clearInterval(S.tick); S.tick = null; S.paused = false;
     const secs = S.t0 ? Math.floor((Date.now() - S.t0) / 1000) : 0;
     $('timer').textContent = fmt(secs);
-    stage.classList.add('done'); stage.classList.remove('peek');
+    stage.classList.add('done'); stage.classList.remove('peek', 'paused');
+    $('peek').classList.remove('on'); $('peek').setAttribute('aria-pressed', 'false');
     const m = S.photo.mem;
     $('r-title').textContent = `${m.mood || '❤️'} ${m.title || ''}`;
     $('r-date').textContent = dateTh(m.date);
     $('r-story').textContent = m.story ? `"${m.story.length > 220 ? m.story.slice(0, 220) + '…' : m.story}"` : '';
-    let best = '', key = 'puzzle_best_' + S.cols;
+    // key ตามจำนวนชิ้นจริง (ไม่ใช่แค่ระดับ) และไม่บันทึกสถิติใหม่ถ้าใช้ตัวช่วย กันโกงด้วยการกดช่วยรัวๆ
+    let bestMsg = '', key = 'puzzle_best_' + S.pieces.length;
     try {
-        const old = +localStorage.getItem(key) || 0;
-        if (!old || secs < old) { localStorage.setItem(key, secs); best = old ? ' 🎉 สถิติใหม่!' : ''; }
-        else best = ` (สถิติที่ดีที่สุด ${fmt(old)})`;
+        let old = null;
+        try { old = JSON.parse(localStorage.getItem(key)); } catch (e) { old = null; }
+        if (!old || typeof old.time !== 'number') old = null;
+        if (S.hints === 0) {
+            if (!old || secs < old.time) {
+                localStorage.setItem(key, JSON.stringify({ time: secs, hints: 0 }));
+                bestMsg = old ? ' 🎉 สถิติใหม่!' : ' 🎉 สถิติแรกของระดับนี้!';
+            } else bestMsg = ` (สถิติที่ดีที่สุด ${fmt(old.time)})`;
+        } else {
+            bestMsg = old ? ` (สถิติที่ดีที่สุด ${fmt(old.time)}, รอบนี้ใช้ตัวช่วย ${S.hints} ครั้งจึงไม่นับสถิติ)` : ` (ใช้ตัวช่วย ${S.hints} ครั้งจึงไม่นับสถิติ)`;
+        }
     } catch (e) {}
-    $('r-time').textContent = `ใช้เวลา ${fmt(secs)}${best}`;
+    $('r-time').textContent = `ใช้เวลา ${fmt(secs)}${bestMsg}`;
     $('msg').textContent = '';
     setTimeout(() => {
-        $('result').classList.remove('hidden'); lucide.createIcons();
+        $('result').classList.remove('hidden'); icons();
         $('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 900);
     const cols = ['#FF6FA5', '#FFC845', '#A374DB', '#5AC8E8', '#5ED1A6'];
-    confetti({ particleCount: 90, spread: 80, origin: { y: .6 }, colors: cols });
-    setTimeout(() => confetti({ particleCount: 60, angle: 60, spread: 60, origin: { x: 0, y: .7 }, colors: cols }), 250);
-    setTimeout(() => confetti({ particleCount: 60, angle: 120, spread: 60, origin: { x: 1, y: .7 }, colors: cols }), 250);
+    confettiSafe({ particleCount: 90, spread: 80, origin: { y: .6 }, colors: cols });
+    setTimeout(() => confettiSafe({ particleCount: 60, angle: 60, spread: 60, origin: { x: 0, y: .7 }, colors: cols }), 250);
+    setTimeout(() => confettiSafe({ particleCount: 60, angle: 120, spread: 60, origin: { x: 1, y: .7 }, colors: cols }), 250);
 }
 
 /* ---------- ปรับขนาดหน้าจอ ---------- */
 let rt; window.addEventListener('resize', () => {
     clearTimeout(rt);
-    rt = setTimeout(() => { if (S.img && !stage.classList.contains('done') && Math.abs(wrap.clientWidth - S.lastW) > 30) build(); }, 300);
+    rt = setTimeout(() => {
+        if (!S.img || stage.classList.contains('done')) return;
+        if (Math.abs(wrap.clientWidth - S.lastW) <= 30) return;
+        if (S.placed > 0) {
+            // มีความคืบหน้าอยู่แล้ว ไม่รีเซ็ตทิ้งเงียบๆ แค่แจ้งเตือนแทน
+            $('msg').textContent = 'ขนาดหน้าจอเปลี่ยน บอร์ดอาจดูเพี้ยนไปบ้าง กด "สุ่มรูปใหม่" ถ้าต้องการปรับขนาดให้พอดี';
+            return;
+        }
+        build();
+    }, 300);
 });
 init();
 </script>

@@ -20,9 +20,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Prompt:wght@300;400;500;600;700&family=Sacramento&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+    <script src="https://unpkg.com/lucide@0.460.0" onerror="window.__lucideFailed=true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" onerror="window.__confettiFailed=true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" onerror="window.__d3Failed=true"></script>
 
     <script>
         tailwind.config = {
@@ -63,7 +63,7 @@
         /* ---------- map ---------- */
         #map-wrap { position:relative; height:74vh; min-height:460px; border-radius:1.5rem; overflow:hidden;
             background: radial-gradient(circle at 30% 20%, #FFFFFF 0%, #FFF3F8 55%, #FBE6F0 100%); border:2px solid #FFE0EC; }
-        #map-svg { width:100%; height:100%; display:block; touch-action:none; }
+        #map-svg { width:100%; height:100%; display:block; touch-action:pan-y; }
         .prov { fill:#FFF9FB; stroke:#F0B2CA; stroke-width:.8; vector-effect:non-scaling-stroke; transition:fill .2s; }
         .prov:hover { fill:#FFE3EF; }
         .prov.v1 { fill:#FFD9E8; } .prov.v2 { fill:#FFBCD6; } .prov.v3 { fill:#FF9EC2; }
@@ -119,13 +119,30 @@
         .heart-trail { position:fixed; pointer-events:none; z-index:9999; font-size:16px; will-change:transform,opacity; animation:heartTrailFloat .9s ease-out forwards; }
         @keyframes heartTrailFloat { 0%{transform:translate(-50%,-50%) scale(1) rotate(0);opacity:.9} 100%{transform:translate(-50%,-160%) scale(.35) rotate(25deg);opacity:0} }
         body.placing #map-svg { cursor: crosshair; }
+
+        /* header icons: เลื่อนแนวนอนแทนการถูกตัด ถ้าจอแคบเกินไป */
+        .no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
+        .no-scrollbar::-webkit-scrollbar { display:none; }
+
+        /* ปุ่มข้อมูล/คู่มือแบบย่อสำหรับมือถือ */
+        .mobile-info-btn { display:flex; }
+        @media (min-width:640px) { .mobile-info-btn { display:none; } }
+
+        /* แจ้งเตือนเมื่อข้อมูลแผนที่สำรองเป็นภาษาอังกฤษ */
+        #geo-lang-warn { position:absolute; left:.75rem; right:.75rem; bottom:.75rem; z-index:6; }
+
+        /* กล่องแผนที่พังเมื่อโหลด CDN ไม่สำเร็จ */
+        #loading .retry-btn { pointer-events:auto; }
+
+        /* หน้าต่างรายการความทรงจำในจังหวัด */
+        #province-modal .prov-mem-item { cursor:pointer; }
     </style>
 </head>
 <body class="min-h-screen pb-16">
 
-    <header class="sticky top-0 z-40 glass-nav overflow-hidden">
+    <header class="sticky top-0 z-40 glass-nav">
         <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center relative">
-            <a href="index.html" class="flex items-center space-x-2">
+            <a href="index.html" class="flex items-center space-x-2 shrink-0">
                 <div class="relative w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 shadow-inner">
                     <i data-lucide="heart" class="w-6 h-6 fill-pink-400 stroke-pink-500 animate-heart-pulse"></i>
                     <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-300 flex items-center justify-center text-[9px] shadow">✨</span>
@@ -135,7 +152,7 @@
                     <p class="text-xs text-pink-400 font-light">แผนที่ความทรงจำของเรา</p>
                 </div>
             </a>
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center space-x-2 overflow-x-auto no-scrollbar pl-2 -mr-1">
                 <a href="index.html" class="nav-pill px-3 py-1.5 text-xs sm:text-sm bg-pink-100 hover:bg-pink-200 text-pink-700 rounded-full font-medium flex items-center shadow-sm">
                     <i data-lucide="book-heart" class="w-4 h-4 mr-1 text-pink-500"></i><span class="hidden sm:inline">ไทม์ไลน์</span>
                 </a>
@@ -166,7 +183,7 @@
                 </div>
                 <div class="flex items-center gap-2 text-xs">
                     <span class="chip rounded-full px-3 py-1.5 flex items-center text-rose-600 font-medium"><i data-lucide="heart" class="w-3.5 h-3.5 mr-1 fill-pink-500 text-pink-500"></i><span id="stat-pins">0</span> หมุด</span>
-                    <span class="chip rounded-full px-3 py-1.5 flex items-center text-rose-600 font-medium"><i data-lucide="map" class="w-3.5 h-3.5 mr-1"></i><span id="stat-provs">0</span> / 77 จังหวัด</span>
+                    <span class="chip rounded-full px-3 py-1.5 flex items-center text-rose-600 font-medium"><i data-lucide="map" class="w-3.5 h-3.5 mr-1"></i><span id="stat-provs">0</span> / <span id="stat-provs-total">77</span> จังหวัด</span>
                 </div>
             </div>
 
@@ -174,15 +191,17 @@
                 <svg id="map-svg" viewBox="0 0 620 900" preserveAspectRatio="xMidYMid meet" aria-label="แผนที่ประเทศไทยแบ่งตามจังหวัด"></svg>
                 <div id="tooltip"></div>
 
-                <div id="loading" class="absolute inset-0 flex flex-col items-center justify-center text-rose-500 text-sm gap-2">
-                    <i data-lucide="heart" class="w-8 h-8 fill-pink-400 text-pink-500 animate-heart-pulse"></i>
+                <div id="loading" class="absolute inset-0 flex flex-col items-center justify-center text-rose-500 text-sm gap-2 text-center px-6">
+                    <i id="loading-icon" data-lucide="heart" class="w-8 h-8 fill-pink-400 text-pink-500 animate-heart-pulse"></i>
                     <span id="loading-text">กำลังโหลดแผนที่ประเทศไทย...</span>
+                    <button id="loading-retry" onclick="location.reload()" class="hidden retry-btn mt-1 text-xs font-medium bg-rose-500 text-white px-4 py-1.5 rounded-full shadow">ลองใหม่</button>
                 </div>
 
                 <div class="absolute top-3 right-3 flex flex-col gap-2">
                     <button class="map-btn" onclick="zoomBy(1.6)" aria-label="ซูมเข้า">+</button>
                     <button class="map-btn" onclick="zoomBy(1/1.6)" aria-label="ซูมออก">−</button>
                     <button class="map-btn" onclick="resetZoom()" aria-label="รีเซ็ตมุมมอง"><i data-lucide="maximize" class="w-4 h-4"></i></button>
+                    <button class="map-btn mobile-info-btn" onclick="showMobileGuide()" aria-label="วิธีใช้แผนที่"><i data-lucide="info" class="w-4 h-4"></i></button>
                 </div>
 
                 <div id="geo-status" class="absolute top-3 left-3 chip rounded-full px-3 py-1.5 text-xs text-rose-600 font-medium items-center hidden">
@@ -194,10 +213,15 @@
                     <button onclick="cancelPlacing()" class="underline">ยกเลิก</button>
                 </div>
 
+                <div id="geo-lang-warn" class="hidden chip rounded-xl px-3 py-2 text-[11px] text-amber-700 items-center gap-1.5">
+                    <i data-lucide="alert-triangle" class="w-3.5 h-3.5 shrink-0"></i>
+                    <span>แหล่งแผนที่สำรองใช้ชื่อจังหวัดภาษาอังกฤษ ชื่อบนแผนที่บางส่วนอาจไม่ใช่ภาษาไทย</span>
+                </div>
+
                 <div class="absolute bottom-3 left-3 chip rounded-xl px-3 py-2 text-[11px] txt-muted hidden sm:block">
                     <div class="font-medium text-rose-500 mb-0.5">คู่มือ</div>
-                    ลากเพื่อเลื่อนแผนที่ · เลื่อนล้อเมาส์เพื่อซูม<br>
-                    หมุดขอบประ = ตำแหน่งโดยประมาณ ลากเพื่อปรับได้
+                    ลากเพื่อเลื่อนแผนที่ · กด Ctrl/⌘ ค้างแล้วเลื่อนล้อเพื่อซูม<br>
+                    หมุดขอบประ = ตำแหน่งโดยประมาณ ลากเพื่อปรับได้ · คลิกจังหวัดเพื่อดูรายการความทรงจำ
                 </div>
             </div>
 
@@ -219,6 +243,16 @@
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
             <div id="memory-content"></div>
+        </div>
+    </div>
+
+    <!-- Province memories -->
+    <div id="province-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/50 backdrop-blur-md" onclick="if(event.target===this)closeProvinceModal()">
+        <div class="glass-card modal-card bg-white/95 rounded-3xl max-w-md w-full max-h-[85vh] overflow-y-auto p-6 shadow-2xl relative border-2 border-pink-200">
+            <button onclick="closeProvinceModal()" class="absolute top-4 right-4 bg-white text-rose-500 hover:text-white hover:bg-rose-500 p-2 rounded-full shadow-lg border border-pink-200 transition z-20" aria-label="ปิด">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div id="province-modal-content"></div>
         </div>
     </div>
 
@@ -251,22 +285,51 @@
         'https://cdn.jsdelivr.net/gh/apisit/thailand.json@master/thailand.json'
     ];
     const GEO_CACHE_KEY = 'map_pin_cache_v1'; // สำรองตำแหน่งไว้ในเครื่อง เผื่อบันทึกขึ้น Firebase ไม่สำเร็จ
+    const GEO_ATTEMPT_KEY = 'map_geo_attempts_v1'; // จำไว้ว่าเคยลองหาตำแหน่งของความทรงจำไหนไปแล้ว และผลเป็นอย่างไร
+    const GEO_FILE_CACHE = 'map-geojson-cache-v1'; // ชื่อ Cache (Cache API) ที่เก็บไฟล์ขอบเขตจังหวัด
+    const GEO_FILE_CACHE_META_KEY = 'map_geojson_cache_meta_v1';
+    const GEO_FILE_CACHE_TTL = 30 * 24 * 60 * 60 * 1000; // 30 วัน ก่อนจะไปโหลดไฟล์ใหม่จากเน็ตอีกครั้ง
+    const RETRY_MS = { network: 6 * 60 * 60 * 1000, notfound: 7 * 24 * 60 * 60 * 1000 }; // เว้นระยะก่อนลองหาตำแหน่งซ้ำ: เน็ตมีปัญหา 6 ชม., หาไม่เจอจริง 7 วัน
     const MOOD_COLORS = { '❤️':'#FF4F8B', '🥰':'#FF8FB8', '😊':'#FFB020', '😋':'#FF7A3D', '✈️':'#3BB6E0', '🥺':'#A374DB', '🎁':'#2FC48D' };
     const W = 620, H = 900;
     const HEART_PATH = 'M0 0 C-15 -11 -15 -25 -7.5 -25 C-3.5 -25 0 -22 0 -18.5 C0 -22 3.5 -25 7.5 -25 C15 -25 15 -11 0 0 Z';
+    // ชื่อจังหวัดสั้นๆ ที่มักไปซ้อนกับคำทั่วไป (เช่น "ตากใบ", "แพร่หลาย", "อร่อยเลย") ต้องมีคำนำหน้าหรือขอบเขตคำชัดเจนถึงจะนับ
+    const AMBIGUOUS_PROVINCE_NAMES = ['ตาก', 'แพร่', 'ตราด', 'เลย', 'ชล', 'น่าน'];
+    // แปลชื่อจังหวัดภาษาอังกฤษ (กรณีแหล่งสำรองตัวที่ 3 ใช้ชื่ออังกฤษ) กลับเป็นไทย เทียบแบบ normalize (ตัดช่องว่าง/ตัวพิมพ์เล็ก)
+    const EN_TH_PROVINCES = {
+        bangkok:'กรุงเทพมหานคร', krabi:'กระบี่', kanchanaburi:'กาญจนบุรี', kalasin:'กาฬสินธุ์', kamphaengphet:'กำแพงเพชร',
+        khonkaen:'ขอนแก่น', chanthaburi:'จันทบุรี', chachoengsao:'ฉะเชิงเทรา', chonburi:'ชลบุรี', chonbuti:'ชลบุรี',
+        chainat:'ชัยนาท', chaiyaphum:'ชัยภูมิ', chumphon:'ชุมพร', chiangrai:'เชียงราย', chiangmai:'เชียงใหม่',
+        trang:'ตรัง', trat:'ตราด', tak:'ตาก', nakhonnayok:'นครนายก', nakhonpathom:'นครปฐม', nakhonphanom:'นครพนม',
+        nakhonratchasima:'นครราชสีมา', nakhonsithammarat:'นครศรีธรรมราช', nakhonsawan:'นครสวรรค์', nonthaburi:'นนทบุรี',
+        narathiwat:'นราธิวาส', nan:'น่าน', buengkan:'บึงกาฬ', buriram:'บุรีรัมย์', burirum:'บุรีรัมย์',
+        pathumthani:'ปทุมธานี', prachuapkhirikhan:'ประจวบคีรีขันธ์', prachinburi:'ปราจีนบุรี', pattani:'ปัตตานี',
+        phranakhonsiayutthaya:'พระนครศรีอยุธยา', ayutthaya:'พระนครศรีอยุธยา', phayao:'พะเยา', phangnga:'พังงา',
+        phatthalung:'พัทลุง', phichit:'พิจิตร', phitsanulok:'พิษณุโลก', phetchaburi:'เพชรบุรี', phetchabun:'เพชรบูรณ์',
+        phrae:'แพร่', phuket:'ภูเก็ต', mahasarakham:'มหาสารคาม', mukdahan:'มุกดาหาร', maehongson:'แม่ฮ่องสอน',
+        yasothon:'ยโสธร', yala:'ยะลา', roiet:'ร้อยเอ็ด', ranong:'ระนอง', rayong:'ระยอง', ratchaburi:'ราชบุรี',
+        lopburi:'ลพบุรี', lampang:'ลำปาง', lamphun:'ลำพูน', loei:'เลย', sisaket:'ศรีสะเกษ', sakonnakhon:'สกลนคร',
+        songkhla:'สงขลา', satun:'สตูล', samutprakan:'สมุทรปราการ', samutsongkhram:'สมุทรสงคราม', samutsakhon:'สมุทรสาคร',
+        sakaeo:'สระแก้ว', saraburi:'สระบุรี', singburi:'สิงห์บุรี', sukhothai:'สุโขทัย', suphanburi:'สุพรรณบุรี',
+        suratthani:'สุราษฎร์ธานี', surin:'สุรินทร์', nongkhai:'หนองคาย', nongbualamphu:'หนองบัวลำภู', angthong:'อ่างทอง',
+        amnatcharoen:'อำนาจเจริญ', udonthani:'อุดรธานี', uttaradit:'อุตรดิตถ์', uthaithani:'อุทัยธานี', ubonratchathani:'อุบลราชธานี'
+    };
 
     /* =====================================================================
        สถานะ
        ===================================================================== */
     let memories = [];
     let features = [];
+    let geoIsThai = true; // false ถ้าต้องใช้แหล่งสำรองที่ชื่อจังหวัดเป็นภาษาอังกฤษและแปลไม่สำเร็จ
     let projection, path, svg, gZoom, gProv, gPins, zoomBehavior;
     let zoomK = 1;
     let placingId = null;
     let currentMemory = null;
     let lbImages = [], lbIndex = 0;
     let localCache = {};
+    let geoAttempts = {};
     try { localCache = JSON.parse(localStorage.getItem(GEO_CACHE_KEY) || '{}'); } catch (e) {}
+    try { geoAttempts = JSON.parse(localStorage.getItem(GEO_ATTEMPT_KEY) || '{}'); } catch (e) {}
 
     /* =====================================================================
        ธีม
@@ -294,12 +357,21 @@
     function inThailand(lat, lng) { return lat >= 5.4 && lat <= 20.6 && lng >= 97.3 && lng <= 105.7; }
     function moodColor(m) { return MOOD_COLORS[m] || '#FF6FA5'; }
     function saveLocalCache() { try { localStorage.setItem(GEO_CACHE_KEY, JSON.stringify(localCache)); } catch (e) {} }
+    function saveGeoAttempts() { try { localStorage.setItem(GEO_ATTEMPT_KEY, JSON.stringify(geoAttempts)); } catch (e) {} }
     function waitForFirebase() {
         return new Promise((resolve, reject) => {
             if (window.firestoreApi) return resolve();
             window.addEventListener('firebase-ready', resolve, { once: true });
             setTimeout(() => reject(new Error('เชื่อมต่อ Firebase ไม่สำเร็จ (ตรวจสอบว่ามีไฟล์ firebase-config.js และ firebase-app.js อยู่โฟลเดอร์เดียวกัน)')), 20000);
         });
+    }
+    // เรียก lucide.createIcons() อย่างปลอดภัย เผื่อ CDN ของ lucide โหลดไม่สำเร็จ จะได้ไม่ทำให้สคริปต์ทั้งก้อนหยุดทำงาน
+    function safeIcons() {
+        try { if (window.lucide && typeof lucide.createIcons === 'function') lucide.createIcons(); } catch (e) { console.warn('lucide ใช้งานไม่ได้', e); }
+    }
+    // เรียก confetti() อย่างปลอดภัย เผื่อ CDN โหลดไม่สำเร็จ (ไม่ใช่ฟีเจอร์จำเป็น ข้ามได้เฉยๆ)
+    function safeConfetti(opts) {
+        try { if (typeof confetti === 'function') confetti(opts); } catch (e) {}
     }
 
     let toastTimer;
@@ -312,22 +384,71 @@
         clearTimeout(toastTimer);
         toastTimer = setTimeout(() => t.classList.remove('show'), undoFn ? 6000 : 2500);
     }
+    function showMobileGuide() {
+        showToast('ลากเพื่อเลื่อนแผนที่ · หมุดขอบประ = ตำแหน่งโดยประมาณ (ลากเพื่อปรับได้) · แตะจังหวัดเพื่อดูความทรงจำในจังหวัดนั้น');
+    }
 
     /* =====================================================================
-       โหลดแผนที่
+       โหลดแผนที่ (พร้อม cache ไฟล์ GeoJSON ไว้ในเครื่องผ่าน Cache API)
        ===================================================================== */
-    function provinceName(f) {
+    function provinceNameRaw(f) {
         const p = f.properties || {};
         return p.pro_th || p.PRO_TH || p.name_th || p.NAME_TH || p.name || p.NAME_1 || p.CHA_NE || p.pro_en || '';
     }
+    // normalize ชื่อภาษาอังกฤษ ("Chon Buri", "chon-buri") ให้เทียบกับ EN_TH_PROVINCES ได้
+    function normalizeEnName(s) { return String(s).toLowerCase().replace(/[^a-z]/g, ''); }
+    function isThaiText(s) { return /[\u0E00-\u0E7F]/.test(String(s)); }
+    // คืนชื่อจังหวัดเป็นภาษาไทยเสมอถ้าแปลได้ ไม่งั้นคืนชื่อดิบ (เช่น ภาษาอังกฤษจากแหล่งสำรอง)
+    function provinceName(f) {
+        const raw = provinceNameRaw(f);
+        if (!raw || isThaiText(raw)) return raw;
+        const th = EN_TH_PROVINCES[normalizeEnName(raw)];
+        return th || raw;
+    }
+
+    async function fileCacheGet(url) {
+        try {
+            if (!('caches' in window)) return null;
+            const meta = JSON.parse(localStorage.getItem(GEO_FILE_CACHE_META_KEY) || '{}');
+            const ts = meta[url];
+            if (!ts || Date.now() - ts > GEO_FILE_CACHE_TTL) return null;
+            const cache = await caches.open(GEO_FILE_CACHE);
+            const res = await cache.match(url);
+            if (!res) return null;
+            return await res.json();
+        } catch (e) { return null; }
+    }
+    async function fileCacheSet(url, response) {
+        try {
+            if (!('caches' in window)) return;
+            const cache = await caches.open(GEO_FILE_CACHE);
+            await cache.put(url, response);
+            const meta = JSON.parse(localStorage.getItem(GEO_FILE_CACHE_META_KEY) || '{}');
+            meta[url] = Date.now();
+            localStorage.setItem(GEO_FILE_CACHE_META_KEY, JSON.stringify(meta));
+        } catch (e) {}
+    }
     async function loadGeo() {
         let lastErr;
+        // 1) ลองใช้ไฟล์ที่เคย cache ไว้ก่อน (เร็ว ไม่ต้องพึ่งเน็ต) แล้วค่อยรีเฟรชเบื้องหลัง
+        for (const url of GEOJSON_URLS) {
+            const cached = await fileCacheGet(url);
+            if (cached && cached.type === 'FeatureCollection' && cached.features?.length) {
+                fetch(url).then(res => { if (res.ok) fileCacheSet(url, res.clone()); }).catch(() => {});
+                return cached;
+            }
+        }
+        // 2) ไม่มี cache หรือ cache หมดอายุ ลองโหลดจากเน็ตตามลำดับ
         for (const url of GEOJSON_URLS) {
             try {
                 const res = await fetch(url);
                 if (!res.ok) throw new Error('HTTP ' + res.status);
+                const cloned = res.clone();
                 const data = await res.json();
-                if (data.type === 'FeatureCollection' && data.features?.length) return data;
+                if (data.type === 'FeatureCollection' && data.features?.length) {
+                    fileCacheSet(url, cloned);
+                    return data;
+                }
                 if (data.type === 'Topology') throw new Error('unsupported topojson');
             } catch (e) { lastErr = e; }
         }
@@ -336,6 +457,14 @@
 
     function drawMap(geo) {
         features = geo.features;
+        // ตรวจว่าข้อมูลจังหวัดเป็นภาษาไทยหรือไม่ (แหล่งสำรองตัวที่ 3 อาจเป็นอังกฤษ) เพื่อเตือนผู้ใช้และปิดการจับคำแบบไทย
+        const sample = features.slice(0, 10).map(provinceNameRaw).filter(Boolean);
+        geoIsThai = sample.length === 0 || sample.some(isThaiText) || sample.some(n => EN_TH_PROVINCES[normalizeEnName(n)]);
+        const rawIsEnglish = sample.length > 0 && !sample.some(isThaiText);
+        document.getElementById('geo-lang-warn').classList.toggle('hidden', !rawIsEnglish);
+
+        document.getElementById('stat-provs-total').textContent = features.length || 77;
+
         projection = d3.geoMercator().fitExtent([[12, 12], [W - 12, H - 12]], geo);
         path = d3.geoPath(projection);
         svg = d3.select('#map-svg');
@@ -353,9 +482,16 @@
                 tip.style.left = (ev.clientX - r.left) + 'px'; tip.style.top = (ev.clientY - r.top) + 'px';
             })
             .on('mouseleave', () => tip.style.display = 'none')
-            .on('click', (ev) => { if (placingId) placeManually(ev); });
+            .on('click', (ev, d) => { if (placingId) placeManually(ev); else showProvinceMemories(d); });
 
         zoomBehavior = d3.zoom().scaleExtent([1, 60]).translateExtent([[0, 0], [W, H]])
+            // เมาส์: ต้องกด Ctrl/⌘ ค้างถึงจะซูมด้วยล้อเลื่อน ไม่งั้นปล่อยให้หน้าเว็บเลื่อนตามปกติ
+            // ทัช/ลาก/บีบสองนิ้ว: อนุญาตเสมอ
+            .filter((ev) => {
+                if (ev.type === 'wheel') return ev.ctrlKey || ev.metaKey;
+                if (ev.type === 'mousedown' && ev.button !== 0) return false;
+                return true;
+            })
             .on('zoom', (ev) => {
                 gZoom.attr('transform', ev.transform);
                 zoomK = ev.transform.k;
@@ -363,6 +499,15 @@
             });
         svg.call(zoomBehavior).on('dblclick.zoom', null);
         svg.on('click', (ev) => { if (placingId && ev.target === svg.node()) placeManually(ev); });
+
+        // แจ้งเตือนครั้งเดียวถ้าผู้ใช้เลื่อนล้อเมาส์บนแผนที่โดยไม่ได้กด Ctrl/⌘ (เพื่อให้รู้ว่าทำไมแผนที่ไม่ซูม)
+        let wheelHintShown = false;
+        wrap.addEventListener('wheel', (ev) => {
+            if (!ev.ctrlKey && !ev.metaKey && !wheelHintShown) {
+                wheelHintShown = true;
+                showToast('กด Ctrl (หรือ ⌘) ค้างแล้วเลื่อนล้อ เพื่อซูมแผนที่');
+            }
+        }, { passive: true });
     }
     function zoomBy(f) { svg.transition().duration(300).call(zoomBehavior.scaleBy, f); }
     function resetZoom() { svg.transition().duration(400).call(zoomBehavior.transform, d3.zoomIdentity); }
@@ -379,54 +524,69 @@
     function parseCoords(text) {
         if (!text) return null;
         const t = String(text);
-        let m = t.match(/@(-?\d{1,2}\.\d+),(-?\d{2,3}\.\d+)/) || t.match(/(-?\d{1,2}\.\d{3,})\s*[,\s]\s*(-?\d{2,3}\.\d{3,})/);
+        let m = t.match(/@(-?\d{1,2}\.\d+),(-?\d{2,3}\.\d+)/)
+            || t.match(/!3d(-?\d{1,2}\.\d+)!4d(-?\d{2,3}\.\d+)/)
+            || t.match(/(-?\d{1,2}\.\d{3,})\s*[,\s]\s*(-?\d{2,3}\.\d{3,})/);
         if (!m) return null;
         const lat = parseFloat(m[1]), lng = parseFloat(m[2]);
         return inThailand(lat, lng) ? { lat, lng } : null;
     }
-    // 2) ชื่อจังหวัดในข้อความ
+    // 2) ชื่อจังหวัดในข้อความ — ต้องมีขอบเขตคำที่สมเหตุสมผล ไม่ใช่แค่ substring ตรงๆ (กัน "ตากใบ" ไปจับเป็น "ตาก", "อร่อยเลย" ไปจับเป็น "เลย")
     const PROVINCE_ALIASES = { 'กทม': 'กรุงเทพมหานคร', 'กรุงเทพ': 'กรุงเทพมหานคร', 'โคราช': 'นครราชสีมา', 'อยุธยา': 'พระนครศรีอยุธยา', 'หัวหิน': 'ประจวบคีรีขันธ์', 'ชะอำ': 'เพชรบุรี' };
+    function escapeRegExp(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+    // ชื่อจังหวัดจะนับว่า "เจอ" ก็ต่อเมื่อตามหลังด้วยตัวอักษรที่ไม่ใช่พยัญชนะ/สระไทย (กันคำต่อท้ายกลายเป็นคำอื่น)
+    // และถ้าเป็นชื่อกำกวม (AMBIGUOUS) ต้องมีคำนำหน้า "จ." หรือ "จังหวัด" ชัดเจน หรืออยู่โดดๆ คั่นด้วยช่องว่าง/จุลภาค
     function findProvinceFeature(text) {
-        if (!text || !features.length) return null;
+        if (!text || !features.length || !geoIsThai) return null;
+        const cleaned = String(text);
         let best = null;
         for (const f of features) {
             const name = provinceName(f).replace(/^จังหวัด/, '').trim();
-            if (name && text.includes(name) && (!best || name.length > best.len)) best = { f, len: name.length };
+            if (!name || !isThaiText(name)) continue;
+            const esc = escapeRegExp(name);
+            let re;
+            if (AMBIGUOUS_PROVINCE_NAMES.includes(name)) {
+                re = new RegExp('(?:จังหวัด|จ\\.)\\s*' + esc + '(?![ก-๙])|(?:^|[\\s,\\u0E2F\\-])' + esc + '(?=$|[\\s,\\u0E2F\\-])');
+            } else {
+                re = new RegExp(esc + '(?![ก-๙])');
+            }
+            if (re.test(cleaned) && (!best || name.length > best.len)) best = { f, len: name.length };
         }
         if (best) return best.f;
         for (const k in PROVINCE_ALIASES) {
-            if (text.includes(k)) return features.find(f => provinceName(f).includes(PROVINCE_ALIASES[k])) || null;
+            if (cleaned.includes(k)) return features.find(f => provinceName(f).includes(PROVINCE_ALIASES[k])) || null;
         }
         return null;
     }
     function centroidLatLng(f) { const c = d3.geoCentroid(f); return { lat: c[1], lng: c[0] }; }
 
     // 3) ค้นหาชื่อสถานที่ผ่าน OpenStreetMap Nominatim (จำกัด 1 คำขอ/วินาที)
+    // คืนค่า { lat, lng } ถ้าเจอ, null ถ้าค้นแล้วไม่พบสถานที่จริงๆ, หรือ throw ถ้าเป็นปัญหาเน็ต/เซิร์ฟเวอร์ (จะได้แยกจากกรณี "ไม่พบ")
     let geoQueue = Promise.resolve(), lastGeoAt = 0;
     function geocode(query) {
         geoQueue = geoQueue.then(async () => {
             const wait = 1100 - (Date.now() - lastGeoAt);
             if (wait > 0) await new Promise(r => setTimeout(r, wait));
             lastGeoAt = Date.now();
-            try {
-                const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=th&accept-language=th&q=' + encodeURIComponent(query);
-                const res = await fetch(url);
-                if (!res.ok) return null;
-                const j = await res.json();
-                if (!j.length) return null;
-                const lat = parseFloat(j[0].lat), lng = parseFloat(j[0].lon);
-                return inThailand(lat, lng) ? { lat, lng } : null;
-            } catch (e) { return null; }
+            const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=th&accept-language=th&q=' + encodeURIComponent(query);
+            const res = await fetch(url); // ถ้า fetch reject (เน็ตหลุด) จะ throw ขึ้นไปตามธรรมชาติ
+            if (!res.ok) throw new Error('nominatim HTTP ' + res.status);
+            const j = await res.json();
+            if (!j.length) return null; // ค้นสำเร็จ แต่ไม่พบสถานที่ — ต่างจากปัญหาเน็ต
+            const lat = parseFloat(j[0].lat), lng = parseFloat(j[0].lon);
+            return inThailand(lat, lng) ? { lat, lng } : null;
         });
         return geoQueue;
     }
 
-    async function persistPos(m, lat, lng, source) {
+    async function persistPos(m, lat, lng, source, geoQuery) {
         m.lat = lat; m.lng = lng; m.geoSource = source;
-        localCache[m.id] = { lat, lng, geoSource: source };
+        if (geoQuery !== undefined) m.geoQuery = geoQuery;
+        assignProvince(m);
+        localCache[m.id] = { lat, lng, geoSource: source, geoQuery: m.geoQuery };
         saveLocalCache();
         try {
-            await window.firestoreApi.updateMemoryInFirestore(m.id, { lat, lng, geoSource: source });
+            await window.firestoreApi.updateMemoryInFirestore(m.id, { lat, lng, geoSource: source, geoQuery: m.geoQuery ?? null });
             return true;
         } catch (e) {
             console.error(e);
@@ -436,53 +596,76 @@
     }
 
     function hasPos(m) { return typeof m.lat === 'number' && typeof m.lng === 'number'; }
+    // เก็บจังหวัดของหมุดไว้ล่วงหน้า (คำนวณครั้งเดียวตอนตำแหน่งเปลี่ยน) แทนที่จะวนเช็คทุกจังหวัดทุกครั้งที่ render
+    function assignProvince(m) {
+        m._prov = hasPos(m) ? (features.find(f => d3.geoContains(f, [m.lng, m.lat])) || null) : null;
+    }
 
     function applyKnownPositions() {
         for (const m of memories) {
-            if (hasPos(m)) { m._approx = false; continue; }
+            const loc = (m.location || '').trim();
+            if (hasPos(m)) {
+                // ถ้าชื่อสถานที่ในไทม์ไลน์ถูกแก้ไขไปจากตอนที่ปักหมุดอัตโนมัติ (ไม่ใช่หมุดที่ลากเอง) ให้เคลียร์ตำแหน่งเพื่อหาใหม่
+                const wasAuto = m.geoSource && m.geoSource !== 'manual';
+                if (wasAuto && m.geoQuery !== undefined && m.geoQuery !== null && m.geoQuery !== loc) {
+                    m.lat = null; m.lng = null; m.geoSource = null; m.geoQuery = null; m._prov = null;
+                } else {
+                    assignProvince(m);
+                    continue;
+                }
+            }
             const c = localCache[m.id];
-            if (c && typeof c.lat === 'number') { m.lat = c.lat; m.lng = c.lng; m.geoSource = c.geoSource; continue; }
-            const p = parseCoords(m.location);
-            if (p) { m.lat = p.lat; m.lng = p.lng; m.geoSource = 'coords'; m._needSave = true; }
+            if (c && typeof c.lat === 'number' && (c.geoSource === 'manual' || c.geoQuery === loc)) {
+                m.lat = c.lat; m.lng = c.lng; m.geoSource = c.geoSource; m.geoQuery = c.geoQuery;
+                assignProvince(m);
+                continue;
+            }
+            const p = parseCoords(loc);
+            if (p) { m.lat = p.lat; m.lng = p.lng; m.geoSource = 'coords'; m.geoQuery = loc; m._needSave = true; assignProvince(m); }
         }
     }
 
     async function resolveMissing() {
-        const todo = memories.filter(m => !hasPos(m) && m.location && m.location.trim());
+        const now = Date.now();
+        const todo = memories.filter(m => {
+            if (hasPos(m) || !m.location || !m.location.trim()) return false;
+            const att = geoAttempts[m.id];
+            if (att && att.query === m.location.trim() && (now - att.at) < RETRY_MS[att.reason || 'notfound']) return false;
+            return true;
+        });
         const status = document.getElementById('geo-status');
         let done = 0;
         if (todo.length) { status.classList.remove('hidden'); status.classList.add('flex'); }
         for (const m of todo) {
             document.getElementById('geo-status-text').textContent = `กำลังปักหมุดจากชื่อสถานที่ ${done + 1}/${todo.length}`;
-            const pf = findProvinceFeature(m.location);
-            let pos = await geocode(m.location);
-            let source = 'auto';
+            const query = m.location.trim();
+            const pf = findProvinceFeature(query);
+            let pos = null, source = 'auto', failReason = null;
+            try {
+                pos = await geocode(query);
+                if (!pos) failReason = 'notfound';
+            } catch (e) {
+                console.warn('geocode ล้มเหลว (น่าจะเป็นปัญหาเน็ต/เซิร์ฟเวอร์):', e);
+                failReason = 'network';
+            }
             if (!pos && pf) {
-                // ลองใส่ชื่อจังหวัดช่วย ถ้ายังไม่เจอใช้จุดกลางจังหวัด (ตำแหน่งโดยประมาณ)
                 pos = centroidLatLng(pf); source = 'province';
+                failReason = null; // ได้ตำแหน่งประมาณจากจังหวัดแล้ว ไม่ถือว่าล้มเหลว
             }
             if (pos) {
-                const spot = nudge(pos.lat, pos.lng, m.id);
-                await persistPos(m, spot.lat, spot.lng, source);
+                await persistPos(m, pos.lat, pos.lng, source, query);
+                delete geoAttempts[m.id];
+            } else {
+                // จำไว้ว่าลองแล้วและเป็นเพราะอะไร จะได้ไม่ยิง Nominatim ซ้ำทุกครั้งที่เปิดหน้า
+                geoAttempts[m.id] = { at: now, reason: failReason || 'notfound', query };
             }
+            saveGeoAttempts();
             done++;
             renderPins();
         }
         status.classList.add('hidden'); status.classList.remove('flex');
-        // บันทึกพิกัดที่อ่านจากข้อความ
-        for (const m of memories) if (m._needSave) { m._needSave = false; persistPos(m, m.lat, m.lng, 'coords'); }
-    }
-
-    // เลี่ยงหมุดซ้อนกันพอดี (ช่วยให้ยังเห็นหลายหมุดในที่เดียวกัน)
-    function nudge(lat, lng, selfId) {
-        const others = memories.filter(o => o.id !== selfId && hasPos(o));
-        let a = 0, r = 0, tries = 0;
-        let p = { lat, lng };
-        while (others.some(o => Math.abs(o.lat - p.lat) < 0.004 && Math.abs(o.lng - p.lng) < 0.004) && tries < 40) {
-            tries++; a += 2.4; r = 0.006 * Math.sqrt(tries);
-            p = { lat: lat + r * Math.sin(a), lng: lng + r * Math.cos(a) };
-        }
-        return p;
+        // บันทึกพิกัดที่อ่านจากข้อความ (ลิงก์/ตัวเลขพิกัด)
+        for (const m of memories) if (m._needSave) { m._needSave = false; persistPos(m, m.lat, m.lng, 'coords', m.location.trim()); }
     }
 
     /* =====================================================================
@@ -492,9 +675,28 @@
         if (!gPins) return;
         const placed = memories.filter(hasPos).map(m => {
             const xy = projection([m.lng, m.lat]);
-            m._x = xy[0]; m._y = xy[1];
+            m._baseX = xy[0]; m._baseY = xy[1];
             return m;
         });
+
+        // หมุดที่อยู่ใกล้กันมากจนซ้อนทับพอดี: กระจายตำแหน่ง "บนจอ" เป็นวงกลมเล็กๆ เพื่อให้มองเห็นแยกกันได้
+        // สำคัญ: ปรับแค่ _x/_y (ตำแหน่งที่วาด) เท่านั้น ไม่แตะ m.lat/m.lng ที่เป็นพิกัดจริงและถูกบันทึกลงฐานข้อมูล
+        const buckets = new Map();
+        const BUCKET_PX = 6;
+        for (const m of placed) {
+            const key = Math.round(m._baseX / BUCKET_PX) + '_' + Math.round(m._baseY / BUCKET_PX);
+            if (!buckets.has(key)) buckets.set(key, []);
+            buckets.get(key).push(m);
+        }
+        for (const group of buckets.values()) {
+            if (group.length === 1) { group[0]._x = group[0]._baseX; group[0]._y = group[0]._baseY; continue; }
+            const r = 5 + group.length * 1.2;
+            group.forEach((m, i) => {
+                const ang = (2 * Math.PI * i) / group.length;
+                m._x = m._baseX + r * Math.cos(ang);
+                m._y = m._baseY + r * Math.sin(ang);
+            });
+        }
 
         const sel = gPins.selectAll('g.pin').data(placed, d => d.id);
         sel.exit().remove();
@@ -531,12 +733,13 @@
                 d3.select(this).classed('dragging', false);
                 const [lng, lat] = projection.invert([d._x, d._y]);
                 if (Math.abs(lat - startLat) < 1e-6 && Math.abs(lng - startLng) < 1e-6) return;
-                const pl = startLat, pg = startLng, prevSrc = d.geoSource;
+                const pl = startLat, pg = startLng, prevSrc = d.geoSource, prevQuery = d.geoQuery;
                 d3.select(this).classed('approx', false);
-                await persistPos(d, lat, lng, 'manual');
+                // ลากเอง = สั่งชัดเจนว่านี่คือตำแหน่งจริง ไม่ใช่แค่ "ขยับเพื่อไม่ให้ซ้อน" — geoQuery ตั้งเป็น null เพื่อไม่ให้การแก้ข้อความสถานที่ภายหลังมาเขียนทับหมุดที่ตั้งใจลากเอง
+                await persistPos(d, lat, lng, 'manual', null);
                 updateStats();
                 showToast('บันทึกตำแหน่งหมุดแล้ว 💗', async () => {
-                    await persistPos(d, pl, pg, prevSrc || 'auto');
+                    await persistPos(d, pl, pg, prevSrc || 'auto', prevQuery);
                     renderPins();
                 });
             });
@@ -546,16 +749,40 @@
         const placed = memories.filter(hasPos);
         document.getElementById('stat-pins').textContent = placed.length;
         const counts = new Map();
-        for (const m of placed) {
-            const f = features.find(ft => d3.geoContains(ft, [m.lng, m.lat]));
-            if (f) counts.set(f, (counts.get(f) || 0) + 1);
-        }
+        for (const m of placed) if (m._prov) counts.set(m._prov, (counts.get(m._prov) || 0) + 1);
         document.getElementById('stat-provs').textContent = counts.size;
         gProv.selectAll('path').attr('class', d => {
             const c = counts.get(d) || 0;
             return 'prov' + (c >= 5 ? ' v3' : c >= 2 ? ' v2' : c >= 1 ? ' v1' : '');
         });
     }
+
+    /* =====================================================================
+       คลิกจังหวัด -> ดูรายการความทรงจำในจังหวัดนั้น
+       ===================================================================== */
+    function showProvinceMemories(f) {
+        const list = memories.filter(m => hasPos(m) && m._prov === f).sort((a, b) => new Date(b.date) - new Date(a.date));
+        const box = document.getElementById('province-modal-content');
+        box.innerHTML = `
+            <h2 class="text-lg sm:text-xl font-bold txt-title font-mitr mb-1 pr-10 flex items-center">
+                <i data-lucide="map-pin" class="w-5 h-5 mr-1.5 text-rose-500"></i>${escapeHtml(provinceName(f))}
+            </h2>
+            <p class="text-xs txt-muted mb-4">${list.length} ความทรงจำในจังหวัดนี้</p>
+            ${list.length ? `
+                <div class="space-y-2">
+                    ${list.map(m => `
+                        <button onclick="closeProvinceModal();openMemory('${m.id}')" class="prov-mem-item list-item w-full rounded-2xl px-3 py-2.5 text-left flex items-center gap-3">
+                            <span class="text-xl">${escapeHtml(m.mood || '❤️')}</span>
+                            <span class="min-w-0 flex-1">
+                                <span class="block text-sm font-medium txt-title truncate">${escapeHtml(m.title)}</span>
+                                <span class="block text-[11px] txt-muted truncate">${formatDateThai(m.date)}${m.location ? ' · ' + escapeHtml(m.location) : ''}</span>
+                            </span>
+                        </button>`).join('')}
+                </div>` : `<p class="text-sm txt-muted">ยังไม่มีความทรงจำที่ปักหมุดในจังหวัดนี้</p>`}`;
+        document.getElementById('province-modal').classList.remove('hidden');
+        safeIcons();
+    }
+    function closeProvinceModal() { document.getElementById('province-modal').classList.add('hidden'); }
 
     /* =====================================================================
        ความทรงจำที่ยังไม่มีหมุด + วางหมุดเอง
@@ -574,7 +801,7 @@
                 </span>
                 <i data-lucide="map-pin-plus" class="w-4 h-4 text-pink-500 shrink-0"></i>
             </button>`).join('');
-        lucide.createIcons();
+        safeIcons();
     }
     function startPlacing(id) {
         const m = memories.find(x => x.id === id); if (!m) return;
@@ -595,18 +822,18 @@
         const [px, py] = d3.pointer(ev, gZoom.node());
         const [lng, lat] = projection.invert([px, py]);
         cancelPlacing();
-        await persistPos(m, lat, lng, 'manual');
+        await persistPos(m, lat, lng, 'manual', null);
         renderPins();
-        confetti({ particleCount: 40, spread: 50, origin: { y: 0.6 } });
+        safeConfetti({ particleCount: 40, spread: 50, origin: { y: 0.6 } });
         showToast('วางหมุดเรียบร้อย 💗');
     }
     async function resetPin(id) {
         const m = memories.find(x => x.id === id); if (!m) return;
         closeMemory();
-        const geo = document.getElementById('geo-status');
         delete localCache[id]; saveLocalCache();
-        m.lat = m.lng = null; m.geoSource = null;
-        try { await window.firestoreApi.updateMemoryInFirestore(id, { lat: null, lng: null, geoSource: null }); } catch (e) {}
+        delete geoAttempts[id]; saveGeoAttempts();
+        m.lat = m.lng = null; m.geoSource = null; m.geoQuery = null; m._prov = null;
+        try { await window.firestoreApi.updateMemoryInFirestore(id, { lat: null, lng: null, geoSource: null, geoQuery: null }); } catch (e) {}
         renderPins();
         await resolveMissing();
         if (!hasPos(m)) showToast('ยังหาตำแหน่งไม่เจอ ลองวางหมุดเองจากรายการด้านล่างนะ');
@@ -625,7 +852,7 @@
             ${imgs.length ? `
                 <div class="mb-4">
                     <div class="grid ${imgs.length === 1 ? 'grid-cols-1' : 'grid-cols-2 sm:grid-cols-3'} gap-2 rounded-2xl overflow-hidden border border-pink-100">
-                        ${imgs.map((src, i) => `<img src="${src}" onclick="openLightbox(${i})" class="w-full ${imgs.length === 1 ? 'h-60' : 'h-28'} object-cover cursor-pointer hover:opacity-90 transition" loading="lazy">`).join('')}
+                        ${imgs.map((src, i) => `<img src="${escapeHtml(src)}" onclick="openLightbox(${i})" class="w-full ${imgs.length === 1 ? 'h-60' : 'h-28'} object-cover cursor-pointer hover:opacity-90 transition" loading="lazy">`).join('')}
                     </div>
                     ${imgs.length > 1 ? '<p class="text-[11px] txt-muted mt-1 text-center">คลิกที่รูปเพื่อเปิดดูขนาดใหญ่</p>' : ''}
                 </div>` : ''}
@@ -648,7 +875,7 @@
                 <a href="index.html" class="text-xs font-medium text-pink-600 bg-pink-50 hover:bg-pink-100 px-3 py-1.5 rounded-full flex items-center"><i data-lucide="book-heart" class="w-3.5 h-3.5 mr-1"></i> ดูในไทม์ไลน์</a>
             </div>`;
         document.getElementById('memory-modal').classList.remove('hidden');
-        lucide.createIcons();
+        safeIcons();
     }
     function closeMemory() { document.getElementById('memory-modal').classList.add('hidden'); }
 
@@ -664,22 +891,37 @@
     function stepLightbox(d) { lbIndex = (lbIndex + d + lbImages.length) % lbImages.length; showLb(); }
     function closeLightbox() { const lb = document.getElementById('lightbox'); lb.classList.add('hidden'); lb.classList.remove('flex'); }
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') { if (!document.getElementById('lightbox').classList.contains('hidden')) closeLightbox(); else if (placingId) cancelPlacing(); else closeMemory(); }
+        if (e.key === 'Escape') {
+            if (!document.getElementById('lightbox').classList.contains('hidden')) closeLightbox();
+            else if (!document.getElementById('province-modal').classList.contains('hidden')) closeProvinceModal();
+            else if (placingId) cancelPlacing();
+            else closeMemory();
+        }
         if (!document.getElementById('lightbox').classList.contains('hidden')) { if (e.key === 'ArrowLeft') stepLightbox(-1); if (e.key === 'ArrowRight') stepLightbox(1); }
     });
 
     /* =====================================================================
        เริ่มทำงาน
        ===================================================================== */
+    function showFatalError(msg) {
+        document.getElementById('loading-text').textContent = msg;
+        document.getElementById('loading-retry').classList.remove('hidden');
+        const icon = document.getElementById('loading-icon');
+        if (icon) icon.classList.remove('animate-heart-pulse');
+    }
     window.addEventListener('load', async () => {
-        lucide.createIcons();
+        safeIcons();
+        if (window.__d3Failed || typeof d3 === 'undefined') {
+            showFatalError('โหลดไลบรารีแผนที่ (d3.js) ไม่สำเร็จ เช็กอินเทอร์เน็ตแล้วลองใหม่');
+            return;
+        }
         const loadingText = document.getElementById('loading-text');
         try {
             const geo = await loadGeo();
             drawMap(geo);
         } catch (e) {
             console.error(e);
-            loadingText.textContent = 'โหลดแผนที่ไม่สำเร็จ ลองรีเฟรชหน้านี้อีกครั้ง';
+            showFatalError('โหลดแผนที่ไม่สำเร็จ เช็กอินเทอร์เน็ตแล้วลองใหม่');
             return;
         }
         loadingText.textContent = 'กำลังโหลดความทรงจำ...';
@@ -688,19 +930,20 @@
             memories = await window.firestoreApi.loadMemoriesFromFirestore();
         } catch (e) {
             console.error(e);
-            loadingText.textContent = 'โหลดความทรงจำไม่สำเร็จ: ' + e.message;
+            showFatalError('โหลดความทรงจำไม่สำเร็จ: ' + e.message);
             return;
         }
         document.getElementById('loading').style.display = 'none';
         applyKnownPositions();
         renderPins();
-        lucide.createIcons();
+        safeIcons();
         await resolveMissing();
         renderPins();
     });
 
-    /* เอฟเฟกต์หัวใจตามเมาส์ */
+    /* เอฟเฟกต์หัวใจตามเมาส์ (เคารพ prefers-reduced-motion) */
     (function () {
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         const HEARTS = ['💗', '💕', '💖', '❤️']; let last = 0;
         function spawn(x, y) {
             const now = Date.now(); if (now - last < 60) return; last = now;
