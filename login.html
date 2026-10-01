@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Our Love Story</title>
+<meta name="theme-color" content="#FFF3F7">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cdefs%3E%3ClinearGradient%20id='g'%20x1='0'%20y1='0'%20x2='1'%20y2='1'%3E%3Cstop%20offset='0'%20stop-color='%23FF6FA5'/%3E%3Cstop%20offset='1'%20stop-color='%23FF9F5A'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle%20cx='32'%20cy='32'%20r='30'%20fill='%23FFF0F5'/%3E%3Cpath%20d='M32%2050C32%2050%2010%2036%2010%2021C10%2013%2016%208%2022%208C26%208%2030%2010%2032%2014C34%2010%2038%208%2042%208C48%208%2054%2013%2054%2021C54%2036%2032%2050%2032%2050Z'%20fill='url(%23g)'/%3E%3C/svg%3E">
+<script>
+(function () {
+  try {
+    var s = localStorage.getItem('theme_mode');
+    var d = s ? s === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (d) document.documentElement.classList.add('dark');
+  } catch (e) {}
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500&family=Prompt:wght@300;400&family=Sacramento&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: linear-gradient(160deg, #FFF3F7 0%, #FFF6EC 55%, #F6F0FC 100%); --bgsolid: #FFE8F1; --wall: rgba(255,182,193,.16);
+    --text: #4A3E3D; --muted: #9A8B8A; --line: #F2C9D8; --field: #FFF8FB; --hover: rgba(255,111,165,.1);
+    --accent: #FF6FA5; --err: #D9304F; --ring: #A374DB;
+  }
+  html.dark {
+    color-scheme: dark;
+    --bg: linear-gradient(160deg, #1F1426 0%, #241B22 55%, #1E1A2F 100%); --bgsolid: #1F1426; --wall: rgba(255,143,184,.05);
+    --text: #F3E8EC; --muted: #B8A7B2; --line: rgba(255,143,184,.3); --field: rgba(255,143,184,.08); --hover: rgba(255,143,184,.14);
+    --accent: #FF8FB8; --err: #FF8A9F;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; }
+  body { font-family: 'Prompt', sans-serif; color: var(--text); background: var(--bg) fixed; min-height: 100vh; min-height: 100dvh; }
+
+  .split { display: grid; grid-template-columns: 1.1fr 1fr; min-height: 100vh; min-height: 100dvh; transition: opacity .4s, transform .4s; }
+  .split.out { opacity: 0; transform: scale(.98); }
+
+  /* ฝั่งซ้าย: รูปในโปสเตอร์ติดผนัง */
+  .wall { display: flex; align-items: center; justify-content: center; padding: 2.5rem 2rem; background: var(--wall); }
+  .poster {
+    position: relative; margin: 0; display: flex; flex-direction: column; padding: .9rem .9rem 0;
+    width: min(100%, calc((100vh - 5rem) * .714)); width: min(100%, calc((100dvh - 5rem) * .714));
+    aspect-ratio: 5 / 7; background: #FFFCF8; color: #4A3E3D; transform: rotate(-1deg);
+    box-shadow: 0 18px 40px rgba(120,60,80,.22), 0 2px 6px rgba(120,60,80,.12);
+  }
+  .pic { flex: 1; min-height: 0; overflow: hidden; background: #EBD9DF; }
+  .pic img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 82%; }
+  .poster figcaption { padding: .6rem 0 .8rem; text-align: center; }
+  .cap-t { font: 400 clamp(1.7rem, 2.6vw, 2.4rem)/1 'Sacramento', cursive; background: linear-gradient(90deg, #FF6FA5, #D946EF, #F59E0B); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .cap-s { margin-top: .2rem; font-size: .68rem; color: #9A8B8A; }
+  .tape { position: absolute; top: -.55rem; width: 3.4rem; height: 1.2rem; background: rgba(255,182,193,.7); }
+  .tape.l { left: -.9rem; transform: rotate(-38deg); }
+  .tape.r { right: -.9rem; transform: rotate(38deg); background: rgba(253,224,130,.75); }
+
+  /* ฝั่งขวา: ปลดล็อก */
+  .panel { position: relative; display: flex; align-items: center; justify-content: center; padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom)); }
+  .box { width: 100%; max-width: 22rem; text-align: center; }
+  .box.shake { animation: shake .4s; }
+  @keyframes shake { 20%{transform:translateX(-8px)} 40%{transform:translateX(7px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(3px)} }
+  .step { display: none; }
+  .step.on { display: block; animation: in .35s ease; }
+  @keyframes in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .heart { display: block; margin: 0 auto 1rem; animation: beat 2.5s infinite; }
+  @keyframes beat { 0%{transform:scale(1)} 14%{transform:scale(1.14)} 28%{transform:scale(1)} 42%{transform:scale(1.14)} 70%{transform:scale(1)} }
+  h1 { font: 500 1.2rem 'Mitr', sans-serif; margin: 0 0 .3rem; }
+  .sub { font-size: .82rem; color: var(--muted); margin: 0 0 1.5rem; line-height: 1.55; }
+  .msg { min-height: 1.3rem; font-size: .8rem; color: var(--muted); margin: .7rem 0 1rem; }
+  .msg.err { color: var(--err); }
+
+  /* PIN */
+  .dots { display: flex; justify-content: center; gap: .9rem; margin: 1.6rem 0 .2rem; }
+  .dot { width: .8rem; height: .8rem; border-radius: 50%; border: 1.5px solid var(--line); transition: background .12s, border-color .12s, transform .12s; }
+  .dot.on { background: var(--accent); border-color: var(--accent); transform: scale(1.1); }
+  .dots.bad .dot { border-color: var(--err); background: var(--err); }
+  .pad { display: grid; grid-template-columns: repeat(3, 4.25rem); gap: 1rem 1.25rem; justify-content: center; }
+  .key { width: 4.25rem; height: 4.25rem; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--text); font: 400 1.5rem 'Mitr', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .12s, transform .08s; }
+  .key:hover, .key:active { background: var(--hover); }
+  .key:active { transform: scale(.94); }
+  .key.ghost { border-color: transparent; }
+  .key.blank { visibility: hidden; }
+  .key:disabled { opacity: .5; cursor: default; }
+
+  /* captcha */
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; }
+  .tile { position: relative; aspect-ratio: 1; padding: 0; border: 0; border-radius: .6rem; overflow: hidden; cursor: pointer; background: var(--field); box-shadow: inset 0 0 0 1px var(--line); transition: transform .12s; }
+  .tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .tile .ph { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; color: var(--line); }
+  .tile .ck { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,111,165,.4); color: #fff; opacity: 0; transition: opacity .12s; }
+  .tile.sel { transform: scale(.9); }
+  .tile.sel .ck { opacity: 1; }
+  .btn { width: 100%; padding: .8rem 1rem; border: 0; border-radius: 999px; cursor: pointer; font: 500 1rem 'Mitr', sans-serif; color: #fff; background: linear-gradient(90deg, #F0518F, #F2802E); transition: transform .1s, opacity .15s; }
+  .btn:active { transform: scale(.98); }
+  .btn:disabled { opacity: .6; cursor: default; }
+  .btn:focus-visible, .key:focus-visible, .tile:focus-visible, .toggle:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+
+  .toggle { position: absolute; top: .9rem; right: .9rem; width: 2.25rem; height: 2.25rem; border: 0; border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .toggle:hover { background: var(--hover); }
+  .toggle .sun { display: none; } html.dark .toggle .sun { display: block; } html.dark .toggle .moon { display: none; }
+
+  /* แอนิเมชันเข้าหน้าหลัก */
+  #go { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; background: var(--bg); opacity: 0; visibility: hidden; transition: opacity .5s; overflow: hidden; }
+  #go.on { opacity: 1; visibility: visible; }
+  #go svg { width: 5rem; height: 5rem; animation: beat 1s infinite; }
+  #go path { fill: var(--accent); transition: fill .9s; }
+  #go.zoom svg { animation: none; transform: scale(45); transition: transform .9s cubic-bezier(.65,0,.9,.5); }
+  #go.zoom path { fill: var(--bgsolid); }
+
+  @media (max-width: 800px) {
+    .split { grid-template-columns: 1fr; grid-template-rows: 40vh 1fr; grid-template-rows: 40dvh 1fr; }
+    .wall { padding: 1.4rem 1rem; }
+    .poster { width: min(100%, calc((40vh - 2.8rem) * .714)); width: min(100%, calc((40dvh - 2.8rem) * .714)); padding: .55rem .55rem 0; }
+    .poster figcaption { padding: .3rem 0 .45rem; } .cap-t { font-size: 1.5rem; } .cap-s { display: none; }
+    .tape { width: 2.4rem; height: .9rem; }
+    .panel { align-items: flex-start; padding-top: 2rem; }
+  }
+  @media (max-height: 640px) { .pad { gap: .6rem 1.1rem; grid-template-columns: repeat(3, 3.6rem); } .key { width: 3.6rem; height: 3.6rem; font-size: 1.3rem; } }
+  @media (prefers-reduced-motion: reduce) { .heart, #go svg, .step.on, .box.shake { animation: none; } #go.zoom svg { transition: none; } .dot, .key { transition: none; } }
+</style>
+</head>
+<body>
+
+<div class="split" id="split">
+  <div class="wall">
+    <figure class="poster">
+      <i class="tape l"></i><i class="tape r"></i>
+      <div class="pic"><img src="couple.jpg" alt="รูปคู่ของเรา"></div>
+      <figcaption>
+        <div class="cap-t">Our Love Story</div>
+        <div class="cap-s">เส้นทางความทรงจำของเราสองคน</div>
+      </figcaption>
+    </figure>
+  </div>
+
+  <section class="panel">
+    <button class="toggle" id="themeBtn" type="button" aria-label="สลับโหมดสว่าง/มืด">
+      <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+
+    <div class="box" id="box">
+      <!-- ขั้นที่ 1: PIN -->
+      <div class="step on" id="s1">
+        <svg class="heart" width="34" height="34" viewBox="0 0 24 24" fill="#FF6FA5" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+        <h1>ใส่รหัสผ่าน</h1>
+        <p class="sub">วันที่เราเริ่มคบกัน เรียงเป็น วัน เดือน ปี (6 หลัก)</p>
+        <div class="dots" id="dots" role="img" aria-label="กรอกแล้ว 0 จาก 6 หลัก"><i class="dot"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i></div>
+        <p class="msg" id="m1" role="alert" aria-live="polite"></p>
+        <div class="pad" id="pad">
+          <button class="key" type="button" data-k="1">1</button><button class="key" type="button" data-k="2">2</button><button class="key" type="button" data-k="3">3</button>
+          <button class="key" type="button" data-k="4">4</button><button class="key" type="button" data-k="5">5</button><button class="key" type="button" data-k="6">6</button>
+          <button class="key" type="button" data-k="7">7</button><button class="key" type="button" data-k="8">8</button><button class="key" type="button" data-k="9">9</button>
+          <button class="key blank" type="button" tabindex="-1" aria-hidden="true"></button>
+          <button class="key" type="button" data-k="0">0</button>
+          <button class="key ghost" type="button" data-k="del" aria-label="ลบ"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M17 9.5l-5 5M12 9.5l5 5"/></svg></button>
+        </div>
+      </div>
+
+      <!-- ขั้นที่ 2: captcha -->
+      <div class="step" id="s2">
+        <h1>เลือกรูปแนนน่ารัก ๆ</h1>
+        <p class="sub">เลือกให้ครบทุกรูป แล้วกดยืนยัน</p>
+        <div class="grid" id="grid"></div>
+        <p class="msg" id="m2" role="alert" aria-live="polite"></p>
+        <button class="btn" id="verify" type="button">ยืนยัน</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="go" aria-hidden="true">
+  <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+</div>
+
+<script>
+(function () {
+  var AUTH_KEY = 'anniv_auth', REDIRECT = 'index.html', LEN = 6;
+
+  // ===== รูปสำหรับ captcha (3x3 = 9 ช่อง) =====
+  // ใส่ path รูปในช่อง src เช่น 'nan1.jpg'  /  cute: true = ต้องเลือก, false = ไม่ใช่แนน (ห้ามเลือก)
+  // ตอนนี้ยังเป็นช่องว่าง และตั้งเป็น true ทั้งหมด (แนนน่ารักทุกรูป)
+  var CAPTCHA_TILES = [
+    { src: '', cute: true }, { src: '', cute: true }, { src: '', cute: true },
+    { src: '', cute: true }, { src: '', cute: true }, { src: '', cute: true },
+    { src: '', cute: true }, { src: '', cute: true }, { src: '', cute: true }
+  ];
+
+  var settings = { startDate: '2023-01-09' };
+  try { Object.assign(settings, JSON.parse(localStorage.getItem('couple_settings_data') || '{}')); } catch (e) {}
+  var p = settings.startDate.split('-');                       // [ค.ศ., เดือน, วัน]
+  var two = function (n) { return String(n).padStart(2, '0'); };
+  var dm = two(p[2]) + two(p[1]);
+  var okCodes = [dm + String(p[0]).slice(-2), dm + two((+p[0] + 543) % 100)]; // ปีท้ายสองหลัก ค.ศ. หรือ พ.ศ.
+
+  var $ = function (id) { return document.getElementById(id); };
+  var box = $('box'), dots = $('dots'), dotEls = dots.querySelectorAll('.dot');
+  var code = '', fails = 0, locked = false, stage = 1;
+  function say(el, t, err) { el.textContent = t; el.className = 'msg' + (err ? ' err' : ''); }
+  function shake() { box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake'); if (navigator.vibrate) navigator.vibrate(120); }
+  function show(n) { stage = n; document.querySelectorAll('.step').forEach(function (s) { s.classList.toggle('on', s.id === 's' + n); }); }
+
+  // --- ขั้นที่ 1: PIN ---
+  function render() {
+    dotEls.forEach(function (d, i) { d.classList.toggle('on', i < code.length); });
+    dots.setAttribute('aria-label', 'กรอกแล้ว ' + code.length + ' จาก ' + LEN + ' หลัก');
+  }
+  function checkPin() {
+    locked = true;
+    if (okCodes.indexOf(code) > -1) { setTimeout(function () { buildCaptcha(); show(2); locked = false; }, 250); return; }
+    fails++; dots.classList.add('bad'); shake();
+    say($('m1'), 'รหัสยังไม่ตรง ลองอีกครั้ง' + (fails >= 3 ? ' (ใบ้: เริ่มคบกันปี พ.ศ. ' + (+p[0] + 543) + ')' : ''), true);
+    setTimeout(function () { code = ''; dots.classList.remove('bad'); render(); locked = false; }, 600);
+  }
+  function press(k) {
+    if (locked || stage !== 1) return;
+    if (k === 'del') { code = code.slice(0, -1); say($('m1'), ''); render(); return; }
+    if (code.length >= LEN) return;
+    code += k; say($('m1'), ''); render();
+    if (code.length === LEN) setTimeout(checkPin, 140);
+  }
+  $('pad').addEventListener('click', function (e) { var b = e.target.closest('[data-k]'); if (b) press(b.dataset.k); });
+  document.addEventListener('keydown', function (e) {
+    if (/^\d$/.test(e.key)) press(e.key); else if (e.key === 'Backspace') press('del');
+  });
+
+  // --- ขั้นที่ 2: captcha ---
+  var HEART = '<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>';
+  var CHECK = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  var picked = [];
+  function buildCaptcha() {
+    var grid = $('grid'); grid.innerHTML = ''; picked = [];
+    CAPTCHA_TILES.forEach(function (t, i) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'tile'; b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', 'รูปที่ ' + (i + 1));
+      var ph = '<span class="ph">' + HEART + '</span>';
+      b.innerHTML = (t.src ? '<img src="' + t.src + '" alt="">' : ph) + '<span class="ck">' + CHECK + '</span>';
+      var img = b.querySelector('img');
+      if (img) img.onerror = function () { img.outerHTML = ph; };
+      b.addEventListener('click', function () {
+        picked[i] = !picked[i];
+        b.classList.toggle('sel', picked[i]); b.setAttribute('aria-pressed', String(!!picked[i]));
+        say($('m2'), '');
+      });
+      grid.appendChild(b);
+    });
+  }
+  $('verify').addEventListener('click', function () {
+    var ok = CAPTCHA_TILES.every(function (t, i) { return !!picked[i] === !!t.cute; });
+    if (ok) { try { localStorage.setItem(AUTH_KEY, '1'); } catch (e) {} enter(); return; }
+    shake(); say($('m2'), 'ยังไม่ถูกนะ ลองเลือกใหม่อีกครั้ง', true); buildCaptcha();
+  });
+
+  // --- ขั้นที่ 3: แอนิเมชันเข้าหน้าหลัก ---
+  function enter() {
+    $('verify').disabled = true;
+    var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    $('split').classList.add('out'); $('go').classList.add('on');
+    if (still) { setTimeout(function () { location.href = REDIRECT; }, 500); return; }
+    setTimeout(function () { $('go').classList.add('zoom'); }, 1300);
+    setTimeout(function () { location.href = REDIRECT; }, 2300);
+  }
+
+  $('themeBtn').addEventListener('click', function () {
+    var d = document.documentElement.classList.toggle('dark');
+    try { localStorage.setItem('theme_mode', d ? 'dark' : 'light'); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>
