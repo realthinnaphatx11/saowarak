@@ -203,13 +203,30 @@
   var AUTH_KEY = 'anniv_auth', REDIRECT = 'index.html', LEN = 6;
 
   // ===== รูปสำหรับ captcha (3x3 = 9 ช่อง) =====
-  // ใส่ path รูปในช่อง src เช่น 'nan1.jpg'  /  cute: true = ต้องเลือก, false = ไม่ใช่แนน (ห้ามเลือก)
-  // ตอนนี้ยังเป็นช่องว่าง และตั้งเป็น true ทั้งหมด (แนนน่ารักทุกรูป)
+  // cute: true = ต้องเลือก (3 รูปแรก), false = ห้ามเลือก
+  // ตำแหน่งจะถูกสุ่มสลับใหม่ทุกครั้งที่เปิด captcha / กดรีเฟรช / ตอบผิด
   var CAPTCHA_TILES = [
-    { src: '', cute: true }, { src: '', cute: true }, { src: '', cute: true },
-    { src: '', cute: true }, { src: '', cute: true }, { src: '', cute: true },
-    { src: '', cute: true }, { src: '', cute: true }, { src: '', cute: true }
+    { src: 'captcha/nan1.jpg', cute: true },
+    { src: 'captcha/nan2.jpg', cute: true },
+    { src: 'captcha/nan3.jpg', cute: true },
+    { src: 'captcha/nan4.jpg', cute: false },
+    { src: 'captcha/nan5.jpg', cute: false },
+    { src: 'captcha/nan6.jpg', cute: false },
+    { src: 'captcha/nan7.jpg', cute: false },
+    { src: 'captcha/nan8.jpg', cute: false },
+    { src: 'captcha/nan9.jpg', cute: false }
   ];
+  var current = CAPTCHA_TILES.slice(); // ลำดับที่แสดงอยู่ตอนนี้ (หลังสุ่ม)
+  function shuffle(a) { // Fisher-Yates ด้วย crypto random
+    a = a.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j;
+      if (window.crypto && crypto.getRandomValues) { var r = new Uint32Array(1); crypto.getRandomValues(r); j = r[0] % (i + 1); }
+      else j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
 
   var settings = { startDate: '2023-01-09' };
   try { Object.assign(settings, JSON.parse(localStorage.getItem('couple_settings_data') || '{}')); } catch (e) {}
@@ -254,7 +271,8 @@
   var picked = [];
   function buildCaptcha() {
     var grid = $('grid'); grid.innerHTML = ''; picked = [];
-    CAPTCHA_TILES.forEach(function (t, i) {
+    current = shuffle(CAPTCHA_TILES);
+    current.forEach(function (t, i) {
       var b = document.createElement('button');
       b.type = 'button'; b.className = 'tile'; b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', 'รูปที่ ' + (i + 1));
       var ph = '<span class="ph">' + HEART + '</span>';
@@ -284,7 +302,7 @@
   $('rcRefresh').addEventListener('click', function () { buildCaptcha(); say($('m2'), ''); });
 
   $('verify').addEventListener('click', function () {
-    var ok = CAPTCHA_TILES.every(function (t, i) { return !!picked[i] === !!t.cute; });
+    var ok = current.every(function (t, i) { return !!picked[i] === !!t.cute; });
     if (ok) { try { localStorage.setItem(AUTH_KEY, '1'); } catch (e) {} enter(); return; }
     shake($('rc')); say($('m2'), 'ยังไม่ถูกนะ ลองเลือกใหม่อีกครั้ง', true); buildCaptcha();
   });
