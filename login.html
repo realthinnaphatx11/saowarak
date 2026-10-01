@@ -83,18 +83,38 @@
   .key.blank { visibility: hidden; }
   .key:disabled { opacity: .5; cursor: default; }
 
-  /* captcha */
-  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; }
-  .tile { position: relative; aspect-ratio: 1; padding: 0; border: 0; border-radius: .6rem; overflow: hidden; cursor: pointer; background: var(--field); box-shadow: inset 0 0 0 1px var(--line); transition: transform .12s; }
-  .tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .tile .ph { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; color: var(--line); }
-  .tile .ck { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,111,165,.4); color: #fff; opacity: 0; transition: opacity .12s; }
-  .tile.sel { transform: scale(.9); }
-  .tile.sel .ck { opacity: 1; }
+  /* captcha popup (สไตล์ reCAPTCHA) */
+  .rc-back { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgba(0,0,0,.5); opacity: 0; visibility: hidden; transition: opacity .2s, visibility .2s; }
+  .rc-back.on { opacity: 1; visibility: visible; }
+  .rc { width: 400px; max-width: 100%; background: #fff; color: #202124; border-radius: 4px; box-shadow: 0 4px 24px rgba(0,0,0,.35); overflow: hidden; text-align: left; font-family: 'Prompt', Roboto, Arial, sans-serif; transform: translateY(10px) scale(.97); transition: transform .2s; }
+  .rc-back.on .rc { transform: none; }
+  .rc.shake { animation: shake .4s; }
+  .rc-head { background: #1a73e8; color: #fff; padding: 1.1rem 1.25rem; line-height: 1.25; }
+  .rc-head small { display: block; font-size: .85rem; }
+  .rc-head b { display: block; font: 500 1.7rem/1.2 'Mitr', sans-serif; margin: .1rem 0; }
+  .rc-body { padding: 8px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+  .tile { position: relative; aspect-ratio: 1; padding: 0; border: 0; border-radius: 0; overflow: hidden; cursor: pointer; background: #f1f3f4; }
+  .tile img, .tile .ph { width: 100%; height: 100%; object-fit: cover; display: flex; align-items: center; justify-content: center; transition: transform .12s; }
+  .tile .ph { color: #f2b3c9; background: #fdeef4; }
+  .tile.sel img, .tile.sel .ph { transform: scale(.8); }
+  .tile .ck { position: absolute; top: 6px; left: 6px; width: 22px; height: 22px; border-radius: 50%; background: #1a73e8; color: #fff; display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(.4); transition: opacity .12s, transform .12s; }
+  .tile .ck svg { width: 14px; height: 14px; }
+  .tile.sel .ck { opacity: 1; transform: none; }
+  .rc-msg { min-height: 1.3rem; padding: 0 .9rem; font-size: .8rem; color: #d93025; }
+  .rc-foot { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .6rem .6rem .6rem .5rem; border-top: 1px solid #dadce0; }
+  .rc-ico { width: 2.4rem; height: 2.4rem; border: 0; border-radius: 50%; background: transparent; color: #5f6368; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .rc-ico:hover { background: rgba(0,0,0,.06); }
+  .rc-go { padding: .65rem 1.4rem; border: 0; border-radius: 3px; background: #1a73e8; color: #fff; font: 500 .9rem 'Prompt', Roboto, sans-serif; letter-spacing: .04em; cursor: pointer; }
+  .rc-go:hover { background: #1765cc; } .rc-go:disabled { opacity: .6; cursor: default; }
+  .rc-ico:focus-visible, .rc-go:focus-visible, .tile:focus-visible { outline: 2px solid #1a73e8; outline-offset: 2px; }
+  html.dark .rc { background: #222; color: #e8eaed; }
+  html.dark .rc-foot { border-top-color: #444; } html.dark .rc-ico { color: #bdc1c6; } html.dark .rc-ico:hover { background: rgba(255,255,255,.1); }
+  html.dark .tile { background: #333; } html.dark .tile .ph { background: #3a2a33; color: #a05d78; } html.dark .rc-msg { color: #f28b82; }
   .btn { width: 100%; padding: .8rem 1rem; border: 0; border-radius: 999px; cursor: pointer; font: 500 1rem 'Mitr', sans-serif; color: #fff; background: linear-gradient(90deg, #F0518F, #F2802E); transition: transform .1s, opacity .15s; }
   .btn:active { transform: scale(.98); }
   .btn:disabled { opacity: .6; cursor: default; }
-  .btn:focus-visible, .key:focus-visible, .tile:focus-visible, .toggle:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+  .btn:focus-visible, .key:focus-visible, .toggle:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
 
   .toggle { position: absolute; top: .9rem; right: .9rem; width: 2.25rem; height: 2.25rem; border: 0; border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; }
   .toggle:hover { background: var(--hover); }
@@ -117,7 +137,7 @@
     .panel { align-items: flex-start; padding-top: 2rem; }
   }
   @media (max-height: 640px) { .pad { gap: .6rem 1.1rem; grid-template-columns: repeat(3, 3.6rem); } .key { width: 3.6rem; height: 3.6rem; font-size: 1.3rem; } }
-  @media (prefers-reduced-motion: reduce) { .heart, #go svg, .step.on, .box.shake { animation: none; } #go.zoom svg { transition: none; } .dot, .key { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .heart, #go svg, .step.on, .box.shake, .rc.shake { animation: none; } .rc, .rc-back { transition: none; } #go.zoom svg { transition: none; } .dot, .key { transition: none; } }
 </style>
 </head>
 <body>
@@ -157,17 +177,21 @@
           <button class="key ghost" type="button" data-k="del" aria-label="ลบ"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M17 9.5l-5 5M12 9.5l5 5"/></svg></button>
         </div>
       </div>
-
-      <!-- ขั้นที่ 2: captcha -->
-      <div class="step" id="s2">
-        <h1>เลือกรูปแนนน่ารัก ๆ</h1>
-        <p class="sub">เลือกให้ครบทุกรูป แล้วกดยืนยัน</p>
-        <div class="grid" id="grid"></div>
-        <p class="msg" id="m2" role="alert" aria-live="polite"></p>
-        <button class="btn" id="verify" type="button">ยืนยัน</button>
-      </div>
     </div>
   </section>
+</div>
+
+<!-- captcha popup: เด้งทับหน้า PIN (หน้า PIN ยังอยู่ด้านหลัง) -->
+<div class="rc-back" id="rcBack" aria-hidden="true">
+  <div class="rc" id="rc" role="dialog" aria-modal="true" aria-labelledby="rcT">
+    <div class="rc-head"><small>เลือกรูปทั้งหมดที่เป็น</small><b id="rcT">แนนน่ารัก ๆ</b><small>เลือกให้ครบทุกรูป แล้วกดยืนยัน</small></div>
+    <div class="rc-body"><div class="grid" id="grid"></div></div>
+    <p class="rc-msg" id="m2" role="alert" aria-live="polite"></p>
+    <div class="rc-foot">
+      <button class="rc-ico" id="rcRefresh" type="button" aria-label="ขอรูปชุดใหม่" title="ขอรูปชุดใหม่"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg></button>
+      <button class="rc-go" id="verify" type="button">ยืนยัน</button>
+    </div>
+  </div>
 </div>
 
 <div id="go" aria-hidden="true">
@@ -198,8 +222,7 @@
   var box = $('box'), dots = $('dots'), dotEls = dots.querySelectorAll('.dot');
   var code = '', fails = 0, locked = false, stage = 1;
   function say(el, t, err) { el.textContent = t; el.className = 'msg' + (err ? ' err' : ''); }
-  function shake() { box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake'); if (navigator.vibrate) navigator.vibrate(120); }
-  function show(n) { stage = n; document.querySelectorAll('.step').forEach(function (s) { s.classList.toggle('on', s.id === 's' + n); }); }
+  function shake(el) { el = el || box; el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); if (navigator.vibrate) navigator.vibrate(120); }
 
   // --- ขั้นที่ 1: PIN ---
   function render() {
@@ -208,7 +231,7 @@
   }
   function checkPin() {
     locked = true;
-    if (okCodes.indexOf(code) > -1) { setTimeout(function () { buildCaptcha(); show(2); locked = false; }, 250); return; }
+    if (okCodes.indexOf(code) > -1) { setTimeout(openCaptcha, 250); return; } // PIN ถูก: เด้ง popup ทับ ไม่ซ่อนหน้า PIN (locked ค้างไว้จนกว่าจะปิด popup)
     fails++; dots.classList.add('bad'); shake();
     say($('m1'), 'รหัสยังไม่ตรง ลองอีกครั้ง' + (fails >= 3 ? ' (ใบ้: เริ่มคบกันปี พ.ศ. ' + (+p[0] + 543) + ')' : ''), true);
     setTimeout(function () { code = ''; dots.classList.remove('bad'); render(); locked = false; }, 600);
@@ -246,15 +269,29 @@
       grid.appendChild(b);
     });
   }
+  // --- popup: เปิด/ปิด ---
+  var rcBack = $('rcBack');
+  function openCaptcha() {
+    stage = 2; buildCaptcha(); say($('m2'), '');
+    rcBack.classList.add('on'); rcBack.setAttribute('aria-hidden', 'false'); $('verify').focus();
+  }
+  function closeCaptcha() { // ยกเลิก: กลับไปกรอก PIN ใหม่
+    rcBack.classList.remove('on'); rcBack.setAttribute('aria-hidden', 'true');
+    code = ''; render(); say($('m1'), ''); stage = 1; locked = false;
+  }
+  rcBack.addEventListener('mousedown', function (e) { if (e.target === rcBack) closeCaptcha(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && stage === 2 && !$('verify').disabled) closeCaptcha(); });
+  $('rcRefresh').addEventListener('click', function () { buildCaptcha(); say($('m2'), ''); });
+
   $('verify').addEventListener('click', function () {
     var ok = CAPTCHA_TILES.every(function (t, i) { return !!picked[i] === !!t.cute; });
     if (ok) { try { localStorage.setItem(AUTH_KEY, '1'); } catch (e) {} enter(); return; }
-    shake(); say($('m2'), 'ยังไม่ถูกนะ ลองเลือกใหม่อีกครั้ง', true); buildCaptcha();
+    shake($('rc')); say($('m2'), 'ยังไม่ถูกนะ ลองเลือกใหม่อีกครั้ง', true); buildCaptcha();
   });
 
   // --- ขั้นที่ 3: แอนิเมชันเข้าหน้าหลัก ---
   function enter() {
-    $('verify').disabled = true;
+    $('verify').disabled = true; $('rcRefresh').disabled = true; rcBack.classList.remove('on');
     var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     $('split').classList.add('out'); $('go').classList.add('on');
     if (still) { setTimeout(function () { location.href = REDIRECT; }, 500); return; }
