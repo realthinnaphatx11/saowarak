@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+    <!-- Login guard: ถ้ายังไม่ผ่านหน้า Login ให้ไปหน้า login.html ก่อน (ต้องอยู่บนสุดของ head) -->
+    <script>
+        if (!localStorage.getItem('anniv_auth')) location.replace('login.html');
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Our Love Story - เส้นทางความทรงจำของเรา</title>
