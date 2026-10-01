@@ -171,6 +171,11 @@
         html.dark .theme-toggle .icon-sun { display: block; }
         html.dark .theme-toggle .icon-moon { display: none; }
 
+        .logout-btn { background: #FFE3EA; color: #D9304F; }
+        .logout-btn:hover { background: #FFD0DB; }
+        html.dark .logout-btn { background: rgba(255,138,159,.16); color: #FF8A9F; }
+        html.dark .logout-btn:hover { background: rgba(255,138,159,.28); }
+
         html.dark { color-scheme: dark; }
         html.dark body {
             background: linear-gradient(150deg, #1F1426 0%, #251824 30%, #241B22 55%, #1E1A2F 80%, #14232B 100%);
@@ -365,6 +370,9 @@
                 <button id="theme-toggle" type="button" onclick="toggleTheme()" class="theme-toggle" aria-pressed="false" aria-label="สลับเป็นโหมดมืด" title="สลับเป็นโหมดมืด">
                     <i data-lucide="moon" class="icon-moon w-4 h-4"></i>
                     <i data-lucide="sun" class="icon-sun w-4 h-4"></i>
+                </button>
+                <button id="logout-btn" type="button" onclick="logout()" class="theme-toggle logout-btn" aria-label="ออกจากระบบ" title="ออกจากระบบ (ล็อก)">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
                 </button>
             </div>
         </div>
@@ -835,6 +843,17 @@
             const btn = document.getElementById('load-error-retry-btn');
             if (btn) { btn.disabled = true; btn.innerText = 'กำลังลองใหม่...'; }
             location.reload();
+        }
+
+        // --- Logout: ล้างสถานะล็อกอินแล้วกลับไปหน้า login.html ---
+        function logout() {
+            if (!confirm('ต้องการออกจากระบบ (ล็อกหน้านี้) ใช่ไหม?')) return;
+            try { localStorage.removeItem('anniv_auth'); } catch (e) {}
+            try {
+                const audio = document.getElementById('bgm-audio');
+                if (audio) audio.pause();
+            } catch (e) {}
+            location.replace('login.html');
         }
 
         function scrollToTop() {
