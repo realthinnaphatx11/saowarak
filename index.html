@@ -1138,7 +1138,14 @@
         }
 
         function renderMemories() {
-            const filtered = getFilteredMemories();
+            let filtered = getFilteredMemories();
+            // Gallery Grid: แสดงเฉพาะเหตุการณ์ที่มีรูปภาพ
+            if (currentView === 'grid') {
+                filtered = filtered.filter(m => {
+                    const imgs = m.images || (m.image ? [m.image] : []);
+                    return imgs.filter(Boolean).length > 0;
+                });
+            }
             const timelineContainer = document.getElementById('timeline-container');
             const gridContainer = document.getElementById('grid-container');
             const emptyState = document.getElementById('empty-state');
