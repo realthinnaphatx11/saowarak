@@ -126,10 +126,66 @@
         }
 
         .video-card { border-radius: 1.75rem; overflow: hidden; }
-        .video-frame { background: #2A1F2B; aspect-ratio: 16 / 9; position: relative; }
-        .video-frame video { width: 100%; height: 100%; max-height: 78vh; object-fit: contain; display: block; background: #2A1F2B; }
+        /* กรอบมือถือ (คลิปแนวตั้งจากมือถือ) */
+        .phone-wrap { display: flex; justify-content: center; padding: 1.5rem 1rem .5rem; }
+        .phone {
+            position: relative;
+            width: min(100%, 21rem, calc((82vh - 1.4rem) * 9 / 16 + 1.4rem));
+            padding: .7rem; border-radius: 2.5rem;
+            background: linear-gradient(145deg, #FFB3D1 0%, #FFC9A3 55%, #D9C2F5 100%);
+            box-shadow: 0 18px 38px rgba(255,111,165,.32), inset 0 0 0 2px rgba(255,255,255,.65);
+            transition: width .3s ease;
+        }
+        .phone.is-landscape { width: min(100%, 40rem); border-radius: 1.9rem; }
+        .phone::before { /* รูกล้องหน้า */
+            content: ''; position: absolute; z-index: 5; pointer-events: none;
+            top: 1.15rem; left: 50%; transform: translateX(-50%);
+            width: 4.4rem; height: 1.1rem; border-radius: 9999px; background: #2A1F2B;
+        }
+        .phone.is-landscape::before { display: none; }
+        .phone-sticker { position: absolute; z-index: 6; pointer-events: none; font-size: 1.7rem; filter: drop-shadow(0 3px 4px rgba(0,0,0,.18)); }
+        .ps-heart { top: -.9rem; left: -.7rem; transform: rotate(-16deg); animation: stickerWiggle 3s ease-in-out infinite; }
+        .ps-star  { bottom: 2.6rem; right: -.85rem; font-size: 1.4rem; transform: rotate(12deg); animation: stickerWiggle 3.6s ease-in-out infinite reverse; }
+        @keyframes stickerWiggle { 0%,100% { transform: rotate(-14deg) scale(1); } 50% { transform: rotate(10deg) scale(1.12); } }
+
+        .video-frame {
+            background: #2A1F2B; position: relative; overflow: hidden;
+            aspect-ratio: 9 / 16; border-radius: 1.8rem; touch-action: manipulation;
+        }
+        .phone.is-landscape .video-frame { aspect-ratio: 16 / 9; border-radius: 1.2rem; }
+        .video-frame video { width: 100%; height: 100%; object-fit: contain; display: block; background: #2A1F2B; }
+
+        /* ปุ่มเล่นรูปหัวใจ ก่อนกดเล่น */
+        .video-cover {
+            position: absolute; inset: 0; z-index: 2; border: 0; width: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .75rem;
+            background: radial-gradient(circle at 50% 45%, rgba(255,111,165,.28), rgba(42,31,43,.55));
+            color: #fff; transition: opacity .3s;
+        }
+        .video-cover.is-hidden { opacity: 0; pointer-events: none; }
+        .cover-btn {
+            width: 4.6rem; height: 4.6rem; border-radius: 9999px; background: rgba(255,255,255,.95); color: #FF4F8F;
+            display: flex; align-items: center; justify-content: center; padding-left: .2rem;
+            box-shadow: 0 8px 22px rgba(255,79,143,.45); animation: heartPulse 2.5s infinite;
+        }
+        .cover-btn svg { fill: currentColor; }
+        .cover-text { font-size: .82rem; font-weight: 500; text-shadow: 0 1px 4px rgba(0,0,0,.4); }
+
+        /* หัวใจลอยขึ้นขณะคลิปเล่น + หัวใจเด้งเมื่อแตะสองที */
+        .float-heart { position: absolute; z-index: 4; bottom: 14%; pointer-events: none; font-size: 1.3rem; animation: floatUp 2.6s ease-out forwards; }
+        @keyframes floatUp {
+            0% { transform: translate(0,0) scale(.6); opacity: 0; }
+            15% { opacity: .95; }
+            100% { transform: translate(var(--dx, 0), -300px) scale(1.15); opacity: 0; }
+        }
+        .pop-heart { position: absolute; z-index: 4; pointer-events: none; font-size: 4rem; transform: translate(-50%,-50%); animation: popHeart .85s ease-out forwards; }
+        @keyframes popHeart {
+            0% { transform: translate(-50%,-50%) scale(.2); opacity: 0; }
+            30% { transform: translate(-50%,-60%) scale(1.15); opacity: 1; }
+            100% { transform: translate(-50%,-130%) scale(1); opacity: 0; }
+        }
         .video-missing {
-            position: absolute; inset: 0; display: flex; flex-direction: column; gap: .4rem;
+            position: absolute; inset: 0; z-index: 3; display: flex; flex-direction: column; gap: .4rem;
             align-items: center; justify-content: center; text-align: center; padding: 1rem;
             color: #F6DDE7; font-size: .85rem; background: #2A1F2B;
         }
@@ -153,6 +209,8 @@
         @media (prefers-reduced-motion: reduce) {
             .panel-in, #nav-menu-panel:not(.hidden), .animate-heart-pulse { animation: none; }
             .year-tab, .theme-toggle { transition: none; }
+            .cover-btn, .ps-heart, .ps-star, .float-heart { animation: none; }
+            .float-heart { display: none; }
         }
 
         /* ---------- Dark mode ---------- */
@@ -192,6 +250,7 @@
         html.dark .clip-badge { background: rgba(255,111,165,.18); color: #FF8FB8; }
         html.dark .soon-icon { background: rgba(168,85,247,.2); color: #C7A2F4; }
         html.dark .video-frame, html.dark .video-frame video { background: #150E19; }
+        html.dark .phone { background: linear-gradient(145deg, #6B3F58 0%, #5A3F4E 55%, #4A3F73 100%); box-shadow: 0 18px 38px rgba(0,0,0,.45), inset 0 0 0 2px rgba(255,255,255,.12); }
 
         /* เคอร์เซอร์หัวใจ + หัวใจลอยตามเมาส์ (เหมือน index) */
         html, body, button, a, [onclick] {
@@ -279,7 +338,7 @@
         /* =====================================================================
            ตั้งค่าวิดีโอ  -- แก้แค่ตรงนี้เมื่อมีคลิปใหม่
            - VIDEO_DIR : โฟลเดอร์ที่เก็บไฟล์วิดีโอ (ตอนนี้ตั้งเป็น ./videos/ ไว้ก่อน)
-           - แต่ละปีมี clips = [ { file, title, caption } ]  (ปีละ 1 คลิป)
+           - แต่ละปีมี clips = [ { file, title, caption } ]  (ปีละ 1 คลิป · แนะนำคลิปแนวตั้งจากมือถือ 9:16)
            - ปีที่ clips ว่าง [] จะแสดงเป็น "เร็วๆ นี้" (ล็อกไว้)
            ===================================================================== */
         const VIDEO_DIR = './videos/';
@@ -297,8 +356,18 @@
                     { file: 'anniversary-2.mp4', title: 'ครบรอบ 2 ปีของเรา', caption: 'ใส่คำบรรยายคลิปที่นี่' }
                 ]
             },
-            { year: 3, clips: [] },
-            { year: 4, clips: [] }
+            {
+                year: 3,
+                clips: [
+                    { file: 'anniversary-3.mp4', title: 'ครบรอบ 3 ปีของเรา', caption: 'สามปีแล้วนะ ยังรักเหมือนเดิมเลย' }
+                ]
+            },
+            {
+                year: 4,
+                clips: [
+                    { file: 'anniversary-4.mp4', title: 'ครบรอบ 4 ปีของเรา', caption: 'สี่ปีที่มีกันและกัน' }
+                ]
+            }
         ];
 
         const tabsEl = document.getElementById('year-tabs');
@@ -327,9 +396,20 @@
             const src = VIDEO_DIR + encodeURI(c.file);
             return `
                 <article class="video-card glass-card">
-                    <div class="video-frame">
-                        <video controls playsinline preload="metadata" src="${src}" aria-label="${escapeHtml(c.title)}"
-                            onerror="videoMissing(this, '${escapeHtml(c.file)}')"></video>
+                    <div class="phone-wrap">
+                        <div class="phone">
+                            <span class="phone-sticker ps-heart" aria-hidden="true">💖</span>
+                            <span class="phone-sticker ps-star" aria-hidden="true">✨</span>
+                            <div class="video-frame">
+                                <video controls playsinline preload="metadata" src="${src}#t=0.1" aria-label="${escapeHtml(c.title)}"
+                                    onloadedmetadata="fitFrame(this)"
+                                    onerror="videoMissing(this, '${escapeHtml(c.file)}')"></video>
+                                <button type="button" class="video-cover" onclick="startClip(this)" aria-label="เล่นคลิป ${escapeHtml(c.title)}">
+                                    <span class="cover-btn"><i data-lucide="play" class="w-7 h-7"></i></span>
+                                    <span class="cover-text">แตะเพื่อเล่น 💕</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     <div class="p-5 sm:p-6">
                         ${total > 1 ? `<span class="clip-badge mb-2"><i data-lucide="film" class="w-3 h-3"></i>คลิปที่ ${i + 1} จาก ${total}</span>` : ''}
@@ -353,7 +433,7 @@
                         <p class="text-sm text-gray-500 mt-2 leading-relaxed">ช่องนี้เก็บไว้ให้เรื่องราวของปีที่ ${a.year}<br>รอให้เราไปสร้างความทรงจำด้วยกันก่อนนะ 💕</p>
                     </div>`;
             } else {
-                const cols = a.clips.length > 1 ? 'md:grid-cols-2' : 'max-w-3xl mx-auto';
+                const cols = a.clips.length > 1 ? 'md:grid-cols-2' : 'max-w-md mx-auto';
                 html = `
                     <div class="flex items-baseline justify-center gap-3 mb-5 panel-in">
                         <span class="font-cursive text-4xl text-pink-500">${ordinal(a.year)}</span>
@@ -382,6 +462,8 @@
 
         function videoMissing(video, file) {
             const frame = video.parentElement;
+            const cover = frame.querySelector('.video-cover');
+            if (cover) cover.remove();
             video.remove();
             frame.insertAdjacentHTML('beforeend', `
                 <div class="video-missing">
@@ -392,11 +474,76 @@
             lucide.createIcons();
         }
 
+        // คลิปแนวนอน -> ปรับกรอบเป็นแนวนอนอัตโนมัติ (แนวตั้งใช้กรอบมือถือ)
+        function fitFrame(v) {
+            const phone = v.closest('.phone');
+            if (phone && v.videoWidth > v.videoHeight) phone.classList.add('is-landscape');
+        }
+
+        function startClip(btn) {
+            const v = btn.parentElement.querySelector('video');
+            if (v) v.play().catch(() => {});
+        }
+
+        // หัวใจลอยขึ้นจากกรอบมือถือขณะคลิปเล่น
+        const heartTimers = new WeakMap();
+        const FLOAT_HEARTS = ['💗', '💕', '💖', '🤍', '✨'];
+        function floatHeart(phone) {
+            const el = document.createElement('span');
+            el.className = 'float-heart';
+            el.textContent = FLOAT_HEARTS[Math.floor(Math.random() * FLOAT_HEARTS.length)];
+            el.style.left = (10 + Math.random() * 80) + '%';
+            el.style.setProperty('--dx', (Math.random() * 40 - 20) + 'px');
+            phone.appendChild(el);
+            setTimeout(() => el.remove(), 2700);
+        }
+        function stopHearts(v) {
+            const t = heartTimers.get(v);
+            if (t) { clearInterval(t); heartTimers.delete(v); }
+        }
+
         // ถ้ามีคลิปเล่นอยู่ แล้วเปิดคลิปอื่น ให้หยุดคลิปเดิม (กันเสียงซ้อน)
         document.addEventListener('play', (e) => {
-            if (e.target.tagName !== 'VIDEO') return;
-            panelEl.querySelectorAll('video').forEach(v => { if (v !== e.target) v.pause(); });
+            const v = e.target;
+            if (v.tagName !== 'VIDEO') return;
+            panelEl.querySelectorAll('video').forEach(o => { if (o !== v) o.pause(); });
+            const cover = v.parentElement.querySelector('.video-cover');
+            if (cover) cover.classList.add('is-hidden');
+            const phone = v.closest('.phone');
+            if (phone && !heartTimers.has(v)) {
+                heartTimers.set(v, setInterval(() => floatHeart(phone), 700));
+            }
         }, true);
+        document.addEventListener('pause', (e) => { if (e.target.tagName === 'VIDEO') stopHearts(e.target); }, true);
+        document.addEventListener('ended', (e) => {
+            const v = e.target;
+            if (v.tagName !== 'VIDEO') return;
+            stopHearts(v);
+            confetti({ particleCount: 60, spread: 80, origin: { y: 0.6 }, colors: ['#FF6FA5', '#FF9F5A', '#FFC845', '#A374DB'] });
+        }, true);
+
+        // แตะสองที (บนมือถือ) = หัวใจเด้งตรงที่แตะ เหมือนกดไลก์
+        (function () {
+            let lastT = 0, lastX = 0, lastY = 0;
+            document.addEventListener('pointerup', (e) => {
+                if (e.pointerType === 'mouse') return;
+                const frame = e.target.closest && e.target.closest('.video-frame');
+                if (!frame || e.target.closest('.video-cover')) return;
+                const r = frame.getBoundingClientRect();
+                const x = e.clientX - r.left, y = e.clientY - r.top;
+                if (y > r.height - 64) return;               // เว้นแถบควบคุมด้านล่าง
+                const now = Date.now();
+                if (now - lastT < 320 && Math.hypot(x - lastX, y - lastY) < 48) {
+                    const el = document.createElement('span');
+                    el.className = 'pop-heart';
+                    el.textContent = '💖';
+                    el.style.left = x + 'px'; el.style.top = y + 'px';
+                    frame.appendChild(el);
+                    setTimeout(() => el.remove(), 900);
+                    lastT = 0;
+                } else { lastT = now; lastX = x; lastY = y; }
+            });
+        })();
 
         // ลูกศรซ้าย/ขวาเลื่อนระหว่างแท็บปี
         tabsEl.addEventListener('keydown', (e) => {
