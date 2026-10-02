@@ -105,6 +105,20 @@
             border-bottom: 1px solid rgba(255, 182, 193, 0.4);
         }
 
+
+        /* เมนูแบบพับเก็บใน header */
+        .nav-item {
+            display: flex; align-items: center; gap: .625rem;
+            width: 100%; padding: .55rem .9rem;
+            border-radius: 9999px; white-space: nowrap;
+            font-size: .875rem; font-weight: 500; text-align: left;
+            transition: background .2s, filter .2s;
+        }
+        #nav-menu-panel:not(.hidden) { display: flex; animation: navMenuIn .16s ease-out; }
+        #nav-menu-btn[aria-expanded="true"] #nav-menu-chevron { transform: rotate(180deg); }
+        @keyframes navMenuIn { from { opacity: 0; transform: translateY(-6px) scale(.97); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { #nav-menu-panel:not(.hidden) { animation: none; } }
+
         /* Hide story text in cards when toggled off */
         body.hide-stories .story-text { display: none; }
         /* Timeline vertical line background */
@@ -197,6 +211,7 @@
             background: rgba(31, 20, 38, 0.92);
             border-bottom-color: rgba(255, 143, 184, 0.25);
         }
+        html.dark #nav-menu-dot { border-color: #1F1426; }
         html.dark .bg-black\/40 { background-color: rgba(0,0,0,.62); }
         html.dark .bg-black\/50 { background-color: rgba(0,0,0,.68); }
 
@@ -322,47 +337,53 @@
         <button onclick="hideLoadErrorNotice()" class="text-amber-600 hover:text-amber-800 underline">ปิด</button>
     </div>
 
-    <header class="sticky top-0 z-40 glass-nav transition-all duration-300 overflow-hidden">
+    <header class="sticky top-0 z-40 glass-nav transition-all duration-300">
         <!-- Decorative floating symbols -->
         <i data-lucide="heart" class="hidden sm:block absolute top-2 left-1/3 w-3.5 h-3.5 text-pink-300/60 fill-pink-200/60 pointer-events-none"></i>
         <i data-lucide="sparkles" class="hidden sm:block absolute bottom-1 left-1/2 w-3 h-3 text-amber-300/70 pointer-events-none"></i>
         <i data-lucide="heart" class="hidden sm:block absolute top-3 right-1/3 w-3 h-3 text-fuchsia-300/60 fill-fuchsia-200/60 pointer-events-none"></i>
 
         <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center relative">
-            <div class="flex items-center space-x-2 cursor-pointer" onclick="scrollToTop()">
+            <div class="flex items-center space-x-2 cursor-pointer min-w-0" onclick="scrollToTop()">
                 <div class="relative w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 shadow-inner">
                     <i data-lucide="heart" class="w-6 h-6 fill-pink-400 stroke-pink-500 animate-heart-pulse"></i>
                     <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-300 flex items-center justify-center text-[9px] shadow">✨</span>
                 </div>
-                <div>
-                    <h1 class="text-xl font-bold bg-gradient-to-r from-pink-500 via-fuchsia-500 to-amber-500 bg-clip-text text-transparent font-mitr leading-tight">Our Love Story</h1>
-                    <p class="text-xs text-pink-400 font-light">เส้นทางความทรงจำของเราสองคน</p>
+                <div class="min-w-0">
+                    <h1 class="text-xl font-bold whitespace-nowrap bg-gradient-to-r from-pink-500 via-fuchsia-500 to-amber-500 bg-clip-text text-transparent font-mitr leading-tight">Our Love Story</h1>
+                    <p class="text-xs text-pink-400 font-light whitespace-nowrap truncate">เส้นทางความทรงจำของเราสองคน</p>
                 </div>
             </div>
 
             <!-- Action Buttons header -->
-            <div class="flex items-center space-x-2">
-                <a href="map.html" class="px-3 py-1.5 text-xs sm:text-sm bg-pink-100 hover:bg-pink-200 text-pink-700 rounded-full font-medium transition duration-200 flex items-center shadow-sm">
-                    <i data-lucide="map" class="w-4 h-4 mr-1 text-pink-500"></i>
-                    <span class="hidden sm:inline">แผนที่ความทรงจำ</span>
-                </a>
-                <a href="marquee.html" class="px-3 py-1.5 text-xs sm:text-sm bg-fuchsia-100 text-fuchsia-700 rounded-full font-medium transition duration-200 flex items-center shadow-sm hover:brightness-95">
-                    <i data-lucide="images" class="w-4 h-4 mr-1 text-fuchsia-500"></i>
-                    <span class="hidden sm:inline">แกลเลอรีรูป</span>
-                </a>
-                <a href="puzzle.html" class="px-3 py-1.5 text-xs sm:text-sm bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-full font-medium transition duration-200 flex items-center shadow-sm">
-                    <i data-lucide="puzzle" class="w-4 h-4 mr-1 text-amber-500"></i>
-                    <span class="hidden sm:inline">จิ๊กซอว์</span>
-                </a>
-                <button onclick="openRandomMemoryModal()" class="px-3 py-1.5 text-xs sm:text-sm bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-full font-medium transition duration-200 flex items-center shadow-sm">
-                    <i data-lucide="sparkles" class="w-4 h-4 mr-1 text-amber-500"></i>
-                    <span class="hidden sm:inline">สุ่มความทรงจำ</span>
-                </button>
-                <button onclick="openOnThisDayModal()" id="on-this-day-btn" class="relative px-3 py-1.5 text-xs sm:text-sm bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-full font-medium transition duration-200 flex items-center shadow-sm">
-                    <i data-lucide="history" class="w-4 h-4 mr-1 text-rose-500"></i>
-                    <span class="hidden sm:inline">วันนี้เมื่อปีก่อน</span>
-                    <span id="on-this-day-badge" class="hidden absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-rose-500 border-2 border-white"></span>
-                </button>
+            <div class="flex items-center space-x-2 shrink-0">
+                <div class="relative" id="nav-menu-wrap">
+                    <button id="nav-menu-btn" type="button" onclick="toggleNavMenu(event)" aria-haspopup="true" aria-expanded="false" aria-controls="nav-menu-panel"
+                        class="relative h-9 px-3.5 whitespace-nowrap text-sm bg-pink-100 hover:bg-pink-200 text-pink-700 rounded-full font-medium transition duration-200 inline-flex items-center gap-1.5 shadow-sm">
+                        <i data-lucide="layout-grid" class="w-4 h-4 text-pink-500"></i>
+                        <span>เมนู</span>
+                        <i data-lucide="chevron-down" id="nav-menu-chevron" class="w-3.5 h-3.5 text-pink-400 transition-transform duration-200"></i>
+                        <span id="nav-menu-dot" class="hidden absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-rose-500 border-2 border-white"></span>
+                    </button>
+                    <div id="nav-menu-panel" role="menu" class="hidden absolute right-0 top-full mt-2 w-64 p-2 rounded-2xl glass-card shadow-xl z-50 flex-col gap-1.5">
+                        <a href="map.html" role="menuitem" class="nav-item bg-pink-100 hover:bg-pink-200 text-pink-700">
+                            <i data-lucide="map" class="w-4 h-4 text-pink-500"></i><span>แผนที่ความทรงจำ</span>
+                        </a>
+                        <a href="marquee.html" role="menuitem" class="nav-item bg-fuchsia-100 hover:brightness-95 text-fuchsia-700">
+                            <i data-lucide="images" class="w-4 h-4 text-fuchsia-500"></i><span>แกลเลอรีรูป</span>
+                        </a>
+                        <a href="puzzle.html" role="menuitem" class="nav-item bg-amber-100 hover:bg-amber-200 text-amber-800">
+                            <i data-lucide="puzzle" class="w-4 h-4 text-amber-500"></i><span>จิ๊กซอว์</span>
+                        </a>
+                        <button type="button" role="menuitem" onclick="closeNavMenu(); openRandomMemoryModal()" class="nav-item bg-amber-100 hover:bg-amber-200 text-amber-800">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i><span>สุ่มความทรงจำ</span>
+                        </button>
+                        <button type="button" role="menuitem" onclick="closeNavMenu(); openOnThisDayModal()" id="on-this-day-btn" class="nav-item relative bg-rose-100 hover:bg-rose-200 text-rose-700">
+                            <i data-lucide="history" class="w-4 h-4 text-rose-500"></i><span>วันนี้เมื่อปีก่อน</span>
+                            <span id="on-this-day-badge" class="hidden ml-auto w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                        </button>
+                    </div>
+                </div>
                 <button id="music-toggle" type="button" onclick="toggleMusic()" class="theme-toggle" aria-pressed="false" aria-label="เปิดเพลงประกอบ" title="เปิด/ปิดเพลงประกอบ">
                     <i data-lucide="music" class="icon-music-off w-4 h-4"></i>
                     <i data-lucide="volume-2" class="icon-music-on w-4 h-4 hidden"></i>
@@ -855,6 +876,28 @@
             } catch (e) {}
             location.replace('login.html');
         }
+
+        // --- เมนูพับเก็บใน header ---
+        function closeNavMenu() {
+            const panel = document.getElementById('nav-menu-panel');
+            const btn = document.getElementById('nav-menu-btn');
+            if (!panel) return;
+            panel.classList.add('hidden');
+            btn.setAttribute('aria-expanded', 'false');
+        }
+        function toggleNavMenu(e) {
+            if (e) e.stopPropagation();
+            const panel = document.getElementById('nav-menu-panel');
+            const btn = document.getElementById('nav-menu-btn');
+            const open = panel.classList.contains('hidden');
+            panel.classList.toggle('hidden', !open);
+            btn.setAttribute('aria-expanded', String(open));
+        }
+        document.addEventListener('click', (e) => {
+            const wrap = document.getElementById('nav-menu-wrap');
+            if (wrap && !wrap.contains(e.target)) closeNavMenu();
+        });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeNavMenu(); });
 
         function scrollToTop() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1676,6 +1719,8 @@
             if (!badge) return;
             const hasMatch = getOnThisDayMemories().length > 0;
             badge.classList.toggle('hidden', !hasMatch);
+            const dot = document.getElementById('nav-menu-dot');
+            if (dot) dot.classList.toggle('hidden', !hasMatch);
         }
 
         function openOnThisDayModal() {
