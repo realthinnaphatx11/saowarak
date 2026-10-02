@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <!-- Login guard: เหมือนหน้า index (ต้องอยู่บนสุดของ head) -->
+    <script>
+        if (!localStorage.getItem('anniv_auth')) location.replace('login.html');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anniversary Videos - วิดีโอครบรอบของเรา</title>
+    <meta name="theme-color" content="#FFE8F1">
+
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cdefs%3E%3ClinearGradient%20id='g'%20x1='0'%20y1='0'%20x2='1'%20y2='1'%3E%3Cstop%20offset='0'%20stop-color='%23FF6FA5'/%3E%3Cstop%20offset='1'%20stop-color='%23FF9F5A'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle%20cx='32'%20cy='32'%20r='30'%20fill='%23FFF0F5'/%3E%3Cpath%20d='M32%2050C32%2050%2010%2036%2010%2021C10%2013%2016%208%2022%208C26%208%2030%2010%2032%2014C34%2010%2038%208%2042%208C48%208%2054%2013%2054%2021C54%2036%2032%2050%2032%2050Z'%20fill='url(%23g)'/%3E%3Ccircle%20cx='47'%20cy='14'%20r='4'%20fill='%23FFC845'/%3E%3C/svg%3E">
+
+    <!-- Dark mode: ใช้ค่าเดียวกับ index (theme_mode) -->
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('theme_mode');
+                var dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (dark) document.documentElement.classList.add('dark');
+            } catch (e) {}
+        })();
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Prompt:wght@300;400;500;600;700&family=Sacramento&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: {
+                prompt: ['Prompt', 'sans-serif'],
+                mitr: ['Mitr', 'sans-serif'],
+                cursive: ['Sacramento', 'cursive']
+            } } }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: linear-gradient(150deg, #FFE8F1 0%, #FFF3E6 30%, #FFEFD9 55%, #F1E9FB 80%, #E4F6F2 100%);
+            background-attachment: fixed;
+            color: #4A3E3D;
+        }
+        .font-cursive { font-family: 'Sacramento', cursive; }
+
+        .glass-card {
+            background: rgba(255,255,255,.88);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,182,193,.35);
+            box-shadow: 0 10px 30px 0 rgba(255,182,193,.18);
+        }
+        .glass-nav {
+            background: rgba(255,255,255,.92);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(255,182,193,.4);
+        }
+
+        /* เมนูพับใน header (เหมือน index) */
+        .nav-item {
+            display: flex; align-items: center; gap: .625rem;
+            width: 100%; padding: .55rem .9rem;
+            border-radius: 9999px; white-space: nowrap;
+            font-size: .875rem; font-weight: 500; text-align: left;
+            transition: background .2s, filter .2s;
+        }
+        .nav-item[aria-current="page"] { box-shadow: inset 0 0 0 2px rgba(255,111,165,.55); }
+        #nav-menu-panel:not(.hidden) { display: flex; animation: navMenuIn .16s ease-out; }
+        #nav-menu-btn[aria-expanded="true"] #nav-menu-chevron { transform: rotate(180deg); }
+        @keyframes navMenuIn { from { opacity: 0; transform: translateY(-6px) scale(.97); } to { opacity: 1; transform: none; } }
+
+        @keyframes heartPulse {
+            0% { transform: scale(1); } 14% { transform: scale(1.15); } 28% { transform: scale(1); }
+            42% { transform: scale(1.15); } 70% { transform: scale(1); }
+        }
+        .animate-heart-pulse { animation: heartPulse 2.5s infinite; }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #FFF0F5; }
+        ::-webkit-scrollbar-thumb { background: #FFB6C1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FF69B4; }
+
+        .theme-toggle {
+            width: 2.25rem; height: 2.25rem;
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 9999px; background: #EDE7FB; color: #6D4BB3;
+            box-shadow: 0 1px 2px rgba(0,0,0,.08);
+            transition: background .2s, color .2s, transform .2s;
+        }
+        .theme-toggle:hover { background: #E1D7F8; }
+        .theme-toggle:active { transform: scale(.92); }
+        .theme-toggle:focus-visible { outline: 2px solid #A374DB; outline-offset: 2px; }
+        .theme-toggle .icon-sun { display: none; }
+        .logout-btn { background: #FFE3EA; color: #D9304F; }
+        .logout-btn:hover { background: #FFD0DB; }
+
+        /* ---------- หน้า Anniversary ---------- */
+        .year-tab {
+            position: relative;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-width: 5.25rem; padding: .7rem 1rem .75rem;
+            border-radius: 1.25rem;
+            background: rgba(255,255,255,.85);
+            border: 1px solid rgba(255,182,193,.45);
+            color: #8A6F78;
+            transition: transform .2s, box-shadow .2s, background .2s;
+        }
+        .year-tab:hover:not([aria-selected="true"]) { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(255,182,193,.3); }
+        .year-tab:focus-visible { outline: 2px solid #A374DB; outline-offset: 3px; }
+        .year-tab .yt-label { font-size: .7rem; font-weight: 500; opacity: .85; }
+        .year-tab .yt-num { font-family: 'Mitr', sans-serif; font-size: 1.9rem; font-weight: 600; line-height: 1.1; }
+        .year-tab[aria-selected="true"] {
+            background: linear-gradient(135deg, #FF6FA5 0%, #FF9F5A 100%);
+            border-color: transparent; color: #fff;
+            box-shadow: 0 10px 22px rgba(255,111,165,.38);
+            transform: translateY(-2px);
+        }
+        .year-tab.is-empty:not([aria-selected="true"]) { opacity: .72; }
+        .year-tab .yt-lock {
+            position: absolute; top: .4rem; right: .45rem; width: .85rem; height: .85rem; opacity: .75;
+        }
+
+        .video-card { border-radius: 1.75rem; overflow: hidden; }
+        .video-frame { background: #2A1F2B; aspect-ratio: 16 / 9; position: relative; }
+        .video-frame video { width: 100%; height: 100%; max-height: 78vh; object-fit: contain; display: block; background: #2A1F2B; }
+        .video-missing {
+            position: absolute; inset: 0; display: flex; flex-direction: column; gap: .4rem;
+            align-items: center; justify-content: center; text-align: center; padding: 1rem;
+            color: #F6DDE7; font-size: .85rem; background: #2A1F2B;
+        }
+        .video-missing code { font-size: .75rem; background: rgba(255,255,255,.1); padding: .1rem .5rem; border-radius: 9999px; }
+
+        .clip-badge {
+            display: inline-flex; align-items: center; gap: .3rem;
+            font-size: .72rem; font-weight: 600; padding: .15rem .65rem; border-radius: 9999px;
+            background: #FFE3EF; color: #E0457F;
+        }
+
+        .soon-card { border-radius: 1.75rem; }
+        .soon-icon {
+            width: 4rem; height: 4rem; border-radius: 9999px; margin: 0 auto 1rem;
+            display: flex; align-items: center; justify-content: center;
+            background: #EEE2FA; color: #A374DB;
+        }
+
+        .panel-in { animation: panelIn .35s ease-out; }
+        @keyframes panelIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) {
+            .panel-in, #nav-menu-panel:not(.hidden), .animate-heart-pulse { animation: none; }
+            .year-tab, .theme-toggle { transition: none; }
+        }
+
+        /* ---------- Dark mode ---------- */
+        html.dark { color-scheme: dark; }
+        html.dark body {
+            background: linear-gradient(150deg, #1F1426 0%, #251824 30%, #241B22 55%, #1E1A2F 80%, #14232B 100%);
+            background-attachment: fixed; color: #F3E8EC;
+        }
+        html.dark ::-webkit-scrollbar-track { background: #1B1220; }
+        html.dark ::-webkit-scrollbar-thumb { background: #6B3F58; }
+        html.dark .glass-card { background: rgba(44,31,48,.9); border-color: rgba(255,143,184,.22); box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+        html.dark .glass-nav { background: rgba(31,20,38,.92); border-bottom-color: rgba(255,143,184,.25); }
+        html.dark #nav-menu-dot { border-color: #1F1426; }
+        html.dark .theme-toggle { background: rgba(255,200,69,.16); color: #FFD36B; }
+        html.dark .theme-toggle:hover { background: rgba(255,200,69,.28); }
+        html.dark .theme-toggle .icon-sun { display: block; }
+        html.dark .theme-toggle .icon-moon { display: none; }
+        html.dark .logout-btn { background: rgba(255,138,159,.16); color: #FF8A9F; }
+        html.dark .logout-btn:hover { background: rgba(255,138,159,.28); }
+        html.dark .bg-pink-100 { background-color: rgba(255,111,165,.16); }
+        html.dark .bg-fuchsia-100 { background-color: rgba(217,70,239,.18); }
+        html.dark .bg-amber-100 { background-color: rgba(255,200,69,.16); }
+        html.dark .bg-sky-100 { background-color: rgba(14,165,233,.18); }
+        html.dark .bg-rose-100 { background-color: rgba(255,111,165,.16); }
+        html.dark .hover\:bg-pink-200:hover { background-color: rgba(255,111,165,.28); }
+        html.dark .hover\:bg-amber-200:hover { background-color: rgba(255,200,69,.28); }
+        html.dark .hover\:bg-sky-200:hover { background-color: rgba(14,165,233,.3); }
+        html.dark .text-pink-700, html.dark .text-rose-700 { color: #FFA3C4; }
+        html.dark .text-fuchsia-700 { color: #EC94F2; }
+        html.dark .text-amber-800 { color: #FFD98A; }
+        html.dark .text-sky-700 { color: #6DD3F0; }
+        html.dark .text-gray-800 { color: #F6ECF0; }
+        html.dark .text-gray-600 { color: #D0BFC9; }
+        html.dark .text-gray-500 { color: #B8A7B2; }
+        html.dark .year-tab { background: rgba(255,255,255,.07); border-color: rgba(255,143,184,.24); color: #C9B4C0; }
+        html.dark .year-tab[aria-selected="true"] { background: linear-gradient(135deg, #FF6FA5 0%, #FF9F5A 100%); color: #fff; border-color: transparent; }
+        html.dark .clip-badge { background: rgba(255,111,165,.18); color: #FF8FB8; }
+        html.dark .soon-icon { background: rgba(168,85,247,.2); color: #C7A2F4; }
+        html.dark .video-frame, html.dark .video-frame video { background: #150E19; }
+
+        /* เคอร์เซอร์หัวใจ + หัวใจลอยตามเมาส์ (เหมือน index) */
+        html, body, button, a, [onclick] {
+            cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 32 32'%3E%3Cpath d='M16 28C16 28 4 20 4 12.5C4 8 7.5 5 11 5C13 5 15 6.2 16 8C17 6.2 19 5 21 5C24.5 5 28 8 28 12.5C28 20 16 28 16 28Z' fill='%23FF6FA5' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E") 15 15, auto;
+        }
+        .heart-trail { position: fixed; pointer-events: none; z-index: 9999; font-size: 16px; will-change: transform, opacity; animation: heartTrailFloat .9s ease-out forwards; }
+        @keyframes heartTrailFloat {
+            0% { transform: translate(-50%,-50%) scale(1) rotate(0deg); opacity: .9; }
+            100% { transform: translate(-50%,-160%) scale(.35) rotate(25deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-16">
+
+    <header class="sticky top-0 z-40 glass-nav transition-all duration-300">
+        <i data-lucide="heart" class="hidden sm:block absolute top-2 left-1/3 w-3.5 h-3.5 text-pink-300/60 fill-pink-200/60 pointer-events-none"></i>
+        <i data-lucide="sparkles" class="hidden sm:block absolute bottom-1 left-1/2 w-3 h-3 text-amber-300/70 pointer-events-none"></i>
+        <i data-lucide="heart" class="hidden sm:block absolute top-3 right-1/3 w-3 h-3 text-fuchsia-300/60 fill-fuchsia-200/60 pointer-events-none"></i>
+
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center relative">
+            <a href="index.html" class="flex items-center space-x-2 min-w-0" aria-label="กลับหน้าแรก Our Love Story">
+                <div class="relative w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 shadow-inner">
+                    <i data-lucide="heart" class="w-6 h-6 fill-pink-400 stroke-pink-500 animate-heart-pulse"></i>
+                    <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-300 flex items-center justify-center text-[9px] shadow">✨</span>
+                </div>
+                <div class="min-w-0">
+                    <h1 class="text-xl font-bold whitespace-nowrap bg-gradient-to-r from-pink-500 via-fuchsia-500 to-amber-500 bg-clip-text text-transparent font-mitr leading-tight">Our Love Story</h1>
+                    <p class="text-xs text-pink-400 font-light whitespace-nowrap truncate">เส้นทางความทรงจำของเราสองคน</p>
+                </div>
+            </a>
+
+            <div class="flex items-center space-x-2 shrink-0">
+                <div class="relative" id="nav-menu-wrap">
+                    <button id="nav-menu-btn" type="button" onclick="toggleNavMenu(event)" aria-haspopup="true" aria-expanded="false" aria-controls="nav-menu-panel"
+                        class="relative h-9 px-3.5 whitespace-nowrap text-sm bg-pink-100 hover:bg-pink-200 text-pink-700 rounded-full font-medium transition duration-200 inline-flex items-center gap-1.5 shadow-sm">
+                        <i data-lucide="layout-grid" class="w-4 h-4 text-pink-500"></i>
+                        <span>เมนู</span>
+                        <i data-lucide="chevron-down" id="nav-menu-chevron" class="w-3.5 h-3.5 text-pink-400 transition-transform duration-200"></i>
+                    </button>
+                    <div id="nav-menu-panel" role="menu" class="hidden absolute right-0 top-full mt-2 w-64 p-2 rounded-2xl glass-card shadow-xl z-50 flex-col gap-1.5">
+                        <a href="index.html" role="menuitem" class="nav-item bg-rose-100 hover:bg-pink-200 text-rose-700">
+                            <i data-lucide="house" class="w-4 h-4 text-rose-500"></i><span>ไทม์ไลน์ความทรงจำ</span>
+                        </a>
+                        <a href="map.html" role="menuitem" class="nav-item bg-pink-100 hover:bg-pink-200 text-pink-700">
+                            <i data-lucide="map" class="w-4 h-4 text-pink-500"></i><span>แผนที่ความทรงจำ</span>
+                        </a>
+                        <a href="marquee.html" role="menuitem" class="nav-item bg-fuchsia-100 hover:brightness-95 text-fuchsia-700">
+                            <i data-lucide="images" class="w-4 h-4 text-fuchsia-500"></i><span>แกลเลอรีรูป</span>
+                        </a>
+                        <a href="puzzle.html" role="menuitem" class="nav-item bg-amber-100 hover:bg-amber-200 text-amber-800">
+                            <i data-lucide="puzzle" class="w-4 h-4 text-amber-500"></i><span>จิ๊กซอว์</span>
+                        </a>
+                        <a href="anniversary.html" role="menuitem" aria-current="page" class="nav-item bg-sky-100 hover:bg-sky-200 text-sky-700">
+                            <i data-lucide="film" class="w-4 h-4 text-sky-500"></i><span>วิดีโอครบรอบ</span>
+                        </a>
+                    </div>
+                </div>
+                <button id="theme-toggle" type="button" onclick="toggleTheme()" class="theme-toggle" aria-pressed="false" aria-label="สลับเป็นโหมดมืด" title="สลับเป็นโหมดมืด">
+                    <i data-lucide="moon" class="icon-moon w-4 h-4"></i>
+                    <i data-lucide="sun" class="icon-sun w-4 h-4"></i>
+                </button>
+                <button id="logout-btn" type="button" onclick="logout()" class="theme-toggle logout-btn" aria-label="ออกจากระบบ" title="ออกจากระบบ (ล็อก)">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 pt-10 sm:pt-14">
+        <!-- หัวหน้า -->
+        <section class="text-center mb-8">
+            <p class="font-cursive text-5xl sm:text-6xl bg-gradient-to-r from-pink-500 via-fuchsia-500 to-amber-500 bg-clip-text text-transparent leading-tight pb-1">Anniversary</p>
+            <h2 class="font-mitr text-2xl sm:text-3xl font-semibold text-gray-800 mt-1">วิดีโอครบรอบของเรา</h2>
+            <p class="text-sm text-gray-500 mt-2">เลือกปีที่อยากย้อนดู แล้วกดเล่นได้เลย</p>
+        </section>
+
+        <!-- เลือกปี -->
+        <div id="year-tabs" role="tablist" aria-label="เลือกปีครบรอบ" class="flex flex-wrap justify-center gap-3 mb-8"></div>
+
+        <!-- เนื้อหาของปีที่เลือก -->
+        <section id="year-panel" role="tabpanel" aria-live="polite"></section>
+    </main>
+
+    <script>
+        /* =====================================================================
+           ตั้งค่าวิดีโอ  -- แก้แค่ตรงนี้เมื่อมีคลิปใหม่
+           - VIDEO_DIR : โฟลเดอร์ที่เก็บไฟล์วิดีโอ (ตอนนี้ตั้งเป็น ./videos/ ไว้ก่อน)
+           - แต่ละปีมี clips = [ { file, title, caption } ]
+           - ปีที่ clips ว่าง [] จะแสดงเป็น "เร็วๆ นี้" (ล็อกไว้)
+           ===================================================================== */
+        const VIDEO_DIR = './videos/';
+
+        const ANNIVERSARIES = [
+            {
+                year: 1,
+                clips: [
+                    { file: 'anniversary-1.mp4', title: 'ครบรอบ 1 ปีของเรา', caption: 'ปีแรกที่เริ่มต้นด้วยกัน' }
+                ]
+            },
+            {
+                year: 2,
+                clips: [
+                    { file: 'anniversary-2-1.mp4', title: 'ครบรอบ 2 ปี · คลิปที่ 1', caption: 'ใส่คำบรรยายคลิปที่นี่' },
+                    { file: 'anniversary-2-2.mp4', title: 'ครบรอบ 2 ปี · คลิปที่ 2', caption: 'ใส่คำบรรยายคลิปที่นี่' }
+                ]
+            },
+            { year: 3, clips: [] },
+            { year: 4, clips: [] }
+        ];
+
+        const tabsEl = document.getElementById('year-tabs');
+        const panelEl = document.getElementById('year-panel');
+        let currentYear = 1;
+
+        function escapeHtml(s) {
+            return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+        }
+
+        function renderTabs() {
+            tabsEl.innerHTML = ANNIVERSARIES.map(a => {
+                const empty = a.clips.length === 0;
+                const sel = a.year === currentYear;
+                return `
+                    <button type="button" role="tab" id="tab-${a.year}" aria-selected="${sel}" aria-controls="year-panel"
+                        class="year-tab ${empty ? 'is-empty' : ''}" onclick="selectYear(${a.year})">
+                        ${empty ? '<i data-lucide="lock" class="yt-lock"></i>' : ''}
+                        <span class="yt-label">ปีที่</span>
+                        <span class="yt-num">${a.year}</span>
+                    </button>`;
+            }).join('');
+        }
+
+        function clipCard(c, i, total, year) {
+            const src = VIDEO_DIR + encodeURI(c.file);
+            return `
+                <article class="video-card glass-card">
+                    <div class="video-frame">
+                        <video controls playsinline preload="metadata" src="${src}" aria-label="${escapeHtml(c.title)}"
+                            onerror="videoMissing(this, '${escapeHtml(c.file)}')"></video>
+                    </div>
+                    <div class="p-5 sm:p-6">
+                        ${total > 1 ? `<span class="clip-badge mb-2"><i data-lucide="film" class="w-3 h-3"></i>คลิปที่ ${i + 1} จาก ${total}</span>` : ''}
+                        <h3 class="font-mitr text-lg sm:text-xl font-medium text-gray-800">${escapeHtml(c.title)}</h3>
+                        ${c.caption ? `<p class="text-sm text-gray-600 mt-1 leading-relaxed">${escapeHtml(c.caption)}</p>` : ''}
+                    </div>
+                </article>`;
+        }
+
+        function renderPanel(burst) {
+            const a = ANNIVERSARIES.find(x => x.year === currentYear);
+            tabsEl.querySelectorAll('.year-tab').forEach(t => t.setAttribute('aria-selected', String(t.id === 'tab-' + currentYear)));
+            panelEl.setAttribute('aria-labelledby', 'tab-' + currentYear);
+
+            let html;
+            if (a.clips.length === 0) {
+                html = `
+                    <div class="soon-card glass-card text-center px-6 py-12 panel-in">
+                        <div class="soon-icon"><i data-lucide="lock-keyhole" class="w-7 h-7"></i></div>
+                        <h3 class="font-mitr text-xl text-gray-800">ครบรอบ ${a.year} ปี · เร็วๆ นี้</h3>
+                        <p class="text-sm text-gray-500 mt-2 leading-relaxed">ช่องนี้เก็บไว้ให้เรื่องราวของปีที่ ${a.year}<br>รอให้เราไปสร้างความทรงจำด้วยกันก่อนนะ 💕</p>
+                    </div>`;
+            } else {
+                const cols = a.clips.length > 1 ? 'md:grid-cols-2' : 'max-w-3xl mx-auto';
+                html = `
+                    <div class="flex items-baseline justify-center gap-3 mb-5 panel-in">
+                        <span class="font-cursive text-4xl text-pink-500">${ordinal(a.year)}</span>
+                        <span class="font-mitr text-lg text-gray-800">Anniversary</span>
+                    </div>
+                    <div class="grid grid-cols-1 ${cols} gap-6 panel-in">
+                        ${a.clips.map((c, i) => clipCard(c, i, a.clips.length, a.year)).join('')}
+                    </div>`;
+            }
+            panelEl.innerHTML = html;
+            lucide.createIcons();
+            if (burst && a.clips.length) {
+                confetti({ particleCount: 36, spread: 60, origin: { y: 0.35 }, colors: ['#FF6FA5', '#FF9F5A', '#FFC845', '#A374DB'] });
+            }
+        }
+
+        function ordinal(n) { return n + (['th','st','nd','rd'][(n % 100 > 10 && n % 100 < 14) ? 0 : (n % 10 < 4 ? n % 10 : 0)]); }
+
+        function selectYear(y) {
+            // หยุดวิดีโอปีเดิมก่อนสลับ
+            panelEl.querySelectorAll('video').forEach(v => v.pause());
+            currentYear = y;
+            try { history.replaceState(null, '', '#year' + y); } catch (e) {}
+            renderPanel(true);
+        }
+
+        function videoMissing(video, file) {
+            const frame = video.parentElement;
+            video.remove();
+            frame.insertAdjacentHTML('beforeend', `
+                <div class="video-missing">
+                    <i data-lucide="video-off" class="w-8 h-8 opacity-80"></i>
+                    <span>ยังไม่มีไฟล์วิดีโอคลิปนี้</span>
+                    <code>${VIDEO_DIR}${file}</code>
+                </div>`);
+            lucide.createIcons();
+        }
+
+        // ถ้ามีคลิปเล่นอยู่ แล้วเปิดคลิปอื่น ให้หยุดคลิปเดิม (กันเสียงซ้อน)
+        document.addEventListener('play', (e) => {
+            if (e.target.tagName !== 'VIDEO') return;
+            panelEl.querySelectorAll('video').forEach(v => { if (v !== e.target) v.pause(); });
+        }, true);
+
+        // ลูกศรซ้าย/ขวาเลื่อนระหว่างแท็บปี
+        tabsEl.addEventListener('keydown', (e) => {
+            if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+            const i = ANNIVERSARIES.findIndex(a => a.year === currentYear);
+            const n = (i + (e.key === 'ArrowRight' ? 1 : -1) + ANNIVERSARIES.length) % ANNIVERSARIES.length;
+            selectYear(ANNIVERSARIES[n].year);
+            document.getElementById('tab-' + ANNIVERSARIES[n].year).focus();
+        });
+
+        // --- เมนู / ธีม / logout (เหมือน index) ---
+        function closeNavMenu() {
+            const panel = document.getElementById('nav-menu-panel');
+            if (!panel) return;
+            panel.classList.add('hidden');
+            document.getElementById('nav-menu-btn').setAttribute('aria-expanded', 'false');
+        }
+        function toggleNavMenu(e) {
+            if (e) e.stopPropagation();
+            const panel = document.getElementById('nav-menu-panel');
+            const open = panel.classList.contains('hidden');
+            panel.classList.toggle('hidden', !open);
+            document.getElementById('nav-menu-btn').setAttribute('aria-expanded', String(open));
+        }
+        document.addEventListener('click', (e) => {
+            const wrap = document.getElementById('nav-menu-wrap');
+            if (wrap && !wrap.contains(e.target)) closeNavMenu();
+        });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeNavMenu(); });
+
+        function syncThemeUI() {
+            const dark = document.documentElement.classList.contains('dark');
+            const btn = document.getElementById('theme-toggle');
+            const label = dark ? 'สลับเป็นโหมดสว่าง' : 'สลับเป็นโหมดมืด';
+            btn.setAttribute('aria-pressed', String(dark));
+            btn.setAttribute('aria-label', label);
+            btn.setAttribute('title', label);
+        }
+        function toggleTheme() {
+            const dark = document.documentElement.classList.toggle('dark');
+            try { localStorage.setItem('theme_mode', dark ? 'dark' : 'light'); } catch (e) {}
+            syncThemeUI();
+        }
+        function logout() {
+            if (!confirm('ต้องการออกจากระบบ (ล็อกหน้านี้) ใช่ไหม?')) return;
+            try { localStorage.removeItem('anniv_auth'); } catch (e) {}
+            location.replace('login.html');
+        }
+
+        // --- เริ่มต้น ---
+        (function init() {
+            const m = /^#year(\d+)$/.exec(location.hash);
+            if (m && ANNIVERSARIES.some(a => a.year === +m[1])) currentYear = +m[1];
+            renderTabs();
+            renderPanel(false);
+            syncThemeUI();
+        })();
+
+        // หัวใจลอยตามเมาส์
+        (function () {
+            const HEARTS = ['💗', '💕', '💖', '❤️'];
+            let last = 0;
+            function spawn(x, y) {
+                const now = Date.now();
+                if (now - last < 60) return;
+                last = now;
+                const el = document.createElement('div');
+                el.className = 'heart-trail';
+                el.textContent = HEARTS[Math.floor(Math.random() * HEARTS.length)];
+                el.style.left = x + 'px'; el.style.top = y + 'px';
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 900);
+            }
+            window.addEventListener('mousemove', (e) => spawn(e.clientX, e.clientY));
+            window.addEventListener('touchmove', (e) => { const t = e.touches[0]; if (t) spawn(t.clientX, t.clientY); }, { passive: true });
+        })();
+    </script>
+</body>
+</html>
