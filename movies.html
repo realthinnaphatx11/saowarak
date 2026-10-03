@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Cinema - หนังที่เราดูด้วยกัน</title>
+<meta name="theme-color" content="#FFE8F1">
+<script>
+(function(){try{var s=localStorage.getItem('theme_mode');var d=s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.classList.add('dark');}catch(e){}})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Prompt:wght@300;400;500;600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+:root{
+  --bg:linear-gradient(150deg,#FFE8F1 0%,#FFF3E6 30%,#FFEFD9 55%,#F1E9FB 80%,#E4F6F2 100%);
+  --ink:#4A3E3D; --muted:#8C7B7A; --card:rgba(255,255,255,.94);
+  --line:rgba(255,111,165,.38); --edge:rgba(255,232,241,.92); --nav:rgba(255,255,255,.92);
+  --pill:#FFE3EF; --pillink:#C2306F; --tog:#EDE7FB; --togink:#6D4BB3;
+}
+html.dark{
+  --bg:linear-gradient(150deg,#1F1426 0%,#251824 30%,#241B22 55%,#1E1A2F 80%,#14232B 100%);
+  --ink:#F3E8EC; --muted:#B8A7B2; --card:rgba(44,31,48,.94);
+  --line:rgba(255,143,184,.34); --edge:rgba(16,9,20,.96); --nav:rgba(31,20,38,.92);
+  --pill:rgba(255,111,165,.16); --pillink:#FFA3C4; --tog:rgba(255,200,69,.16); --togink:#FFD36B;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Poppins','Prompt',sans-serif;background:var(--bg);background-attachment:fixed;color:var(--ink)}
+
+/* Header: ใช้โครงเดียวกับหน้าหลัก */
+header{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:relative;z-index:10;
+  background:var(--nav);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.logo{width:40px;height:40px;border-radius:50%;background:var(--pill);display:grid;place-items:center;color:#FF6FA5;flex:none}
+.brand h1{font:600 20px/1.1 'Poppins','Mitr',sans-serif;white-space:nowrap;background:linear-gradient(90deg,#EC4899,#D946EF,#F59E0B);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand p{font-size:12px;font-weight:300;color:#F472B6;white-space:nowrap}
+.acts{display:flex;gap:8px;align-items:center}
+.pill{height:36px;padding:0 14px;border-radius:999px;background:var(--pill);color:var(--pillink);font-size:14px;font-weight:500;
+  display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+.tog{width:36px;height:36px;border-radius:50%;border:0;background:var(--tog);color:var(--togink);display:grid;place-items:center;cursor:pointer}
+.tog .sun{display:none} html.dark .tog .sun{display:block} html.dark .tog .moon{display:none}
+.pill:focus-visible,.tog:focus-visible,
+
+/* ฉาก: ทางเดินแกลเลอรี 3 มิติ */
+#stage{position:relative;height:calc(100svh - 64px);overflow:hidden;perspective:1100px;perspective-origin:50% 46%;touch-action:none;cursor:grab}
+#stage:active{cursor:grabbing}
+#floor{position:absolute;left:-60%;right:-60%;bottom:0;height:48%;transform-origin:50% 100%;transform:perspective(700px) rotateX(64deg);
+  background:repeating-linear-gradient(0deg,var(--line) 0 2px,transparent 2px 90px);
+  -webkit-mask-image:linear-gradient(to top,#000 25%,transparent);mask-image:linear-gradient(to top,#000 25%,transparent)}
+#fog{position:absolute;inset:0;pointer-events:none;z-index:5;background:radial-gradient(ellipse at 50% 46%,transparent 28%,var(--edge) 100%)}
+#world{position:absolute;left:50%;top:46%;width:0;height:0;transform-style:preserve-3d}
+
+.frame{position:absolute;left:0;top:0;width:290px;padding:10px 10px 13px;background:var(--card);border:2px solid var(--c);border-radius:14px;
+  box-shadow:0 0 26px color-mix(in srgb,var(--c) 45%,transparent);transition:box-shadow .35s}
+.frame.on{box-shadow:0 0 46px color-mix(in srgb,var(--c) 85%,transparent)}
+.poster{position:relative;aspect-ratio:2/3;border-radius:8px;overflow:hidden;display:grid;place-items:center;text-align:center;padding:14px;
+  background:linear-gradient(160deg,var(--c),color-mix(in srgb,var(--c) 35%,#3b2a3a));color:#fff}
+.poster span{font:500 20px/1.3 'Poppins','Mitr',sans-serif;text-shadow:0 2px 8px rgba(0,0,0,.25)}
+.poster span i{display:block;font-style:normal;font-size:34px;margin-bottom:6px}
+.poster img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cap{padding:10px 4px 0}
+.cap small{font-size:12px;color:var(--c);font-weight:500}
+.cap h3{font:500 18px/1.3 'Poppins','Mitr',sans-serif;margin:2px 0 4px}
+.cap .d{font-size:12px;color:var(--muted);margin-bottom:6px}
+.cap p{font-size:13px;line-height:1.7;font-weight:300}
+
+.sign{position:absolute;left:0;top:0;text-align:center;white-space:nowrap;pointer-events:none}
+.sign b{display:block;font:600 clamp(44px,8vw,92px)/1.15 'Poppins','Mitr',sans-serif;letter-spacing:-.02em;background:linear-gradient(90deg,#FF6FA5,#FF9F5A,#FFC845);-webkit-background-clip:text;background-clip:text;color:transparent;padding:0 .15em}
+.sign span{font:400 clamp(14px,2vw,18px) 'Poppins','Prompt',sans-serif;color:var(--muted)}
+
+#ctl{position:absolute;left:0;right:0;bottom:22px;z-index:6;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
+#pad{display:flex;align-items:center;gap:16px;pointer-events:auto}
+.wbtn{width:64px;height:64px;border-radius:50%;border:1.5px solid #FF6FA5;background:var(--card);color:#FF6FA5;
+  font:500 11px 'Poppins','Prompt',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
+  box-shadow:0 0 22px rgba(255,111,165,.4)}
+.wbtn.fwd{width:80px;height:80px;font-size:13px}
+.wbtn svg{width:22px;height:22px}
+.wbtn.go{background:#FF6FA5;color:#fff}
+.wbtn:focus-visible{outline:2px solid #A374DB;outline-offset:2px}
+#hint{font-size:12px;color:var(--muted)}
+
+@media (max-width:640px){
+  .frame{width:210px;padding:8px 8px 10px}
+  .poster span{font-size:16px}
+  .cap h3{font-size:15px} .cap p{font-size:11.5px;line-height:1.6}
+  .brand p{display:none}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo"><i data-lucide="clapperboard" style="width:22px;height:22px"></i></div>
+    <div><h1>Our Love Story</h1><p>โรงหนังของเราสองคน</p></div>
+  </div>
+  <div class="acts">
+    <a class="pill" href="index.html"><i data-lucide="arrow-left" style="width:16px;height:16px"></i>หน้าหลัก</a>
+    <button class="tog" id="theme" type="button" aria-label="สลับโหมดมืด">
+      <i data-lucide="moon" class="moon" style="width:16px;height:16px"></i><i data-lucide="sun" class="sun" style="width:16px;height:16px"></i>
+    </button>
+  </div>
+</header>
+
+<main id="stage">
+  <div id="floor"></div>
+  <div id="world"></div>
+  <div id="fog"></div>
+  <div id="ctl">
+    <div id="pad">
+      <button id="back" class="wbtn" type="button" aria-label="กดค้างเพื่อถอยหลัง"><i data-lucide="arrow-down"></i>ถอยหลัง</button>
+      <button id="fwd" class="wbtn fwd" type="button" aria-label="กดค้างเพื่อเดินหน้า"><i data-lucide="arrow-up"></i>เดินหน้า</button>
+    </div>
+    <div id="hint">กดค้างปุ่มเดินหน้า / ถอยหลัง หรือลากนิ้วขึ้น-ลงบนจอ</div>
+  </div>
+</main>
+
+<script>
+/* ===== แก้รายการหนังตรงนี้ =====
+   t = ชื่อเรื่อง, d = วันที่ดู, n = ข้อความความทรงจำ, c = สีกรอบ,
+   y = ปีที่หนังออก (ไม่บังคับ ช่วยให้ค้นเจอเรื่องที่ถูก), id = รหัส IMDb เช่น 'tt3896198' (ไม่บังคับ แม่นที่สุด),
+   p = ที่อยู่ไฟล์โปสเตอร์ เช่น 'posters/lalaland.jpg' (ใส่แล้วจะใช้รูปนี้แทน OMDb)
+   ตัวอย่างด้านล่างเป็นข้อมูลตัวอย่าง ให้เปลี่ยนเป็นเรื่องจริงของเรา */
+/* ===== OMDb: ดึงโปสเตอร์อัตโนมัติจากชื่อเรื่อง (omdbapi.com) ===== */
+const OMDB_KEY = 'dafc860d';
+
+const films = [
+  { t:'La La Land', y:'2016', d:'14 ก.พ. 2025', n:'หนังเรื่องแรกที่ดูด้วยกันในโรง ป๊อปคอร์นหมดก่อนหนังเริ่ม', c:'#FF6FA5', p:'' },
+  { t:'Your Name', y:'2016', d:'2 มี.ค. 2025', n:'ร้องไห้พร้อมกัน แล้วหัวเราะกันเองตอนเดินออกมา', c:'#5AC8E8', p:'' },
+  { t:'Spider-Man: Across the Spider-Verse', y:'2023', d:'19 เม.ย. 2025', n:'ที่นั่งแถวเดิมที่เราชอบ และเธอบ่นว่าเสียงดังไป', c:'#FF9F5A', p:'' },
+  { t:'Interstellar', y:'2014', d:'8 มิ.ย. 2025', n:'นั่งนิ่งสามชั่วโมง แล้วคุยต่อกันอีกสองชั่วโมง', c:'#A374DB', p:'' },
+  { t:'Past Lives', y:'2023', d:'30 ส.ค. 2025', n:'เดินกลับบ้านเงียบๆ แต่จับมือแน่นกว่าเดิม', c:'#FFC845', p:'' },
+  { t:'Coco', y:'2017', d:'25 ธ.ค. 2025', n:'หนังที่ดูที่บ้าน ห่มผ้าผืนเดียวกัน', c:'#5ED1A6', p:'' }
+];
+
+const GAP = 520, Z0 = 700, END = films.length * GAP + 200;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const world = document.getElementById('world'), floor = document.getElementById('floor'), stage = document.getElementById('stage');
+const esc = s => s.replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+const items = [];
+
+function showPoster(box, url, title) {
+  const hi = url.replace(/_SX\d+/, '_SX700');          // OMDb ให้รูป 300px ลองขอขนาดใหญ่ขึ้นก่อน
+  const tries = hi !== url ? [hi, url] : [url];
+  const next = () => {
+    const u = tries.shift(); if (!u) return;            // ไม่ได้สักรูป: คงโปสเตอร์สีไว้
+    const img = new Image();
+    img.alt = 'โปสเตอร์ ' + title;
+    img.onload = () => box.appendChild(img);
+    img.onerror = next;
+    img.src = u;
+  };
+  next();
+}
+
+async function omdbPoster(f) {
+  const ck = 'omdb_poster_v1:' + (f.id || f.t + '|' + (f.y || ''));
+  try { const c = localStorage.getItem(ck); if (c) return c; } catch (e) {}
+  const q = f.id ? 'i=' + encodeURIComponent(f.id)
+    : 't=' + encodeURIComponent(f.t) + '&type=movie' + (f.y ? '&y=' + f.y : '');
+  try {
+    const r = await fetch('https://www.omdbapi.com/?' + q + '&apikey=' + OMDB_KEY);
+    if (!r.ok) throw new Error(r.status);
+    const j = await r.json();
+    if (j.Response === 'False') throw new Error(j.Error);
+    if (!j.Poster || j.Poster === 'N/A') return '';
+    try { localStorage.setItem(ck, j.Poster); } catch (e) {}
+    return j.Poster;
+  } catch (e) { console.warn('OMDb:', f.t, e); return ''; }
+}
+
+function add(el, z, i) { world.appendChild(el); items.push({ el, z, i }); }
+
+const sign = document.createElement('div');
+sign.className = 'sign';
+sign.innerHTML = '<b>Our Cinema</b><span>หนังที่เราดูด้วยกัน เดินเข้าไปดูกันเลย</span>';
+add(sign, -300, -1);
+
+films.forEach((f, i) => {
+  const el = document.createElement('article');
+  el.className = 'frame';
+  el.style.setProperty('--c', f.c);
+  el.innerHTML =
+    '<div class="poster"><span><i>🎬</i>' + esc(f.t) + '</span></div>' +
+    '<div class="cap"><small>เรื่องที่ ' + (i + 1) + '</small><h3>' + esc(f.t) + '</h3><p class="d">' + esc(f.d) + '</p><p>' + esc(f.n) + '</p></div>';
+  add(el, -(i * GAP + Z0), i);
+  const box = el.querySelector('.poster');
+  if (f.p) showPoster(box, f.p, f.t);
+  else if (OMDB_KEY) omdbPoster(f).then(u => u && showPoster(box, u, f.t));
+});
+
+const end = document.createElement('div');
+end.className = 'sign';
+end.innerHTML = '<b style="font-size:clamp(30px,5.5vw,60px)">To be continued</b><span>เรื่องต่อไป เรายังไม่ได้ดูด้วยกัน</span>';
+add(end, -(films.length * GAP + Z0), -1);
+
+function layout() {
+  const X = Math.min(innerWidth * 0.36, 560);
+  items.forEach(it => {
+    if (it.i < 0) { it.el.style.transform = 'translate3d(0,' + (it.z === -300 ? -110 : 0) + 'px,' + it.z + 'px) translate(-50%,-50%)'; return; }
+    const side = it.i % 2 ? 1 : -1;
+    it.el.style.transform = 'translate3d(' + side * X + 'px,-20px,' + it.z + 'px) rotateY(' + (-side * 38) + 'deg) translate(-50%,-50%)';
+  });
+}
+layout(); addEventListener('resize', layout);
+
+let pos = 0, target = 0, dir = 0, act = -1;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const go = d => { target = clamp(target + d, 0, END); };
+
+(function tick() {
+  if (dir) go(7 * dir);
+  pos += (target - pos) * (reduce ? 1 : 0.08);
+  world.style.transform = 'translateZ(' + pos + 'px)';
+  floor.style.backgroundPositionY = ((pos * 0.6) % 90) + 'px';
+  let best = -1, bd = 1e9;
+  items.forEach(it => {
+    const e = it.z + pos;
+    let o = 1;
+    if (e > -60) o = 1 - (e + 60) / 260; else if (e < -2400) o = (3200 + e) / 800;
+    o = clamp(o, 0, 1);
+    it.el.style.opacity = o;
+    it.el.style.visibility = o ? 'visible' : 'hidden';
+    if (it.i >= 0) { const d = Math.abs(e + 500); if (d < bd) { bd = d; best = it.i; } }
+  });
+  if (bd > 300) best = -1;
+  if (best !== act) {
+    items.forEach(it => it.i >= 0 && it.el.classList.toggle('on', it.i === best));
+    act = best;
+  }
+  requestAnimationFrame(tick);
+})();
+
+/* ควบคุม: ปุ่มเดิน, ล้อเมาส์, ลากนิ้ว, คีย์บอร์ด */
+const btns = { fwd: document.getElementById('fwd'), back: document.getElementById('back') };
+function setDir(d) { dir = d; btns.fwd.classList.toggle('go', d > 0); btns.back.classList.toggle('go', d < 0); }
+[[btns.fwd, 1], [btns.back, -1]].forEach(([b, d]) => {
+  b.addEventListener('pointerdown', e => { e.stopPropagation(); b.setPointerCapture(e.pointerId); setDir(d); });
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => b.addEventListener(ev, () => setDir(0)));
+  b.addEventListener('contextmenu', e => e.preventDefault());
+});
+let lastY = null;
+stage.addEventListener('pointerdown', e => { lastY = e.clientY; });
+stage.addEventListener('pointermove', e => { if (lastY === null) return; go((lastY - e.clientY) * 2.2); lastY = e.clientY; });
+['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => stage.addEventListener(ev, () => { lastY = null; }));
+stage.addEventListener('wheel', e => { e.preventDefault(); go(e.deltaY * 1.1); }, { passive: false });
+addEventListener('keydown', e => {
+  if (e.key === 'ArrowUp' || e.key === 'ArrowRight' || e.key === 'w') go(170);
+  else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 's') go(-170);
+  else if (e.key === ' ') { e.preventDefault(); setDir(1); }
+});
+addEventListener('keyup', e => { if (e.key === ' ') setDir(0); });
+
+/* สลับธีม ใช้ค่าเดียวกับหน้าหลัก (theme_mode) */
+document.getElementById('theme').addEventListener('click', () => {
+  const dark = document.documentElement.classList.toggle('dark');
+  try { localStorage.setItem('theme_mode', dark ? 'dark' : 'light'); } catch (e) {}
+});
+lucide.createIcons();
+</script>
+</body>
+</html>
