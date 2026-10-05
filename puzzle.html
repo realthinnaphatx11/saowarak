@@ -541,9 +541,11 @@ function build() {
     Object.assign(board.style, { left: pad + 'px', top: pad + 'px', width: bw + 'px', height: bh + 'px', backgroundSize: `${cw}px ${ch}px` });
     board.appendChild(sc); stage.appendChild(board);
 
-    // ถาดวางชิ้นส่วน (เว้นระยะตามขนาดกล่องชิ้นจริง Wp/Hp กันซ้อนทับกัน)
-    const n = cols * rows, tcols = Math.max(1, Math.floor(W / (Wp * .92))), trows = Math.ceil(n / tcols), rowH = Hp * .92;
-    const trayTop = pad * 2 + bh + 10, trayH = trows * rowH + pad * 2 + 18;
+    // ถาดวางชิ้นส่วน: ถาดเล็ก กองสุมทับกันแบบไม่เป็นระเบียบ (ระยะห่างแค่ ~60% ของชิ้น) จะได้ไม่ต้องลากไกล
+    const n = cols * rows, stepXmax = cw * .62, stepY = ch * .55;
+    const tcols = Math.max(1, Math.floor((W - Wp) / stepXmax) + 1), trows = Math.ceil(n / tcols);
+    const stepX = tcols > 1 ? (W - Wp) / (tcols - 1) : 0;
+    const trayTop = pad * 2 + bh + 10, trayH = (trows - 1) * stepY + Hp + 30;
     const tray = document.createElement('div'); tray.id = 'tray';
     Object.assign(tray.style, { top: trayTop + 'px', height: trayH + 'px' });
     tray.innerHTML = '<div id="tray-label">ถาดจิ๊กซอว์</div>'; stage.appendChild(tray);
@@ -568,10 +570,11 @@ function build() {
         x.lineWidth = 1.2; x.strokeStyle = 'rgba(214,64,126,.45)'; x.stroke(path);
 
         const el = document.createElement('div'); el.className = 'piece'; el.appendChild(cv); stage.appendChild(el);
-        const slot = slots.pop(), jx = (Math.random() - .5) * cw * .18, jy = (Math.random() - .5) * ch * .12;
-        const px = tcols > 1 ? (slot % tcols) * (W - Wp) / (tcols - 1) : (W - Wp) / 2;
+        const slot = slots.pop(), jx = (Math.random() - .5) * stepX * .6, jy = (Math.random() - .5) * stepY * .7;
+        const px = tcols > 1 ? (slot % tcols) * stepX : (W - Wp) / 2;
+        const py = trayTop + 16 + Math.floor(slot / tcols) * stepY + jy;
         const p = { r, c, el, path, w: Wp, h: Hp, tx: c * cw, ty: r * ch, snapD: m * .35,
-            x: Math.max(0, Math.min(W - Wp, px + jx)), y: trayTop + 14 + Math.floor(slot / tcols) * rowH + jy, z: ++S.z, placed: false };
+            x: Math.max(0, Math.min(W - Wp, px + jx)), y: Math.max(trayTop + 8, Math.min(trayTop + trayH - Hp - 6, py)), z: ++S.z, placed: false };
         el.style.zIndex = p.z; S.pieces.push(p); move(p);
     }
     updateProg(); showBestStat();

@@ -184,7 +184,7 @@
 <!-- captcha popup: เด้งทับหน้า PIN (หน้า PIN ยังอยู่ด้านหลัง) -->
 <div class="rc-back" id="rcBack" aria-hidden="true">
   <div class="rc" id="rc" role="dialog" aria-modal="true" aria-labelledby="rcT">
-    <div class="rc-head"><small>เลือกรูป 3 รูปที่เป็น</small><b id="rcT">ที่ต่างจากรูปอื่น</b><small>เลือกรูป แล้วกดยืนยัน</small></div>
+    <div class="rc-head"><small>จากรูปทั้งหมด</small><b id="rcT">เลือก 3 รูป</b><small>แล้วกดยืนยัน</small></div>
     <div class="rc-body"><div class="grid" id="grid"></div></div>
     <p class="rc-msg" id="m2" role="alert" aria-live="polite"></p>
     <div class="rc-foot">
@@ -304,7 +304,7 @@
   $('verify').addEventListener('click', function () {
     var ok = current.every(function (t, i) { return !!picked[i] === !!t.cute; });
     if (ok) { try { localStorage.setItem(AUTH_KEY, '1'); } catch (e) {} enter(); return; }
-    shake($('rc')); say($('m2'), 'ยังไม่ถูกนะ ลองเลือกใหม่อีกครั้ง', true); buildCaptcha();
+    shake($('rc')); say($('m2'), 'ยังเลือกไม่ครบ หรือเลือกไม่ถูก ลองใหม่ดูนะ', true); buildCaptcha();
   });
 
   // --- ขั้นที่ 3: แอนิเมชันเข้าหน้าหลัก ---
