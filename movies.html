@@ -30,19 +30,74 @@ html.dark{
 html,body{height:100%;overflow:hidden}
 body{font-family:'Poppins','Prompt',sans-serif;background:var(--bg);background-attachment:fixed;color:var(--ink)}
 
-/* Header: ใช้โครงเดียวกับหน้าหลัก */
-header{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:relative;z-index:10;
-  background:var(--nav);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
-.brand{display:flex;align-items:center;gap:10px;min-width:0}
-.logo{width:40px;height:40px;border-radius:50%;background:var(--pill);display:grid;place-items:center;color:#FF6FA5;flex:none}
-.brand h1{font:600 20px/1.1 'Poppins','Mitr',sans-serif;white-space:nowrap;background:linear-gradient(90deg,#EC4899,#D946EF,#F59E0B);-webkit-background-clip:text;background-clip:text;color:transparent}
-.brand p{font-size:12px;font-weight:300;color:#F472B6;white-space:nowrap}
-.acts{display:flex;gap:8px;align-items:center}
-.pill{height:36px;padding:0 14px;border-radius:999px;background:var(--pill);color:var(--pillink);font-size:14px;font-weight:500;
-  display:inline-flex;align-items:center;gap:6px;text-decoration:none}
-.tog{width:36px;height:36px;border-radius:50%;border:0;background:var(--tog);color:var(--togink);display:grid;place-items:center;cursor:pointer}
-.tog .sun{display:none} html.dark .tog .sun{display:block} html.dark .tog .moon{display:none}
-.pill:focus-visible,.tog:focus-visible,
+/* ===== Header: เหมือนหน้าหลัก (index) ===== */
+.ls-nav{position:relative;z-index:40;height:64px;background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,182,193,.4)}
+html.dark .ls-nav{background:rgba(31,20,38,.92);border-bottom-color:rgba(255,143,184,.25)}
+.ls-nav .hidden{display:none!important}
+.ls-in{position:relative;max-width:64rem;height:100%;margin:0 auto;padding:0 1rem;display:flex;align-items:center;justify-content:space-between}
+.ls-deco{position:absolute;pointer-events:none;display:none}
+@media (min-width:640px){.ls-deco{display:block}}
+.ls-d1{top:.5rem;left:33.333%;width:.875rem;height:.875rem;color:rgba(249,168,212,.6);fill:rgba(251,207,232,.6)}
+.ls-d2{bottom:.25rem;left:50%;width:.75rem;height:.75rem;color:rgba(252,211,77,.7)}
+.ls-d3{top:.75rem;right:33.333%;width:.75rem;height:.75rem;color:rgba(240,171,252,.6);fill:rgba(245,208,254,.6)}
+.ls-brand{display:flex;align-items:center;gap:.5rem;min-width:0;text-decoration:none;color:inherit}
+.ls-logo{position:relative;flex:none;width:2.5rem;height:2.5rem;border-radius:50%;background:#fce7f3;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 2px 4px rgba(0,0,0,.05)}
+html.dark .ls-logo{background:rgba(255,111,165,.16)}
+.ls-heart{width:1.5rem;height:1.5rem;fill:#f472b6;stroke:#ec4899}
+.ls-spark{position:absolute;top:-4px;right:-4px;width:1rem;height:1rem;border-radius:50%;background:#fcd34d;display:flex;align-items:center;justify-content:center;font-size:9px;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.ls-ttl{min-width:0;overflow:hidden}
+.ls-ttl h1{font:700 1.25rem/1.25 'Mitr',sans-serif;white-space:nowrap;background:linear-gradient(90deg,#ec4899,#d946ef,#f59e0b);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ls-ttl p{font:300 .75rem/1rem 'Prompt',sans-serif;color:#f472b6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@keyframes heartPulse{0%{transform:scale(1)}14%{transform:scale(1.15)}28%{transform:scale(1)}42%{transform:scale(1.15)}70%{transform:scale(1)}}
+.animate-heart-pulse{animation:heartPulse 2.5s infinite}
+.ls-acts{display:flex;align-items:center;gap:.5rem;flex:none}
+.ls-menuwrap{position:relative}
+.ls-menubtn{position:relative;height:2.25rem;padding:0 .875rem;display:inline-flex;align-items:center;gap:.375rem;border:0;border-radius:9999px;background:#fce7f3;color:#be185d;font:500 .875rem 'Prompt',sans-serif;white-space:nowrap;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.05);transition:background .2s}
+.ls-menubtn:hover{background:#fbcfe8}
+.ls-menubtn .ls-ic{color:#ec4899}
+.ls-menubtn #nav-menu-chevron{width:.875rem;height:.875rem;color:#f472b6;transition:transform .2s}
+#nav-menu-btn[aria-expanded="true"] #nav-menu-chevron{transform:rotate(180deg)}
+html.dark .ls-menubtn{background:rgba(255,111,165,.16);color:#FFA3C4}
+html.dark .ls-menubtn:hover{background:rgba(255,111,165,.28)}
+.ls-ic{width:1rem;height:1rem;flex:none}
+.ls-panel{position:absolute;right:0;top:100%;margin-top:.5rem;width:16rem;padding:.5rem;border-radius:1rem;display:flex;flex-direction:column;gap:.375rem;z-index:50;
+  background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,182,193,.35);
+  box-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);animation:navMenuIn .16s ease-out}
+html.dark .ls-panel{background:rgba(44,31,48,.9);border-color:rgba(255,143,184,.22);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+@keyframes navMenuIn{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}
+.ls-item{display:flex;align-items:center;gap:.625rem;width:100%;padding:.55rem .9rem;border-radius:9999px;white-space:nowrap;font:500 .875rem 'Prompt',sans-serif;text-align:left;text-decoration:none;border:0;cursor:pointer;
+  background:var(--ib);color:var(--it);transition:background .2s,filter .2s}
+.ls-item:hover{background:var(--ibh,var(--ib));filter:var(--ihf,none)}
+.ls-item .ls-ic{color:var(--ii)}
+.ls-item[aria-current="page"]{box-shadow:inset 0 0 0 2px rgba(255,111,165,.55)}
+.ls-rose{--ib:#ffe4e6;--ibh:#fbcfe8;--it:#be123c;--ii:#f43f5e}
+.ls-rose2{--ib:#ffe4e6;--ibh:#fecdd3;--it:#be123c;--ii:#f43f5e}
+.ls-pink{--ib:#fce7f3;--ibh:#fbcfe8;--it:#be185d;--ii:#ec4899}
+.ls-fuchsia{--ib:#fae8ff;--it:#a21caf;--ii:#d946ef;--ihf:brightness(.95)}
+.ls-purple{--ib:#f3e8ff;--it:#9333ea;--ii:#a855f7;--ihf:brightness(.95)}
+.ls-amber{--ib:#fef3c7;--ibh:#fde68a;--it:#92400e;--ii:#f59e0b}
+.ls-sky{--ib:#e0f2fe;--ibh:#bae6fd;--it:#0369a1;--ii:#0ea5e9}
+html.dark .ls-rose,html.dark .ls-pink{--ib:rgba(255,111,165,.16);--ibh:rgba(255,111,165,.28);--it:#FFA3C4}
+html.dark .ls-rose2{--ib:rgba(255,111,165,.16);--ibh:rgba(255,111,165,.28);--it:#FFA3C4}
+html.dark .ls-fuchsia{--ib:rgba(217,70,239,.18);--it:#EC94F2}
+html.dark .ls-purple{--ib:rgba(168,85,247,.2);--it:#C7A2F4}
+html.dark .ls-amber{--ib:rgba(255,200,69,.16);--ibh:rgba(255,200,69,.28);--it:#FFD98A}
+html.dark .ls-sky{--ib:rgba(14,165,233,.18);--ibh:rgba(14,165,233,.3);--it:#6DD3F0}
+.ls-tog{width:2.25rem;height:2.25rem;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:9999px;background:#EDE7FB;color:#6D4BB3;cursor:pointer;
+  box-shadow:0 1px 2px rgba(0,0,0,.08);transition:background .2s,color .2s,transform .2s}
+.ls-tog:hover{background:#E1D7F8}
+.ls-tog:active{transform:scale(.92)}
+.ls-tog .icon-sun{display:none}
+html.dark .ls-tog{background:rgba(255,200,69,.16);color:#FFD36B}
+html.dark .ls-tog:hover{background:rgba(255,200,69,.28)}
+html.dark .ls-tog .icon-sun{display:block}
+html.dark .ls-tog .icon-moon{display:none}
+.ls-logout{background:#FFE3EA;color:#D9304F}
+.ls-logout:hover{background:#FFD0DB}
+html.dark .ls-logout{background:rgba(255,138,159,.16);color:#FF8A9F}
+html.dark .ls-logout:hover{background:rgba(255,138,159,.28)}
+.ls-menubtn:focus-visible,.ls-tog:focus-visible,.ls-item:focus-visible,.ls-brand:focus-visible{outline:2px solid #A374DB;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.ls-panel,.animate-heart-pulse{animation:none}.ls-tog,.ls-menubtn,.ls-item{transition:none}}
 
 /* ฉาก: ทางเดินแกลเลอรี 3 มิติ */
 #stage{position:relative;height:calc(100svh - 64px);overflow:hidden;perspective:1100px;perspective-origin:50% 46%;touch-action:none;cursor:grab}
@@ -87,21 +142,56 @@ header{height:64px;display:flex;align-items:center;justify-content:space-between
   .frame{width:210px;padding:8px 8px 10px}
   .poster span{font-size:16px}
   .cap h3{font-size:15px} .cap p{font-size:11.5px;line-height:1.6}
-  .brand p{display:none}
 }
 </style>
 </head>
 <body>
-<header>
-  <div class="brand">
-    <div class="logo"><i data-lucide="clapperboard" style="width:22px;height:22px"></i></div>
-    <div><h1>Our Love Story</h1><p>โรงหนังของเราสองคน</p></div>
-  </div>
-  <div class="acts">
-    <a class="pill" href="index.html"><i data-lucide="arrow-left" style="width:16px;height:16px"></i>หน้าหลัก</a>
-    <button class="tog" id="theme" type="button" aria-label="สลับโหมดมืด">
-      <i data-lucide="moon" class="moon" style="width:16px;height:16px"></i><i data-lucide="sun" class="sun" style="width:16px;height:16px"></i>
-    </button>
+<header class="ls-nav">
+  <i data-lucide="heart" class="ls-deco ls-d1"></i>
+  <i data-lucide="sparkles" class="ls-deco ls-d2"></i>
+  <i data-lucide="heart" class="ls-deco ls-d3"></i>
+  <div class="ls-in">
+    <a href="index.html" class="ls-brand" aria-label="กลับหน้าแรก Our Love Story">
+      <div class="ls-logo">
+        <i data-lucide="heart" class="ls-heart animate-heart-pulse"></i>
+        <span class="ls-spark">✨</span>
+      </div>
+      <div class="ls-ttl">
+        <h1>Our Love Story</h1>
+        <p>เส้นทางความทรงจำของเราสองคน</p>
+      </div>
+    </a>
+
+    <div class="ls-acts">
+      <div class="ls-menuwrap" id="nav-menu-wrap">
+        <button id="nav-menu-btn" type="button" class="ls-menubtn" onclick="toggleNavMenu(event)" aria-haspopup="true" aria-expanded="false" aria-controls="nav-menu-panel">
+          <i data-lucide="layout-grid" class="ls-ic"></i>
+          <span>เมนู</span>
+          <i data-lucide="chevron-down" id="nav-menu-chevron" class="ls-ic"></i>
+        </button>
+        <div id="nav-menu-panel" role="menu" class="ls-panel hidden">
+        <a href="index.html" role="menuitem" class="ls-item ls-rose"><i data-lucide="house" class="ls-ic"></i><span>ไทม์ไลน์ความทรงจำ</span></a>
+        <a href="map.html" role="menuitem" class="ls-item ls-pink"><i data-lucide="map" class="ls-ic"></i><span>แผนที่ความทรงจำ</span></a>
+        <a href="marquee.html" role="menuitem" class="ls-item ls-fuchsia"><i data-lucide="images" class="ls-ic"></i><span>แกลเลอรีรูป</span></a>
+        <a href="movies.html" role="menuitem" aria-current="page" class="ls-item ls-purple"><i data-lucide="clapperboard" class="ls-ic"></i><span>โรงหนังของเรา</span></a>
+        <a href="puzzle.html" role="menuitem" class="ls-item ls-amber"><i data-lucide="puzzle" class="ls-ic"></i><span>จิ๊กซอว์</span></a>
+        <a href="anniversary.html" role="menuitem" class="ls-item ls-sky"><i data-lucide="film" class="ls-ic"></i><span>วิดีโอครบรอบ</span></a>
+        <a href="index.html?open=random" role="menuitem" class="ls-item ls-amber"><i data-lucide="sparkles" class="ls-ic"></i><span>สุ่มความทรงจำ</span></a>
+        <a href="index.html?open=onthisday" role="menuitem" class="ls-item ls-rose2"><i data-lucide="history" class="ls-ic"></i><span>วันนี้เมื่อปีก่อน</span></a>
+        </div>
+      </div>
+      <button id="music-toggle" type="button" onclick="toggleMusic()" class="ls-tog" aria-pressed="false" aria-label="เปิดเพลงประกอบ" title="เปิด/ปิดเพลงประกอบ">
+        <i data-lucide="music" class="icon-music-off ls-ic"></i>
+        <i data-lucide="volume-2" class="icon-music-on ls-ic hidden"></i>
+      </button>
+      <button id="theme-toggle" type="button" onclick="toggleTheme()" class="ls-tog" aria-pressed="false" aria-label="สลับเป็นโหมดมืด" title="สลับเป็นโหมดมืด">
+        <i data-lucide="moon" class="icon-moon ls-ic"></i>
+        <i data-lucide="sun" class="icon-sun ls-ic"></i>
+      </button>
+      <button id="logout-btn" type="button" onclick="logout()" class="ls-tog ls-logout" aria-label="ออกจากระบบ" title="ออกจากระบบ (ล็อก)">
+        <i data-lucide="log-out" class="ls-ic"></i>
+      </button>
+    </div>
   </div>
 </header>
 
@@ -248,18 +338,121 @@ stage.addEventListener('pointermove', e => { if (lastY === null) return; go((las
 ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => stage.addEventListener(ev, () => { lastY = null; }));
 stage.addEventListener('wheel', e => { e.preventDefault(); go(e.deltaY * 1.1); }, { passive: false });
 addEventListener('keydown', e => {
+  if (e.target.closest && e.target.closest('header')) return;
   if (e.key === 'ArrowUp' || e.key === 'ArrowRight' || e.key === 'w') go(170);
   else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 's') go(-170);
   else if (e.key === ' ') { e.preventDefault(); setDir(1); }
 });
 addEventListener('keyup', e => { if (e.key === ' ') setDir(0); });
 
+/* ===== เมนู / ธีม / logout / เพลง (เหมือน index) ===== */
+function closeNavMenu() {
+  const panel = document.getElementById('nav-menu-panel');
+  if (!panel) return;
+  panel.classList.add('hidden');
+  document.getElementById('nav-menu-btn').setAttribute('aria-expanded', 'false');
+}
+function toggleNavMenu(e) {
+  if (e) e.stopPropagation();
+  const panel = document.getElementById('nav-menu-panel');
+  const open = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', !open);
+  document.getElementById('nav-menu-btn').setAttribute('aria-expanded', String(open));
+}
+document.addEventListener('click', (e) => {
+  const wrap = document.getElementById('nav-menu-wrap');
+  if (wrap && !wrap.contains(e.target)) closeNavMenu();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeNavMenu(); });
+
+function syncThemeUI() {
+  const dark = document.documentElement.classList.contains('dark');
+  const btn = document.getElementById('theme-toggle');
+  if (btn) {
+    const label = dark ? 'สลับเป็นโหมดสว่าง' : 'สลับเป็นโหมดมืด';
+    btn.setAttribute('aria-pressed', String(dark));
+    btn.setAttribute('aria-label', label);
+    btn.setAttribute('title', label);
+  }
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', dark ? '#1F1426' : '#FFE8F1');
+}
 /* สลับธีม ใช้ค่าเดียวกับหน้าหลัก (theme_mode) */
-document.getElementById('theme').addEventListener('click', () => {
+function toggleTheme() {
   const dark = document.documentElement.classList.toggle('dark');
   try { localStorage.setItem('theme_mode', dark ? 'dark' : 'light'); } catch (e) {}
-});
+  syncThemeUI();
+}
+function logout() {
+  if (!confirm('ต้องการออกจากระบบ (ล็อกหน้านี้) ใช่ไหม?')) return;
+  try { localStorage.removeItem('anniv_auth'); } catch (e) {}
+  location.replace('login.html');
+}
+syncThemeUI();
 lucide.createIcons();
+</script>
+<!-- เพลงประกอบ: ใช้ไฟล์ bgm.mp3 และค่า bgm_enabled ตัวเดียวกับ index (เปิดค้างไว้ข้ามหน้า และเล่นต่อจากตำแหน่งเดิม) -->
+<audio id="bgm-audio" loop preload="none">
+    <source src="./bgm.mp3" type="audio/mpeg">
+</audio>
+<script>
+(function () {
+    var KEY = 'bgm_enabled', POS = 'bgm_pos';
+    var audio = document.getElementById('bgm-audio');
+    if (!audio) return;
+
+    function setUI(playing) {
+        var btn = document.getElementById('music-toggle');
+        if (!btn) return;
+        var off = btn.querySelector('.icon-music-off'), on = btn.querySelector('.icon-music-on');
+        if (off) off.classList.toggle('hidden', playing);
+        if (on) on.classList.toggle('hidden', !playing);
+        var label = playing ? 'ปิดเพลงประกอบ' : 'เปิดเพลงประกอบ';
+        btn.setAttribute('aria-pressed', String(playing));
+        btn.setAttribute('aria-label', label);
+        btn.setAttribute('title', label);
+    }
+    function savePos() {
+        try { if (!audio.paused && audio.currentTime > 0) localStorage.setItem(POS, String(audio.currentTime)); } catch (e) {}
+    }
+    function resumeFromSaved() {
+        var t = 0;
+        try { t = parseFloat(localStorage.getItem(POS) || '0') || 0; } catch (e) {}
+        if (t > 0) audio.addEventListener('loadedmetadata', function () {
+            try { if (isFinite(audio.duration) && t < audio.duration) audio.currentTime = t; } catch (e) {}
+        }, { once: true });
+    }
+
+    window.toggleMusic = function () {
+        if (audio.paused) {
+            resumeFromSaved();
+            audio.play().then(function () {
+                setUI(true);
+                try { localStorage.setItem(KEY, 'on'); } catch (e) {}
+            }).catch(function (err) {
+                console.warn('เล่นเพลงไม่สำเร็จ (ตรวจสอบว่ามีไฟล์ bgm.mp3 หรือยัง):', err);
+            });
+        } else {
+            savePos();
+            audio.pause();
+            setUI(false);
+            try { localStorage.setItem(KEY, 'off'); } catch (e) {}
+        }
+    };
+
+    var enabled = false;
+    try { enabled = localStorage.getItem(KEY) === 'on'; } catch (e) {}
+    if (enabled) {
+        resumeFromSaved();
+        // เบราว์เซอร์อาจบล็อก autoplay: ถ้าเล่นไม่ได้ ปุ่มจะกลับเป็นสถานะปิด (เหมือน index)
+        audio.play().then(function () { setUI(true); }).catch(function () { setUI(false); });
+    }
+    audio.addEventListener('timeupdate', function () {
+        if (Math.floor(audio.currentTime) % 3 === 0) savePos();
+    });
+    window.addEventListener('pagehide', savePos);
+    document.addEventListener('visibilitychange', function () { if (document.hidden) savePos(); });
+})();
 </script>
 </body>
 </html>

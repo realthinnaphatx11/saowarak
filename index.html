@@ -847,8 +847,20 @@
                 lucide.createIcons();
                 checkOnThisDay();
                 hidePageLoader();
+                handleOpenParam();
             }
         };
+
+        // เมนูจากหน้าอื่น (index.html?open=random / ?open=onthisday) -> เปิดหน้าต่างนั้นทันทีที่โหลดเสร็จ
+        function handleOpenParam() {
+            try {
+                const action = new URLSearchParams(location.search).get('open');
+                if (!action) return;
+                history.replaceState(null, '', location.pathname + location.hash); // กันเด้งซ้ำตอนรีเฟรช
+                if (action === 'random') openRandomMemoryModal();
+                else if (action === 'onthisday') openOnThisDayModal();
+            } catch (e) { console.warn(e); }
+        }
 
         // --- Page Loader ---
         function hidePageLoader() {

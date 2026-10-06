@@ -262,6 +262,15 @@
             100% { transform: translate(-50%,-160%) scale(.35) rotate(25deg); opacity: 0; }
         }
     </style>
+<style id="nav-extra">
+        /* เมนู header เท่ากับ index: สีโหมดมืดของรายการที่เพิ่มเข้ามา */
+        .nav-item[aria-current="page"] { box-shadow: inset 0 0 0 2px rgba(255,111,165,.55); }
+        html.dark .glass-nav .bg-purple-100 { background-color: rgba(168,85,247,.2); }
+        html.dark .glass-nav .text-purple-600 { color: #C7A2F4; }
+        html.dark .glass-nav .hover\:bg-rose-200:hover { background-color: rgba(255,111,165,.28); }
+        html.dark .glass-nav .bg-rose-100 { background-color: rgba(255,111,165,.16); }
+        html.dark .glass-nav .text-rose-700 { color: #FFA3C4; }
+    </style>
 </head>
 <body class="min-h-screen pb-16">
 
@@ -300,14 +309,27 @@
                         <a href="marquee.html" role="menuitem" class="nav-item bg-fuchsia-100 hover:brightness-95 text-fuchsia-700">
                             <i data-lucide="images" class="w-4 h-4 text-fuchsia-500"></i><span>แกลเลอรีรูป</span>
                         </a>
+                        <a href="movies.html" role="menuitem" class="nav-item bg-purple-100 hover:brightness-95 text-purple-600">
+                            <i data-lucide="clapperboard" class="w-4 h-4 text-purple-500"></i><span>โรงหนังของเรา</span>
+                        </a>
                         <a href="puzzle.html" role="menuitem" class="nav-item bg-amber-100 hover:bg-amber-200 text-amber-800">
                             <i data-lucide="puzzle" class="w-4 h-4 text-amber-500"></i><span>จิ๊กซอว์</span>
                         </a>
                         <a href="anniversary.html" role="menuitem" aria-current="page" class="nav-item bg-sky-100 hover:bg-sky-200 text-sky-700">
                             <i data-lucide="film" class="w-4 h-4 text-sky-500"></i><span>วิดีโอครบรอบ</span>
                         </a>
+                        <a href="index.html?open=random" role="menuitem" class="nav-item bg-amber-100 hover:bg-amber-200 text-amber-800">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i><span>สุ่มความทรงจำ</span>
+                        </a>
+                        <a href="index.html?open=onthisday" role="menuitem" class="nav-item bg-rose-100 hover:bg-rose-200 text-rose-700">
+                            <i data-lucide="history" class="w-4 h-4 text-rose-500"></i><span>วันนี้เมื่อปีก่อน</span>
+                        </a>
                     </div>
                 </div>
+                <button id="music-toggle" type="button" onclick="toggleMusic()" class="theme-toggle" aria-pressed="false" aria-label="เปิดเพลงประกอบ" title="เปิด/ปิดเพลงประกอบ">
+                    <i data-lucide="music" class="icon-music-off w-4 h-4"></i>
+                    <i data-lucide="volume-2" class="icon-music-on w-4 h-4 hidden"></i>
+                </button>
                 <button id="theme-toggle" type="button" onclick="toggleTheme()" class="theme-toggle" aria-pressed="false" aria-label="สลับเป็นโหมดมืด" title="สลับเป็นโหมดมืด">
                     <i data-lucide="moon" class="icon-moon w-4 h-4"></i>
                     <i data-lucide="sun" class="icon-sun w-4 h-4"></i>
@@ -621,5 +643,68 @@
             window.addEventListener('touchmove', (e) => { const t = e.touches[0]; if (t) spawn(t.clientX, t.clientY); }, { passive: true });
         })();
     </script>
+<!-- เพลงประกอบ: ใช้ไฟล์ bgm.mp3 และค่า bgm_enabled ตัวเดียวกับ index (เปิดค้างไว้ข้ามหน้า และเล่นต่อจากตำแหน่งเดิม) -->
+<audio id="bgm-audio" loop preload="none">
+    <source src="./bgm.mp3" type="audio/mpeg">
+</audio>
+<script>
+(function () {
+    var KEY = 'bgm_enabled', POS = 'bgm_pos';
+    var audio = document.getElementById('bgm-audio');
+    if (!audio) return;
+
+    function setUI(playing) {
+        var btn = document.getElementById('music-toggle');
+        if (!btn) return;
+        var off = btn.querySelector('.icon-music-off'), on = btn.querySelector('.icon-music-on');
+        if (off) off.classList.toggle('hidden', playing);
+        if (on) on.classList.toggle('hidden', !playing);
+        var label = playing ? 'ปิดเพลงประกอบ' : 'เปิดเพลงประกอบ';
+        btn.setAttribute('aria-pressed', String(playing));
+        btn.setAttribute('aria-label', label);
+        btn.setAttribute('title', label);
+    }
+    function savePos() {
+        try { if (!audio.paused && audio.currentTime > 0) localStorage.setItem(POS, String(audio.currentTime)); } catch (e) {}
+    }
+    function resumeFromSaved() {
+        var t = 0;
+        try { t = parseFloat(localStorage.getItem(POS) || '0') || 0; } catch (e) {}
+        if (t > 0) audio.addEventListener('loadedmetadata', function () {
+            try { if (isFinite(audio.duration) && t < audio.duration) audio.currentTime = t; } catch (e) {}
+        }, { once: true });
+    }
+
+    window.toggleMusic = function () {
+        if (audio.paused) {
+            resumeFromSaved();
+            audio.play().then(function () {
+                setUI(true);
+                try { localStorage.setItem(KEY, 'on'); } catch (e) {}
+            }).catch(function (err) {
+                console.warn('เล่นเพลงไม่สำเร็จ (ตรวจสอบว่ามีไฟล์ bgm.mp3 หรือยัง):', err);
+            });
+        } else {
+            savePos();
+            audio.pause();
+            setUI(false);
+            try { localStorage.setItem(KEY, 'off'); } catch (e) {}
+        }
+    };
+
+    var enabled = false;
+    try { enabled = localStorage.getItem(KEY) === 'on'; } catch (e) {}
+    if (enabled) {
+        resumeFromSaved();
+        // เบราว์เซอร์อาจบล็อก autoplay: ถ้าเล่นไม่ได้ ปุ่มจะกลับเป็นสถานะปิด (เหมือน index)
+        audio.play().then(function () { setUI(true); }).catch(function () { setUI(false); });
+    }
+    audio.addEventListener('timeupdate', function () {
+        if (Math.floor(audio.currentTime) % 3 === 0) savePos();
+    });
+    window.addEventListener('pagehide', savePos);
+    document.addEventListener('visibilitychange', function () { if (document.hidden) savePos(); });
+})();
+</script>
 </body>
 </html>
