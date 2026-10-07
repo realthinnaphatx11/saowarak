@@ -17,7 +17,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500&family=Prompt:wght@300;400&family=Sacramento&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500&family=Prompt:wght@300;400&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: linear-gradient(160deg, #FFF3F7 0%, #FFF6EC 55%, #F6F0FC 100%); --bgsolid: #FFE8F1; --wall: rgba(255,182,193,.16);
@@ -42,16 +42,18 @@
   .poster {
     position: relative; margin: 0; display: flex; flex-direction: column; padding: .9rem .9rem 0;
     width: min(100%, calc((100vh - 5rem) * .714)); width: min(100%, calc((100dvh - 5rem) * .714));
-    aspect-ratio: 5 / 7; background: #FFFCF8; color: #4A3E3D; transform: rotate(-1deg);
+    aspect-ratio: 5 / 7; background: #FFFCF8; color: #4A3E3D; transform: perspective(900px) rotate(-1deg) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform .25s ease-out;
     box-shadow: 0 18px 40px rgba(120,60,80,.22), 0 2px 6px rgba(120,60,80,.12);
   }
   .pic { flex: 1; min-height: 0; overflow: hidden; background: #EBD9DF; }
   .pic { position: relative; }
-  .pic .slide { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.2s ease; image-rendering: auto; }
-  .pic .slide.on { opacity: 1; }
+  .pic .slide { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1); transition: opacity 1.2s ease, transform 0s 1.2s; image-rendering: auto; }
+  .pic .slide.on.ld { opacity: 1; transform: scale(1.08); transition: opacity 1.2s ease, transform 6s linear; }
   .poster figcaption { padding: .6rem 0 .8rem; text-align: center; }
-  .cap-t { font: 400 clamp(1.7rem, 2.6vw, 2.4rem)/1 'Sacramento', cursive; background: linear-gradient(90deg, #FF6FA5, #D946EF, #F59E0B); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .cap-s { margin-top: .2rem; font-size: .68rem; color: #9A8B8A; }
+  .cap-t { font: 500 clamp(1.35rem, 2.1vw, 1.9rem)/1.2 'Mitr', sans-serif; letter-spacing: .02em;
+    background: linear-gradient(100deg, transparent 40%, rgba(255,255,255,.7) 50%, transparent 60%) no-repeat, linear-gradient(90deg, #F0518F, #D946EF, #F59E0B);
+    background-size: 250% 100%, 100% 100%; background-position: 100% 0, 0 0; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shine 7s ease-in-out infinite; }
+  @keyframes shine { 0%, 55% { background-position: 100% 0, 0 0; } 100% { background-position: 0% 0, 0 0; } }
   .tape { position: absolute; top: -.55rem; width: 3.4rem; height: 1.2rem; background: rgba(255,182,193,.7); }
   .tape.l { left: -.9rem; transform: rotate(-38deg); }
   .tape.r { right: -.9rem; transform: rotate(38deg); background: rgba(253,224,130,.75); }
@@ -122,6 +124,34 @@
   .toggle:hover { background: var(--hover); }
   .toggle .sun { display: none; } html.dark .toggle .sun { display: block; } html.dark .toggle .moon { display: none; }
 
+  /* ===== effects ===== */
+  .box { position: relative; z-index: 1; } .toggle { z-index: 2; }
+  /* หัวใจ/กลีบลอย */
+  .floaty { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+  .fl { position: absolute; left: var(--x); bottom: -2.5rem; width: var(--s); height: var(--s); color: var(--accent); opacity: 0; animation: rise var(--d) linear var(--dl) infinite; }
+  .fl svg { display: block; width: 100%; height: 100%; }
+  .fl.petal { border-radius: 150% 0 150% 0; background: linear-gradient(135deg, #FFB6CE, #FF8FB8); }
+  @keyframes rise { 0% { transform: translate3d(0,0,0) rotate(0); opacity: 0; } 10%, 90% { opacity: var(--o); } 100% { transform: translate3d(var(--dx), -115vh, 0) rotate(var(--r)); opacity: 0; } }
+  /* จุดบอกสไลด์ */
+  .sdots { position: absolute; left: 0; right: 0; bottom: .45rem; display: flex; justify-content: center; gap: .1rem; z-index: 2; }
+  .sdots button { width: 1.2rem; height: 1.2rem; padding: 0; border: 0; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .sdots button::before { content: ''; width: .45rem; height: .45rem; border-radius: 99px; background: rgba(255,255,255,.65); box-shadow: 0 0 0 1px rgba(0,0,0,.2); transition: width .25s, background .25s; }
+  .sdots button.on::before { width: 1.1rem; background: #fff; }
+  .sdots button:focus-visible { outline: 2px solid var(--ring); outline-offset: 1px; }
+  /* ripple ปุ่มเลข */
+  .key { position: relative; overflow: hidden; }
+  .rip { position: absolute; border-radius: 50%; background: var(--accent); opacity: .35; transform: scale(0); animation: rip .55s ease-out forwards; pointer-events: none; }
+  @keyframes rip { to { transform: scale(1); opacity: 0; } }
+  /* ฉลอง PIN ถูก */
+  .dots { position: relative; }
+  .dots.ok .dot { background: var(--accent); border-color: var(--accent); animation: okpop .5s ease both; }
+  @keyframes okpop { 0% { transform: scale(1.1); box-shadow: 0 0 0 0 rgba(255,111,165,.6); } 50% { transform: scale(1.7); } 100% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(255,111,165,0); } }
+  .burst { position: absolute; left: 50%; top: 50%; pointer-events: none; animation: fly .8s ease-out both; }
+  @keyframes fly { from { transform: translate(-50%,-50%) scale(.3); opacity: 1; } to { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1); opacity: 0; } }
+  /* captcha tile */
+  .tile { animation: tileIn .38s cubic-bezier(.2,.8,.3,1) both; }
+  @keyframes tileIn { from { opacity: 0; transform: scale(.8); } }
+
   /* แอนิเมชันเข้าหน้าหลัก */
   #go { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; background: var(--bg); opacity: 0; visibility: hidden; transition: opacity .5s; overflow: hidden; }
   #go.on { opacity: 1; visibility: visible; }
@@ -134,12 +164,13 @@
     .split { grid-template-columns: 1fr; grid-template-rows: 40vh 1fr; grid-template-rows: 40dvh 1fr; }
     .wall { padding: 1.4rem 1rem; }
     .poster { width: min(100%, calc((40vh - 2.8rem) * .714)); width: min(100%, calc((40dvh - 2.8rem) * .714)); padding: .55rem .55rem 0; }
-    .poster figcaption { padding: .3rem 0 .45rem; } .cap-t { font-size: 1.5rem; } .cap-s { display: none; }
+    .poster figcaption { padding: .3rem 0 .45rem; } .cap-t { font-size: 1.25rem; }
     .tape { width: 2.4rem; height: .9rem; }
     .panel { align-items: flex-start; padding-top: 2rem; }
   }
   @media (max-height: 640px) { .pad { gap: .6rem 1.1rem; grid-template-columns: repeat(3, 3.6rem); } .key { width: 3.6rem; height: 3.6rem; font-size: 1.3rem; } }
   @media (prefers-reduced-motion: reduce) { .heart, #go svg, .step.on, .box.shake, .rc.shake { animation: none; } .rc, .rc-back { transition: none; } #go.zoom svg { transition: none; } .dot, .key { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .floaty { display: none; } .fl, .burst, .tile, .cap-t, .dots.ok .dot, .rip { animation: none; } .poster { transition: none; } .pic .slide.on.ld { transform: none; } }
 </style>
 </head>
 <body>
@@ -155,7 +186,7 @@
       </div>
       <figcaption>
         <div class="cap-t">Our Love Story</div>
-        <div class="cap-s">เส้นทางความทรงจำของเราสองคน</div>
+        
       </figcaption>
     </figure>
   </div>
@@ -245,6 +276,30 @@
   var box = $('box'), dots = $('dots'), dotEls = dots.querySelectorAll('.dot');
   var code = '', fails = 0, locked = false, stage = 1;
   function say(el, t, err) { el.textContent = t; el.className = 'msg' + (err ? ' err' : ''); }
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var HP = 'M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z';
+  function celebrate() {
+    dots.classList.add('ok');
+    if (navigator.vibrate) navigator.vibrate([20, 50, 20]);
+    if (reduced) return;
+    dotEls.forEach(function (d, i) { d.style.animationDelay = i * 70 + 'ms'; });
+    var cols = ['#FF6FA5', '#D946EF', '#F59E0B', '#F0518F'];
+    for (var n = 0; n < 14; n++) {
+      var h = document.createElement('span'), a = n / 14 * Math.PI * 2 + Math.random() * .4, r = 50 + Math.random() * 60, z = 12 + Math.floor(Math.random() * 10);
+      h.className = 'burst'; h.style.color = cols[n % 4]; h.style.animationDelay = (150 + Math.random() * 150) + 'ms';
+      h.style.setProperty('--dx', Math.cos(a) * r * 1.4 + 'px'); h.style.setProperty('--dy', Math.sin(a) * r + 'px');
+      h.innerHTML = '<svg width="' + z + '" height="' + z + '" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="' + HP + '"/></svg>';
+      dots.appendChild(h);
+      (function (el) { setTimeout(function () { el.remove(); }, 1500); })(h);
+    }
+  }
+  function ripple(btn, x, y) {
+    if (!btn || reduced) return;
+    var b = btn.getBoundingClientRect(), d = b.width * 1.7, el = document.createElement('span');
+    el.className = 'rip';
+    el.style.cssText = 'width:' + d + 'px;height:' + d + 'px;left:' + ((x == null ? b.width / 2 : x - b.left) - d / 2) + 'px;top:' + ((y == null ? b.height / 2 : y - b.top) - d / 2) + 'px';
+    btn.appendChild(el); setTimeout(function () { el.remove(); }, 600);
+  }
   function shake(el) { el = el || box; el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); if (navigator.vibrate) navigator.vibrate(120); }
 
   // --- ขั้นที่ 1: PIN ---
@@ -254,7 +309,7 @@
   }
   function checkPin() {
     locked = true;
-    if (okCodes.indexOf(code) > -1) { setTimeout(openCaptcha, 250); return; } // PIN ถูก: เด้ง popup ทับ ไม่ซ่อนหน้า PIN (locked ค้างไว้จนกว่าจะปิด popup)
+    if (okCodes.indexOf(code) > -1) { celebrate(); setTimeout(openCaptcha, reduced ? 250 : 1000); return; } // PIN ถูก: เด้ง popup ทับ ไม่ซ่อนหน้า PIN (locked ค้างไว้จนกว่าจะปิด popup)
     fails++; dots.classList.add('bad'); shake();
     say($('m1'), 'รหัสยังไม่ตรง ลองอีกครั้ง' + (fails >= 3 ? ' (ใบ้: เริ่มคบกันปี พ.ศ. ' + (+p[0] + 543) + ')' : ''), true);
     setTimeout(function () { code = ''; dots.classList.remove('bad'); render(); locked = false; }, 600);
@@ -266,9 +321,16 @@
     code += k; say($('m1'), ''); render();
     if (code.length === LEN) setTimeout(checkPin, 140);
   }
+  $('pad').addEventListener('pointerdown', function (e) {
+    var b = e.target.closest('[data-k]');
+    if (b && !locked && stage === 1) { ripple(b, e.clientX, e.clientY); if (navigator.vibrate) navigator.vibrate(8); }
+  });
   $('pad').addEventListener('click', function (e) { var b = e.target.closest('[data-k]'); if (b) press(b.dataset.k); });
   document.addEventListener('keydown', function (e) {
-    if (/^\d$/.test(e.key)) press(e.key); else if (e.key === 'Backspace') press('del');
+    var k = /^\d$/.test(e.key) ? e.key : e.key === 'Backspace' ? 'del' : null;
+    if (k === null) return;
+    if (!locked && stage === 1) ripple($('pad').querySelector('[data-k="' + k + '"]'));
+    press(k);
   });
 
   // --- ขั้นที่ 2: captcha ---
@@ -280,7 +342,7 @@
     current = shuffle(CAPTCHA_TILES);
     current.forEach(function (t, i) {
       var b = document.createElement('button');
-      b.type = 'button'; b.className = 'tile'; b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', 'รูปที่ ' + (i + 1));
+      b.type = 'button'; b.className = 'tile'; b.style.animationDelay = (120 + i * 50) + 'ms'; b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', 'รูปที่ ' + (i + 1));
       var ph = '<span class="ph">' + HEART + '</span>';
       b.innerHTML = (t.src ? '<img src="' + t.src + '" alt="">' : ph) + '<span class="ck">' + CHECK + '</span>';
       var img = b.querySelector('img');
@@ -301,7 +363,7 @@
   }
   function closeCaptcha() { // ยกเลิก: กลับไปกรอก PIN ใหม่
     rcBack.classList.remove('on'); rcBack.setAttribute('aria-hidden', 'true');
-    code = ''; render(); say($('m1'), ''); stage = 1; locked = false;
+    dots.classList.remove('ok'); code = ''; render(); say($('m1'), ''); stage = 1; locked = false;
   }
   rcBack.addEventListener('mousedown', function (e) { if (e.target === rcBack) closeCaptcha(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && stage === 2 && !$('verify').disabled) closeCaptcha(); });
@@ -331,13 +393,66 @@
 </script>
 <script>
 (function () {
-  var s = document.querySelectorAll('#pic .slide');
-  if (s.length < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  var i = 0, t;
-  function next() { s[i].classList.remove('on'); i = (i + 1) % s.length; s[i].classList.add('on'); }
-  function start() { t = setInterval(next, 4500); }
-  document.addEventListener('visibilitychange', function () { clearInterval(t); if (!document.hidden) start(); });
-  start();
+  var pic = document.getElementById('pic'), poster = pic.parentNode, wall = poster.parentNode, panel = document.querySelector('.panel');
+  var slides = pic.querySelectorAll('.slide'), reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // fade-in เมื่อรูปโหลดเสร็จ
+  slides.forEach(function (im) {
+    var ok = function () { im.classList.add('ld'); };
+    if (im.complete && im.naturalWidth) ok(); else { im.addEventListener('load', ok); im.addEventListener('error', ok); }
+  });
+
+  // สไลด์ + จุดบอก + หยุดเมื่อ hover/แตะ + ปัดซ้ายขวา
+  var cur = 0, timer = null, hold = false, btns = [], nav = document.createElement('div');
+  nav.className = 'sdots';
+  slides.forEach(function (_, n) {
+    var b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', 'รูปที่ ' + (n + 1));
+    b.addEventListener('click', function () { go(n); });
+    nav.appendChild(b); btns.push(b);
+  });
+  if (slides.length > 1) pic.appendChild(nav);
+  btns[0] && btns[0].classList.add('on');
+  function stop() { clearInterval(timer); timer = null; }
+  function run() { stop(); if (!reduced && !hold && !document.hidden && slides.length > 1) timer = setInterval(function () { go(cur + 1); }, 4500); }
+  function go(n) {
+    slides[cur].classList.remove('on'); btns[cur].classList.remove('on');
+    cur = (n + slides.length) % slides.length;
+    slides[cur].classList.add('on'); btns[cur].classList.add('on');
+    run();
+  }
+  poster.addEventListener('mouseenter', function () { hold = true; stop(); });
+  poster.addEventListener('mouseleave', function () { hold = false; run(); });
+  var x0 = null;
+  pic.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; hold = true; stop(); }, { passive: true });
+  pic.addEventListener('touchend', function (e) {
+    var dx = e.changedTouches[0].clientX - x0; hold = false;
+    if (Math.abs(dx) > 40) go(cur + (dx < 0 ? 1 : -1)); else run();
+  }, { passive: true });
+  document.addEventListener('visibilitychange', run);
+  run();
+
+  // โปสเตอร์เอียงตามเมาส์ (เฉพาะอุปกรณ์ที่มีเมาส์)
+  if (!reduced && matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    wall.addEventListener('mousemove', function (e) {
+      var w = wall.getBoundingClientRect();
+      var x = (e.clientX - w.left) / w.width * 2 - 1, y = (e.clientY - w.top) / w.height * 2 - 1;
+      poster.style.setProperty('--ry', (x * 7).toFixed(2) + 'deg'); poster.style.setProperty('--rx', (-y * 7).toFixed(2) + 'deg');
+    });
+    wall.addEventListener('mouseleave', function () { poster.style.setProperty('--ry', '0deg'); poster.style.setProperty('--rx', '0deg'); });
+  }
+
+  // หัวใจ/กลีบดอกไม้ลอยฝั่งขวา
+  if (!reduced) {
+    var fl = document.createElement('div'); fl.className = 'floaty'; fl.setAttribute('aria-hidden', 'true');
+    for (var n = 0; n < 12; n++) {
+      var e = document.createElement('i'), d = 14 + Math.random() * 14, petal = n % 3 === 2;
+      e.className = 'fl' + (petal ? ' petal' : '');
+      e.style.cssText = '--x:' + (Math.random() * 96) + '%;--s:' + (10 + Math.random() * 14) + 'px;--d:' + d + 's;--dl:-' + (Math.random() * d) + 's;--dx:' + ((Math.random() - .5) * 80) + 'px;--r:' + ((Math.random() - .5) * 360) + 'deg;--o:' + (.15 + Math.random() * .2);
+      if (!petal) e.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>';
+      fl.appendChild(e);
+    }
+    panel.insertBefore(fl, panel.firstChild);
+  }
 })();
 </script>
 </body>
