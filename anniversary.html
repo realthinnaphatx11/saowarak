@@ -100,31 +100,6 @@
         .logout-btn:hover { background: #FFD0DB; }
 
         /* ---------- หน้า Anniversary ---------- */
-        .year-tab {
-            position: relative;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            min-width: 5.25rem; padding: .7rem 1rem .75rem;
-            border-radius: 1.25rem;
-            background: rgba(255,255,255,.85);
-            border: 1px solid rgba(255,182,193,.45);
-            color: #8A6F78;
-            transition: transform .2s, box-shadow .2s, background .2s;
-        }
-        .year-tab:hover:not([aria-selected="true"]) { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(255,182,193,.3); }
-        .year-tab:focus-visible { outline: 2px solid #A374DB; outline-offset: 3px; }
-        .year-tab .yt-label { font-size: .7rem; font-weight: 500; opacity: .85; }
-        .year-tab .yt-num { font-family: 'Mitr', sans-serif; font-size: 1.9rem; font-weight: 600; line-height: 1.1; }
-        .year-tab[aria-selected="true"] {
-            background: linear-gradient(135deg, #FF6FA5 0%, #FF9F5A 100%);
-            border-color: transparent; color: #fff;
-            box-shadow: 0 10px 22px rgba(255,111,165,.38);
-            transform: translateY(-2px);
-        }
-        .year-tab.is-empty:not([aria-selected="true"]) { opacity: .72; }
-        .year-tab .yt-lock {
-            position: absolute; top: .4rem; right: .45rem; width: .85rem; height: .85rem; opacity: .75;
-        }
-
         .video-card { border-radius: 1.75rem; overflow: hidden; }
         /* กรอบมือถือ (คลิปแนวตั้งจากมือถือ) */
         .phone-wrap { display: flex; justify-content: center; padding: 1.5rem 1rem .5rem; }
@@ -205,7 +180,7 @@
         }
 
         .panel-in { animation: panelIn .35s ease-out; }
-        @keyframes panelIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+        @keyframes panelIn { from { opacity: 0; transform: translateX(var(--slide, 0px)) translateY(10px); } to { opacity: 1; transform: none; } }
         @media (prefers-reduced-motion: reduce) {
             .panel-in, #nav-menu-panel:not(.hidden), .animate-heart-pulse { animation: none; }
             .year-tab, .theme-toggle { transition: none; }
@@ -245,12 +220,10 @@
         html.dark .text-gray-800 { color: #F6ECF0; }
         html.dark .text-gray-600 { color: #D0BFC9; }
         html.dark .text-gray-500 { color: #B8A7B2; }
-        html.dark .year-tab { background: rgba(255,255,255,.07); border-color: rgba(255,143,184,.24); color: #C9B4C0; }
-        html.dark .year-tab[aria-selected="true"] { background: linear-gradient(135deg, #FF6FA5 0%, #FF9F5A 100%); color: #fff; border-color: transparent; }
         html.dark .clip-badge { background: rgba(255,111,165,.18); color: #FF8FB8; }
         html.dark .soon-icon { background: rgba(168,85,247,.2); color: #C7A2F4; }
         html.dark .video-frame, html.dark .video-frame video { background: #150E19; }
-        html.dark .phone { background: linear-gradient(145deg, #6B3F58 0%, #5A3F4E 55%, #4A3F73 100%); box-shadow: 0 18px 38px rgba(0,0,0,.45), inset 0 0 0 2px rgba(255,255,255,.12); }
+        html.dark .phone { background: linear-gradient(145deg, #6B3F58 0%, #5A3F4E 55%, #4A3F73 100%); --drop: rgba(0,0,0,.45); --inset: rgba(255,255,255,.12); }
 
         /* เคอร์เซอร์หัวใจ + หัวใจลอยตามเมาส์ (เหมือน index) */
         html, body, button, a, [onclick] {
@@ -271,8 +244,132 @@
         html.dark .glass-nav .bg-rose-100 { background-color: rgba(255,111,165,.16); }
         html.dark .glass-nav .text-rose-700 { color: #FFA3C4; }
     </style>
+
+<style id="effects">
+        /* ===== พื้นหลังลอยเบาๆ ===== */
+        #bg-float { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+        #bg-float.paused * { animation-play-state: paused !important; }
+        .bg-bokeh {
+            position: absolute; border-radius: 50%;
+            background: radial-gradient(circle, rgba(var(--c), .5) 0%, rgba(var(--c), 0) 70%);
+            animation: bgBokeh var(--dur, 20s) ease-in-out infinite;
+        }
+        @keyframes bgBokeh {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: .3; }
+            50% { transform: translate(var(--bx, 30px), var(--by, -40px)) scale(1.18); opacity: .65; }
+        }
+        .bg-petal {
+            position: absolute; bottom: -8vh; line-height: 1; opacity: 0;
+            animation: bgRise var(--dur, 32s) linear infinite;
+        }
+        @keyframes bgRise {
+            0%   { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 0; }
+            10%  { opacity: var(--o, .5); }
+            50%  { transform: translate3d(var(--sway, 30px), -55vh, 0) rotate(var(--rot, 25deg)); }
+            90%  { opacity: var(--o, .5); }
+            100% { transform: translate3d(calc(var(--sway, 30px) * -1), -115vh, 0) rotate(calc(var(--rot, 25deg) * -1)); opacity: 0; }
+        }
+        html.dark #bg-float { opacity: .7; }
+        main { position: relative; z-index: 10; }
+
+        /* ===== เส้นไทม์ไลน์เชื่อมปี ===== */
+        .timeline { --dot: 3.8rem; --n: 4; --p: 0; position: relative; width: min(100%, calc(var(--n) * 7.5rem)); margin: 0 auto 2rem; padding-top: 1.3rem; }
+        .tl-tabs { position: relative; z-index: 2; display: flex; justify-content: space-between; }
+        .tl-track {
+            position: absolute; z-index: 1; height: 6px; border-radius: 9999px;
+            left: calc(var(--dot) / 2); right: calc(var(--dot) / 2);
+            top: calc(1.3rem + var(--dot) / 2 - 3px);
+            background: rgba(255,182,193,.5);
+        }
+        .tl-fill {
+            position: absolute; left: 0; top: 0; bottom: 0; border-radius: inherit;
+            width: calc(var(--p) * 1%);
+            background: linear-gradient(90deg, #FF6FA5, #FF9F5A);
+            transition: width .55s cubic-bezier(.4, 0, .2, 1);
+        }
+        .tl-heart {
+            position: absolute; z-index: 3; top: 0; margin-left: -.65rem; font-size: 1.2rem; line-height: 1; pointer-events: none;
+            left: calc(var(--dot) / 2 + (100% - var(--dot)) * var(--p) / 100);
+            transition: left .55s cubic-bezier(.4, 0, .2, 1);
+            animation: tlBob 1.8s ease-in-out infinite;
+        }
+        @keyframes tlBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px) scale(1.12); } }
+
+        .year-tab {
+            position: relative; flex: none;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            width: var(--dot); height: var(--dot); border-radius: 50%;
+            background: #FFF6FA; border: 2px solid rgba(255,143,184,.5); color: #8A6F78;
+            transition: transform .25s, box-shadow .25s, background .35s, color .35s, border-color .35s;
+        }
+        .year-tab:hover:not([aria-selected="true"]) { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(255,182,193,.35); }
+        .year-tab:focus-visible { outline: 2px solid #A374DB; outline-offset: 3px; }
+        .year-tab .yt-label { font-size: .6rem; font-weight: 500; line-height: 1; opacity: .85; }
+        .year-tab .yt-num { font-family: 'Mitr', sans-serif; font-size: 1.55rem; font-weight: 600; line-height: 1.1; }
+        .year-tab.is-passed { background: #FFE0EC; border-color: #FF9EC0; color: #E0457F; }
+        .year-tab[aria-selected="true"] {
+            background: linear-gradient(135deg, #FF6FA5 0%, #FF9F5A 100%);
+            border-color: transparent; color: #fff;
+            box-shadow: 0 10px 22px rgba(255,111,165,.4);
+            transform: scale(1.1);
+        }
+        .year-tab.is-empty:not([aria-selected="true"]) { opacity: .75; }
+        .year-tab .yt-lock { position: absolute; top: -.1rem; right: -.1rem; width: 1.1rem; height: 1.1rem; padding: .17rem; border-radius: 50%; background: #EEE2FA; color: #A374DB; }
+        html.dark .tl-track { background: rgba(255,143,184,.2); }
+        html.dark .year-tab { background: #2E2030; border-color: rgba(255,143,184,.3); color: #C9B4C0; }
+        html.dark .year-tab.is-passed { background: rgba(255,111,165,.22); border-color: rgba(255,143,184,.6); color: #FFA3C4; }
+        html.dark .year-tab[aria-selected="true"] { background: linear-gradient(135deg, #FF6FA5 0%, #FF9F5A 100%); border-color: transparent; color: #fff; }
+
+        .swipe-hint { display: none; text-align: center; font-size: .75rem; margin: -1rem 0 1.25rem; }
+        @media (hover: none) and (pointer: coarse) { .swipe-hint { display: block; } }
+
+        /* ===== กรอบมือถือเอียงตามเมาส์ ===== */
+        .phone-wrap { perspective: 1000px; }
+        .phone {
+            --drop: rgba(255,111,165,.32); --inset: rgba(255,255,255,.65);
+            box-shadow: 0 18px 38px var(--drop), inset 0 0 0 2px var(--inset);
+            transition: width .3s ease, transform .25s ease-out;
+        }
+        .phone::after {
+            content: ''; position: absolute; inset: 0; z-index: 7; border-radius: inherit; pointer-events: none;
+            background: radial-gradient(circle at var(--gx, 50%) var(--gy, 30%), rgba(255,255,255,.55), rgba(255,255,255,0) 55%);
+            mix-blend-mode: soft-light; opacity: var(--glare, 0); transition: opacity .3s;
+        }
+
+        /* ===== โหมดโรงหนัง ===== */
+        #cinema-dim {
+            position: fixed; inset: 0; z-index: 5; pointer-events: none; opacity: 0; transition: opacity .6s ease;
+            background: radial-gradient(circle at 50% 45%, rgba(24,12,30,.55) 0%, rgba(10,5,15,.9) 80%);
+        }
+        html.cinema #cinema-dim { opacity: 1; }
+        .cinema-dim, .timeline, .swipe-hint { transition: opacity .5s ease; }
+        html.cinema .cinema-dim, html.cinema .timeline, html.cinema .swipe-hint { opacity: .3; }
+        html.cinema .glass-nav { opacity: .45; }
+        html.cinema .glass-nav:hover, html.cinema .glass-nav:focus-within { opacity: 1; }
+        .video-card { transition: background .5s, border-color .5s, box-shadow .5s; }
+        .video-card h3, .video-card p { transition: color .5s; }
+        html.cinema .video-card { background: rgba(36,24,40,.84); border-color: rgba(255,143,184,.28); box-shadow: 0 24px 60px rgba(0,0,0,.55); }
+        html.cinema .video-card .text-gray-800 { color: #F6ECF0; }
+        html.cinema .video-card .text-gray-600 { color: #D0BFC9; }
+        .phone.is-playing { animation: phoneGlow 2.5s ease-in-out infinite; }
+        @keyframes phoneGlow {
+            0%, 100% { box-shadow: 0 18px 38px var(--drop), 0 0 26px 4px rgba(255,111,165,.35), inset 0 0 0 2px var(--inset); }
+            50%      { box-shadow: 0 18px 38px var(--drop), 0 0 56px 14px rgba(255,111,165,.65), inset 0 0 0 2px var(--inset); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            #bg-float { display: none; }
+            .tl-heart, .phone.is-playing { animation: none; }
+            .tl-fill, .tl-heart { transition: none; }
+            .phone { transition: width .3s ease; }
+            .phone::after { display: none; }
+        }
+    </style>
 </head>
 <body class="min-h-screen pb-16">
+
+    <div id="bg-float" aria-hidden="true"></div>
+    <div id="cinema-dim" aria-hidden="true"></div>
 
     <header class="sticky top-0 z-40 glass-nav transition-all duration-300">
         <i data-lucide="heart" class="hidden sm:block absolute top-2 left-1/3 w-3.5 h-3.5 text-pink-300/60 fill-pink-200/60 pointer-events-none"></i>
@@ -341,16 +438,21 @@
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto px-4 pt-10 sm:pt-14">
+    <main class="max-w-4xl mx-auto px-4 pt-10 sm:pt-14 relative z-10">
         <!-- หัวหน้า -->
-        <section class="text-center mb-8">
+        <section class="text-center mb-8 cinema-dim">
             <p class="font-cursive text-5xl sm:text-6xl bg-gradient-to-r from-pink-500 via-fuchsia-500 to-amber-500 bg-clip-text text-transparent leading-tight pb-1">Anniversary</p>
             <h2 class="font-mitr text-2xl sm:text-3xl font-semibold text-gray-800 mt-1">วิดีโอครบรอบของเรา</h2>
             <p class="text-sm text-gray-500 mt-2">เลือกปีที่อยากย้อนดู แล้วกดเล่นได้เลย</p>
         </section>
 
         <!-- เลือกปี -->
-        <div id="year-tabs" role="tablist" aria-label="เลือกปีครบรอบ" class="flex flex-wrap justify-center gap-3 mb-8"></div>
+        <div id="timeline" class="timeline">
+            <div class="tl-track" aria-hidden="true"><span class="tl-fill"></span></div>
+            <span class="tl-heart" aria-hidden="true">💖</span>
+            <div id="year-tabs" role="tablist" aria-label="เลือกปีครบรอบ" class="tl-tabs"></div>
+        </div>
+        <p class="swipe-hint text-gray-500">👈 ปัดซ้าย–ขวาเพื่อเปลี่ยนปี 👉</p>
 
         <!-- เนื้อหาของปีที่เลือก -->
         <section id="year-panel" role="tabpanel" aria-live="polite"></section>
@@ -394,6 +496,7 @@
 
         const tabsEl = document.getElementById('year-tabs');
         const panelEl = document.getElementById('year-panel');
+        const timelineEl = document.getElementById('timeline');
         let currentYear = 1;
 
         function escapeHtml(s) {
@@ -443,7 +546,13 @@
 
         function renderPanel(burst) {
             const a = ANNIVERSARIES.find(x => x.year === currentYear);
-            tabsEl.querySelectorAll('.year-tab').forEach(t => t.setAttribute('aria-selected', String(t.id === 'tab-' + currentYear)));
+            const idx = ANNIVERSARIES.findIndex(x => x.year === currentYear);
+            tabsEl.querySelectorAll('.year-tab').forEach((t, i) => {
+                t.setAttribute('aria-selected', String(t.id === 'tab-' + currentYear));
+                t.classList.toggle('is-passed', i < idx);
+            });
+            timelineEl.style.setProperty('--n', ANNIVERSARIES.length);
+            timelineEl.style.setProperty('--p', ANNIVERSARIES.length > 1 ? (idx / (ANNIVERSARIES.length - 1) * 100) : 0);
             panelEl.setAttribute('aria-labelledby', 'tab-' + currentYear);
 
             let html;
@@ -477,9 +586,24 @@
         function selectYear(y) {
             // หยุดวิดีโอปีเดิมก่อนสลับ
             panelEl.querySelectorAll('video').forEach(v => v.pause());
+            panelEl.style.setProperty('--slide', (y >= currentYear ? 1 : -1) * 36 + 'px');
             currentYear = y;
             try { history.replaceState(null, '', '#year' + y); } catch (e) {}
             renderPanel(true);
+            syncCinema();
+        }
+
+        // โหมดโรงหนัง: หรี่ไฟเมื่อมีคลิปกำลังเล่น แล้วเปิดไฟกลับเมื่อหยุด/จบ
+        function syncCinema() {
+            const vids = Array.from(panelEl.querySelectorAll('video'));
+            let any = false;
+            vids.forEach(v => {
+                const playing = !v.paused && !v.ended;
+                if (playing) any = true;
+                const ph = v.closest('.phone');
+                if (ph) ph.classList.toggle('is-playing', playing);
+            });
+            document.documentElement.classList.toggle('cinema', any);
         }
 
         function videoMissing(video, file) {
@@ -535,12 +659,14 @@
             if (phone && !heartTimers.has(v)) {
                 heartTimers.set(v, setInterval(() => floatHeart(phone), 700));
             }
+            syncCinema();
         }, true);
-        document.addEventListener('pause', (e) => { if (e.target.tagName === 'VIDEO') stopHearts(e.target); }, true);
+        document.addEventListener('pause', (e) => { if (e.target.tagName === 'VIDEO') { stopHearts(e.target); syncCinema(); } }, true);
         document.addEventListener('ended', (e) => {
             const v = e.target;
             if (v.tagName !== 'VIDEO') return;
             stopHearts(v);
+            syncCinema();
             confetti({ particleCount: 60, spread: 80, origin: { y: 0.6 }, colors: ['#FF6FA5', '#FF9F5A', '#FFC845', '#A374DB'] });
         }, true);
 
@@ -622,6 +748,100 @@
             renderTabs();
             renderPanel(false);
             syncThemeUI();
+        })();
+
+        // ปัดซ้าย/ขวาบนมือถือ = เปลี่ยนปี
+        (function () {
+            const root = document.querySelector('main');
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            let sx = 0, sy = 0, t0 = 0, ok = false;
+            root.addEventListener('touchstart', (e) => {
+                if (e.touches.length !== 1) { ok = false; return; }
+                const t = e.touches[0];
+                sx = t.clientX; sy = t.clientY; t0 = Date.now(); ok = true;
+                const f = e.target.closest && e.target.closest('.video-frame');
+                if (f && t.clientY > f.getBoundingClientRect().bottom - 72) ok = false;   // เว้นแถบเลื่อนวิดีโอ
+            }, { passive: true });
+            root.addEventListener('touchend', (e) => {
+                if (!ok) return;
+                ok = false;
+                const t = e.changedTouches[0];
+                const dx = t.clientX - sx, dy = t.clientY - sy;
+                if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.6 || Date.now() - t0 > 800) return;
+                if (document.fullscreenElement || document.webkitFullscreenElement) return;
+                const i = ANNIVERSARIES.findIndex(a => a.year === currentYear);
+                const n = i + (dx < 0 ? 1 : -1);
+                if (n < 0 || n >= ANNIVERSARIES.length) {
+                    if (!reduce && panelEl.animate) panelEl.animate(
+                        [{ transform: 'translateX(0)' }, { transform: 'translateX(' + (dx < 0 ? -14 : 14) + 'px)' }, { transform: 'translateX(0)' }],
+                        { duration: 260, easing: 'ease-out' });
+                    return;
+                }
+                selectYear(ANNIVERSARIES[n].year);
+            }, { passive: true });
+        })();
+
+        // กรอบมือถือเอียงตามเมาส์ (เฉพาะเมาส์ · ไม่ทำงานถ้าเปิด reduce motion)
+        (function () {
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            const MAX = 10;
+            let active = null, raf = 0, ev = null;
+            function reset(p) {
+                if (!p) return;
+                p.style.transform = '';
+                p.style.setProperty('--glare', '0');
+            }
+            function apply() {
+                raf = 0;
+                if (!ev) return;
+                const wrap = ev.target.closest && ev.target.closest('.phone-wrap');
+                const p = wrap ? wrap.querySelector('.phone') : null;
+                if (active && active !== p) reset(active);
+                active = p;
+                if (!p) return;
+                const r = wrap.getBoundingClientRect();     // ใช้ wrap (ไม่เอียง) เพื่อไม่ให้สั่น
+                const px = Math.min(1, Math.max(0, (ev.clientX - r.left) / r.width));
+                const py = Math.min(1, Math.max(0, (ev.clientY - r.top) / r.height));
+                p.style.transform = 'rotateX(' + (-(py - .5) * 2 * MAX).toFixed(2) + 'deg) rotateY(' + ((px - .5) * 2 * MAX).toFixed(2) + 'deg)';
+                p.style.setProperty('--gx', (px * 100).toFixed(1) + '%');
+                p.style.setProperty('--gy', (py * 100).toFixed(1) + '%');
+                p.style.setProperty('--glare', '.9');
+            }
+            document.addEventListener('pointermove', (e) => {
+                if (e.pointerType && e.pointerType !== 'mouse') return;
+                ev = e;
+                if (!raf) raf = requestAnimationFrame(apply);
+            }, { passive: true });
+            document.documentElement.addEventListener('mouseleave', () => { reset(active); active = null; });
+        })();
+
+        // พื้นหลังลอยเบาๆ: ฟองแสง + กลีบ/หัวใจลอยขึ้น
+        (function () {
+            const host = document.getElementById('bg-float');
+            if (!host || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            const small = window.matchMedia('(max-width: 640px)').matches;
+            const COLORS = ['255,111,165', '255,159,90', '255,200,69', '163,116,219', '255,182,193'];
+            const GLYPHS = ['💗', '💕', '🌸', '🤍', '✨'];
+            const rnd = (a, b) => a + Math.random() * (b - a);
+            for (let i = 0; i < (small ? 5 : 9); i++) {
+                const el = document.createElement('span');
+                const size = rnd(70, 190);
+                el.className = 'bg-bokeh';
+                el.style.cssText = 'width:' + size + 'px;height:' + size + 'px;left:' + rnd(-5, 95) + '%;top:' + rnd(-5, 95) + '%;' +
+                    '--c:' + COLORS[i % COLORS.length] + ';--dur:' + rnd(16, 30) + 's;--bx:' + rnd(-50, 50) + 'px;--by:' + rnd(-60, 40) + 'px;' +
+                    'animation-delay:-' + rnd(0, 20) + 's';
+                host.appendChild(el);
+            }
+            for (let i = 0; i < (small ? 7 : 14); i++) {
+                const el = document.createElement('span');
+                el.className = 'bg-petal';
+                el.textContent = GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+                el.style.cssText = 'left:' + rnd(2, 96) + '%;font-size:' + rnd(12, 26) + 'px;' +
+                    '--dur:' + rnd(26, 46) + 's;--sway:' + rnd(18, 48) + 'px;--rot:' + rnd(-40, 40) + 'deg;--o:' + rnd(.3, .6).toFixed(2) + ';' +
+                    'animation-delay:-' + rnd(0, 46) + 's';
+                host.appendChild(el);
+            }
+            document.addEventListener('visibilitychange', () => host.classList.toggle('paused', document.hidden));
         })();
 
         // หัวใจลอยตามเมาส์
